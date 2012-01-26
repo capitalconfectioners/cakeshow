@@ -1,0 +1,80 @@
+{spawn} = require 'child_process'
+
+option '-r', '--replace', 'replace existing Cakeshow database'
+option '-m', '--mysql [PATH]', 'specify MySQL install directory'
+option '-u', '--user [USER]', 'specify MySQL username'
+option '-p', '--password [PASSWORD]', 'specify MySQL password'
+option '-v', '--verbose', 'print verbose output'
+
+class ExitHandler
+	constructor: (options, onSuccess) ->
+		this.onSuccess = onSuccess
+	
+	onExit: (status) => 
+		process.exit(1) if status != 0
+		if typeof this.onSuccess is 'function'
+			this.onSuccess(this.options) 
+
+redirect = (proc) ->
+	proc.stderr.pipe(process.stderr)
+	proc.stdout.pipe(process.stdout)
+	return proc
+
+mysql = (options, args = []) ->
+	if options.mysql?
+		command = options.mysql + '/bin/mysql'
+	else
+		command = 'mysql'
+	
+	arguments = []
+	
+	if options.user?
+		arguments = arguments.concat(['-u', options.user])
+	
+	if options.password?
+		arguments = arguments.concat(['-p', options.password])
+		
+	if options.verbose?
+		arguments.push('--verbose')
+	
+	env = process.env
+	
+	if options.mysql? and process.platform == 'darwin'
+		env['DYLD_LIBRARY_PATH'] = options.mysql + "/lib:" + process.env['DYLD_LIBRARY_PATH']
+		
+	return redirect(spawn(command, arguments.concat(args)), { env: env })
+
+coffee = (script, args = []) ->
+	return redirect(spawn('coffee', [script].concat(args)))
+
+runSqlScript = (options, script, onSuccess) ->
+	handler = new ExitHandler(options, onSuccess)
+	
+	sqlProc = mysql(options, ['-e', 'source ' + script])
+	
+	sqlProc.on('exit', handler.onExit)
+
+createCakeshowDB = (options, onSuccess) ->
+	runSqlScript(options, 'database/create_cakeshow.sql', onSuccess) 
+
+migrateData = (options, onSuccess) ->
+	console.log('Migrating data')
+	
+	handler = new ExitHandler(options, onSuccess)
+	
+	proc = coffee('database/upgrade_db.coffee')
+	
+	proc.on('exit', handler.onExit)
+	
+task 'olddb', 'Create old database from backup', (options) ->
+	runSqlScript(options, 'database/create_old_dbs.sql')
+
+task 'create', 'Create cakeshow database', (options) ->
+	createCakeshowDB(options)
+
+task 'migrate', 'Migrate data into the new Cakeshow DB', (options) ->
+	if options.replace?
+		console.log('Replacing old DB')
+		createCakeshowDB(options, migrateData)
+	else
+		migrateData(options)

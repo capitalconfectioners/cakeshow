@@ -1,5 +1,5 @@
 mysql = require("mysql")
-cakeshowDB = require('./cakeshowDB')
+Sequelize = require('sequelize')
 
 exit = (message) ->
 	console.log(message)
@@ -54,66 +54,8 @@ styleMap =
 
 
 signupMap =
-	registrantid: 
-		name: "registrantid"
-		type: "number"
-	year: 
-		name: "year"
-		type: "string"
-	registration: 
-		name: "registrationTime"
-		type: "string"
-	class: 
-		name: "class"
-		type: "string"
-	childage: 
-		name: "childage"
-		type: "number"
-	paid: 
-		name: "paid"
-		type: "boolean"
-	totalfee: 
-		name: "totalfee"
-		type: "number"
-	signupshowcase: 
-		name: "signupshowcase"
-		type: "boolean"
-	hotelinfo: 
-		name: "hotelinfo"
-		type: "boolean"
-	electricity: 
-		name: "electricity"
-		type: "boolean"
-	paymentmethod: 
-		name: "paymentmethod"
-		type: "string"
-
-mapSignup = (row, year) ->
-	newRow = []
-	for oldCol, newCol of signupMap
-		converted = row[oldCol]
-		
-		switch newCol.type
-			when "boolean" 
-				if converted == "yes"
-					converted = 1
-				else
-					converted = 0
-			when "number"
-				if typeof converted == "string"
-					if converted == ""
-						converted = 0
-					else
-						converted = parseInt(converted)
-			
-		
-		switch newCol.name
-			when "year"
-				newRow.push(year)
-			else
-				newRow.push(converted)
-	
-	return newRow
+	registrationTime: "registration"
+	RegistrantId: "registrantid"
 
 class Upgrader
 	cakeshowDBs : 
@@ -122,14 +64,21 @@ class Upgrader
 		"10": "2010"
 		"12": "2012"
 	
-	upgrade : =>
-		cakeshowDB.connect()
+	upgrade : (cakeshowDB, onSuccess= ->) =>
+		this.cakeshowDB = cakeshowDB
 		
-		this.upgradeRegistrants()
-		for showNumber of this.cakeshowDBs
-			this.upgradeCakeshow(showNumber)
+		this.upgradeRegistrants( =>
+			showsToUpgrade = Object.keys(this.cakeshowDBs).length
+			completed = 0
+			for showNumber of this.cakeshowDBs
+				this.upgradeCakeshow(showNumber, ->
+					completed++
+					if completed == showsToUpgrade
+						onSuccess()
+				)
+		)
 	
-	upgradeRegistrants : =>
+	upgradeRegistrants : (onSuccess= ->) =>
 		this.registrantsDB = new mysql.createClient(
 			hostname: "localhost"
 			user: "root"
@@ -144,19 +93,27 @@ class Upgrader
 				if error
 					exit("Error: " + error)
 				
+				completed = 0
+				
 				for row in rows
 					newRow = {}
-					for col of cakeshowDB.Registrant.rawAttributes when row[col]?
+					for col of this.cakeshowDB.Registrant.rawAttributes when row[col]?
 						newRow[col] = row[col]
 					
-					registrant = cakeshowDB.Registrant.build(newRow)
+					registrant = this.cakeshowDB.Registrant.build(newRow)
 					registrant.save()
 						.error( (error) ->
 							console.log('Error inserting registrant: ' + error)
 						)
+						.success( =>
+							completed++
+							if completed == rows.length
+								this.registrantsDB.end()
+								onSuccess()
+						)
 		)
 
-	upgradeCakeshow : (number) =>
+	upgradeCakeshow : (number, onSuccess= ->) =>
 		dbName = "capitalc_cakeshow" + number
 		this[dbName] = new mysql.createClient(
 			hostname: "localhost"
@@ -170,47 +127,89 @@ class Upgrader
 		signups = this[dbName].query(
 			"SELECT *" +
 			"FROM contestantsignups;",
-			(error, rows, columns) ->
+			(error, rows, columns) =>
+				completed = 0
 				for row in rows
-					signupUpgrader.insertRegistrant(row)
+					signupUpgrader.insertRegistrant(row, =>
+						completed++
+						if completed == rows.length
+							this[dbName].end()
+							onSuccess()
+					)
 		)
 
 class SignupUpgrader
 	constructor: (upgrader, year) ->
 		this.upgrader = upgrader
 		this.year = year
+		this.cakeshowDB = upgrader.cakeshowDB
 
-	insertRegistrant : (row) =>
-		###
-		this.upgrader.cakeshow.query()
-			.insert("signups", (newCol.name for oldCol, newCol of signupMap),
-				mapSignup(row, this.year))
-			.execute( callback = (error, result) =>
-				if error
-					exit("Error inserting signup: " + error)
-				
-				this.insertRegistrantEntries(result.id, row)
-			
+	insertRegistrant : (row, onSuccess= ->) =>
+		signup = this.cakeshowDB.Signup.build(this.mapSignup(row, this.year))
+		signup.save().success( =>
+			this.insertRegistrantEntries(signup, row, onSuccess)
 		)
-		###
-
-	insertRegistrantEntries : (signupID, oldRegistrant) =>
-		###
-		columns = ['registrantid','signupid','year','category']
-		allEntries = []
+	
+	insertRegistrantEntries : (signup, oldRegistrant, onSuccess= ->) =>
+		entryChain = new Sequelize.Utils.QueryChainer
+		entries = []
+		
 		for style, entryStyle of styleMap when oldRegistrant[style]?
 			if entryStyle.type == "number"
 				for i in [0..oldRegistrant[style]]
-					allEntries.push([oldRegistrant.registrantid, signupID, this.year, entryStyle.name])
+					entry = this.cakeshowDB.Entry.build(
+						category: entryStyle.name
+					)
+					entryChain.add(entry.save())
+					entries.push(entry)
 			else
-				allEntries.push([oldRegistrant.registrantid, signupID, this.year, entryStyle.name])
+				entry = this.cakeshowDB.Entry.build(
+					category: entryStyle.name
+				)
+				entryChain.add(entry.save())
+				entries.push(entry)
 		
-		this.upgrader.cakeshow.query()
-			.insert("entries", columns, allEntries)
-			.execute(callback = (error) ->
-				if error
-					console.log("Error inserting entry: " + error)
+		entryChain.run()
+			.error( (errors) ->
+					console.log("Error inserting entries: " + errors)
 			)
-		###
+			.success( ->
+				signup.setEntries(entries)
+					.error( (error) ->
+						console.log("Error linking entries to signup: " + error)
+					)
+					.success( ->
+						onSuccess()
+				)
+		)
+	
+	mapSignup: (row, year) =>
+		newRow = {}
+		for newCol, colInfo of this.cakeshowDB.Signup.rawAttributes when newCol != 'id'
+			oldCol = signupMap[newCol] ? newCol
+	
+			if row[oldCol]?
+				type = colInfo.type ? colInfo
+				
+				converted = row[oldCol]
+				
+				switch type
+					when Sequelize.BOOLEAN 
+						if converted == "yes"
+							converted = true
+						else
+							converted = false
+					when Sequelize.INTEGER
+						if typeof converted == "string"
+							if converted == ""
+								converted = 0
+							else
+								converted = parseInt(converted)			
+				
+				newRow[newCol] = converted
+	
+		newRow.year = year
+		
+		return newRow
 
 module.exports = new Upgrader()

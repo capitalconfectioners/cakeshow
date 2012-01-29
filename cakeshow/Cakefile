@@ -89,7 +89,9 @@ createCakeshowDB = (options, onSuccess = ->) ->
 migrateData = (options, onSuccess) ->
 	console.log('Migrating data')
 	
-	upgrader.upgrade()
+	upgrader.upgrade(db, ->
+		console.log('Done')
+	)
 	
 task 'olddb', 'Create old database from backup', (options) ->
 	runSqlScript(options, 'database/create_old_dbs.sql')

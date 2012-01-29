@@ -1,8 +1,10 @@
 Sequelize = require('sequelize')
 
 class CakeshowDB
-	connect: (username='root', password='') =>
-		this.cakeshowDB = new Sequelize('cakeshow', username, password)
+	connect: (username='root', password='', logging=false) =>
+		this.cakeshowDB = new Sequelize('cakeshow', username, password,
+			logging: logging
+		)
 		
 		this.Registrant = this.cakeshowDB.define('Registrant',
 			firstname: Sequelize.STRING
@@ -26,11 +28,19 @@ class CakeshowDB
 				type: Sequelize.STRING
 				validate: {isIn: ['adultint','culstudent','adultbeg','professional','junior','adultadv','child','teen','masters']}
 			childage: Sequelize.INTEGER
-			paid: Sequelize.BOOLEAN
+			paid: 
+				type: Sequelize.BOOLEAN
+				default: false
 			totalfee: Sequelize.INTEGER
-			signupshowcase: Sequelize.BOOLEAN
-			hotelinfo: Sequelize.BOOLEAN
-			electricity: Sequelize.BOOLEAN
+			signupshowcase: 
+				type: Sequelize.BOOLEAN
+				default: false
+			hotelinfo: 
+				type: Sequelize.BOOLEAN
+				default: false
+			electricity: 
+				type: Sequelize.BOOLEAN
+				default: false
 			paymentmethod:
 				type: Sequelize.STRING
 				validate: {isIn: ['instore','mail','paypal']}
@@ -40,8 +50,12 @@ class CakeshowDB
 			category:
 				type: Sequelize.STRING
 				validate: {isIn: ['showcase','style1','style2','style3','style4','style5','style6','style7','special1','special2','special3','special4','special5','cupcakes','tasting']}
-			didBring: Sequelize.BOOLEAN
-			styleChange: Sequelize.BOOLEAN
+			didBring: 
+				type: Sequelize.BOOLEAN
+				default: false
+			styleChange: 
+				type: Sequelize.BOOLEAN
+				default: false
 		)
 		
 		this.Registrant.hasMany(this.Signup, {as: 'Signups'})

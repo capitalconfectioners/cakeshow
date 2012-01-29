@@ -1,10 +1,10 @@
 express = require('express')
 routes = require('./routes')
-{Registrants} = require('./models/registrant')
+cakeshowDB = require('./database/cakeshowDB')
 
 app = module.exports = express.createServer();
 
-registrants = new Registrants()
+cakeshowDB.connect()
 
 # Configuration
 
@@ -27,8 +27,10 @@ app.configure('production', ->
 
 # Routes
 
+middleware = new routes.DatabaseMiddleware(cakeshowDB)
+
 app.get('/', routes.index)
-app.get('/registrants', registrants.allRegistrants, routesregistrants)
+app.get('/registrants', middleware.allRegistrants, routes.registrants)
 
 app.listen(3000)
 console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env)

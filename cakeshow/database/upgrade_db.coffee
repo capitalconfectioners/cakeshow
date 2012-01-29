@@ -1,4 +1,5 @@
-mysql = require("db-mysql")
+mysql = require("mysql")
+cakeshowDB = require('./cakeshowDB')
 
 exit = (message) ->
 	console.log(message)
@@ -122,67 +123,56 @@ class Upgrader
 		"12": "2012"
 	
 	upgrade : =>
-		this.cakeshow = new mysql.Database(
-			hostname: "localhost"
-			user: "root"
-			password: ""
-			database: "cakeshow"
-		)
-		this.cakeshow.connect( (error) =>
-			if error
-				exit("Connection error: " + error)
-			
-			this.upgradeRegistrants()
-			for showNumber of this.cakeshowDBs
-				this.upgradeCakeshow(showNumber)
-		)
+		cakeshowDB.connect()
+		
+		this.upgradeRegistrants()
+		for showNumber of this.cakeshowDBs
+			this.upgradeCakeshow(showNumber)
 	
 	upgradeRegistrants : =>
-		this.registrantsDB = new mysql.Database(
+		this.registrantsDB = new mysql.createClient(
 			hostname: "localhost"
 			user: "root"
 			password: ""
 			database: "capitalc_registrants"
 		)
-		this.registrantsDB.connect( (error) => 
-			if error
-				exit("Connection error: " + error)
-			
-			this.registrantsDB.query()
-				.select("*")
-				.from("registrants")
-				.execute( (error,rows,columns) =>
-					if error
-						exit("Error: " + error)
-						
-					this.cakeshow.query()
-						.insert("registrants", (column.name for column in columns), 
-							((row[column.name] for column in columns) for row in rows))
-						.execute()
-			)
+		
+		this.registrantsDB.query(
+			'SELECT *' +
+			'FROM registrants;',
+			(error,rows,columns) =>
+				if error
+					exit("Error: " + error)
+				
+				for row in rows
+					newRow = {}
+					for col of cakeshowDB.Registrant.rawAttributes when row[col]?
+						newRow[col] = row[col]
+					
+					registrant = cakeshowDB.Registrant.build(newRow)
+					registrant.save()
+						.error( (error) ->
+							console.log('Error inserting registrant: ' + error)
+						)
 		)
 
 	upgradeCakeshow : (number) =>
 		dbName = "capitalc_cakeshow" + number
-		this[dbName] = new mysql.Database(
+		this[dbName] = new mysql.createClient(
 			hostname: "localhost"
 			user: "root"
 			password: ""
 			database: dbName
 		)
 		
-		this[dbName].connect( (error) =>
-			if error
-				exit("Connection error: " + error)
-			
-			signupUpgrader = new SignupUpgrader(this, this.cakeshowDBs[number])
-			
-			signups = this[dbName].query()
-				.select("*")
-				.from("contestantsignups")
-				
-			signups.on("each", signupUpgrader.insertRegistrant)
-			signups.execute()
+		signupUpgrader = new SignupUpgrader(this, this.cakeshowDBs[number])
+		
+		signups = this[dbName].query(
+			"SELECT *" +
+			"FROM contestantsignups;",
+			(error, rows, columns) ->
+				for row in rows
+					signupUpgrader.insertRegistrant(row)
 		)
 
 class SignupUpgrader
@@ -190,7 +180,8 @@ class SignupUpgrader
 		this.upgrader = upgrader
 		this.year = year
 
-	insertRegistrant : (row,index,last) =>
+	insertRegistrant : (row) =>
+		###
 		this.upgrader.cakeshow.query()
 			.insert("signups", (newCol.name for oldCol, newCol of signupMap),
 				mapSignup(row, this.year))
@@ -201,8 +192,10 @@ class SignupUpgrader
 				this.insertRegistrantEntries(result.id, row)
 			
 		)
+		###
 
 	insertRegistrantEntries : (signupID, oldRegistrant) =>
+		###
 		columns = ['registrantid','signupid','year','category']
 		allEntries = []
 		for style, entryStyle of styleMap when oldRegistrant[style]?
@@ -218,7 +211,6 @@ class SignupUpgrader
 				if error
 					console.log("Error inserting entry: " + error)
 			)
+		###
 
-upgrader = new Upgrader()
-upgrader.upgrade()
-
+module.exports = new Upgrader()

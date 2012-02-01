@@ -6,5 +6,5 @@ script
     console.log('running!');
     cakeshow = require('cakeshowClient');
     app = new cakeshow.Cakeshow();
-    app.initialize();
+    app.initialize('#{route}');
   });

@@ -7,11 +7,13 @@ exports.Cakeshow = class Cakeshow
 	routers: {}
 	collections: {}
 	
-	initialize: (startRoute = "/registrants") =>
+	initialize: (startRoute) =>
+		startRoute = '/registrants' if startRoute = '/'
+	
 		this.registrants = new models.RegistrantList()
 		this.registrantsView = new views.RegistrantListView({collection: this.registrants})
 		
 		this.router = new routers.CakeshowRoutes()
-		Backbone.history.start({pushState: true});
+		Backbone.history.start(pushState: true, silent: true);
 		
 		this.router.navigate(startRoute, true)

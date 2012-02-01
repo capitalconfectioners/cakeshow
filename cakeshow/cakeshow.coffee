@@ -1,6 +1,6 @@
 express = require('express')
 stitch = require('stitch')
-routes = require('./routes')
+routes = require('./routes/server_routes')
 cakeshowDB = require('./database/cakeshowDB')
 
 clientPackage = stitch.createPackage(
@@ -18,8 +18,8 @@ app.configure( ->
   app.set('view engine', 'jade')
   app.use(express.bodyParser())
   app.use(express.methodOverride())
-  app.use(app.router)
   app.use(express.static(__dirname + '/public'))
+  app.use(app.router)
 )
 
 app.configure('development', ->
@@ -35,7 +35,7 @@ app.get('/cakeshow.js', clientPackage.createServer())
 
 middleware = new routes.DatabaseMiddleware(cakeshowDB)
 
-app.get('/', routes.index)
+app.get('*', routes.index)
 app.get('/registrants', middleware.allRegistrants, routes.registrants)
 
 app.listen(3000)

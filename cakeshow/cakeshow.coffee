@@ -1,6 +1,11 @@
 express = require('express')
+stitch = require('stitch')
 routes = require('./routes')
 cakeshowDB = require('./database/cakeshowDB')
+
+clientPackage = stitch.createPackage(
+	paths: [ __dirname + '/client' ]
+)
 
 app = module.exports = express.createServer();
 
@@ -26,6 +31,7 @@ app.configure('production', ->
 )
 
 # Routes
+app.get('/cakeshow.js', clientPackage.createServer())
 
 middleware = new routes.DatabaseMiddleware(cakeshowDB)
 

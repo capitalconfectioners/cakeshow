@@ -46,7 +46,7 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
 			if offset + limit < count
 				request.next_page = page+1
 			
-			this.cakeshowDB.Registrant.findAll(offset:page, limit:limit, order: 'lastname ASC').success( (registrants) ->
+			this.cakeshowDB.Registrant.findAll(offset:offset, limit:limit, order: 'lastname ASC, firstname ASC').success( (registrants) ->
 				request.registrants = registrants
 				next()
 			)

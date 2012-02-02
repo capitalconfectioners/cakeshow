@@ -2,6 +2,7 @@ express = require('express')
 stitch = require('stitch')
 routes = require('./routes/server_routes')
 cakeshowDB = require('./database/cakeshowDB')
+require('./lib/stitch_jade').register(stitch)
 
 clientPackage = stitch.createPackage(
 	paths: [ __dirname + '/client' ]

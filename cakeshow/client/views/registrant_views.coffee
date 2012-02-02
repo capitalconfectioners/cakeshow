@@ -1,3 +1,6 @@
+registrantTemplate = require('./templates/registrant')
+registrantListTemplate = require('./templates/registrant_list')
+
 exports.RegistrantView = class RegistrantView extends Backbone.View
 	tagName: 'li'
 	
@@ -7,7 +10,7 @@ exports.RegistrantView = class RegistrantView extends Backbone.View
 	
 	render: =>
 		json = this.model.toJSON()
-		this.$el.html(json.firstname + ' ' + json.lastname)
+		this.$el.html(registrantTemplate.render(json))
 		return this
 
 exports.RegistrantListView = class RegistrantListView extends Backbone.View
@@ -27,7 +30,7 @@ exports.RegistrantListView = class RegistrantListView extends Backbone.View
 		this.$el.find('#registrants').append(view.render().el)
 		
 	render: =>
-		this.$el.html('<ul id="registrants"></ul><a class="prev">prev</a><a class="next">next</a>')
+		this.$el.html(registrantListTemplate.render())
 		
 		this.add(registrant) for registrant in this.collection.models
 		

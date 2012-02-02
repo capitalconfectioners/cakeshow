@@ -5,11 +5,8 @@ exports.RegistrantList = class RegistrantList extends Backbone.Collection
 	model: Registrant
 	baseUrl: '/registrants'
 	
-	initialize: (url) =>
-		if url?
-			this.url = url
-		else
-			this.url = this.baseUrl
+	initialize: () =>
+		this.url = this.baseUrl
 	
 	# Idea to do URL overriding stolen from https://gist.github.com/838460
 	# but parsing the next/prev from the HTTP Response headers, which are raw
@@ -36,10 +33,14 @@ exports.RegistrantList = class RegistrantList extends Backbone.Collection
 		
 		return response
 	
+	setUrl: (url) =>
+		if url?
+			this.url = this.baseUrl + '?' + url
+		else
+			this.url = this.baseUrl
+	
 	nextPage: =>
-		app.initRegistrants(this.next)
 		app.router.navigate(this.next, trigger: true)
 	
 	prevPage: =>
-		app.initRegistrants(this.prev)
 		app.router.navigate(this.prev, trigger: true)

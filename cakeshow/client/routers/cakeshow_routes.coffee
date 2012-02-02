@@ -5,9 +5,14 @@ class exports.CakeshowRoutes extends Backbone.Router
 		'registrants': 'registrants'
 		'registrants?:querystring': 'registrantsPage'
 	
-	registrants: ->
+	registrants: =>
+		app.registrants.setUrl()
+		this.reloadRegistrants()
+
+	registrantsPage: (querystring) =>
+		app.registrants.setUrl(querystring)
+		this.reloadRegistrants()
+	
+	reloadRegistrants: ->
 		app.registrants.reset()
 		app.registrants.fetch(add: true)
-	
-	registrantsPage: (querystring) =>
-		this.registrants()

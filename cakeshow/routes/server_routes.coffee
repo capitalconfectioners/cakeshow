@@ -1,15 +1,19 @@
 exports.index = (request, response, next) ->
-	if request.accepts('json')
-		next()
-	else
-		response.render('index', { title: 'Cakeshow', route:request.url })
+	response.render('index', 
+		title: 'Cakeshow'
+		initialState: JSON.stringify(
+			route: request.url
+			link: response.header('Link')
+			data: request.sanitizedRegistrants
+		)
+	)
 
-exports.registrants = (request, response) -> 
-	registrants = []
+exports.registrants = (request, response, next) -> 
+	request.sanitizedRegistrants = []
 	for registrant in request.registrants
 		rawRegistrant = {}
 		rawRegistrant[key]= value for key, value of registrant.values when key != 'password'
-		registrants.push(rawRegistrant)
+		request.sanitizedRegistrants.push(rawRegistrant)
 
 	if request.next_page?
 		link = "<#{request.route.path}?page=#{request.next_page}>; rel=\"next\""
@@ -25,7 +29,10 @@ exports.registrants = (request, response) ->
 	if link?
 		response.header('Link', link)
 
-	response.json(registrants)
+	if request.accepts('json')
+		response.json(request.sanitizedRegistrants)
+	else
+		next()
 
 exports.DatabaseMiddleware = class DatabaseMiddleware
 	constructor: (cakeshowDB) ->

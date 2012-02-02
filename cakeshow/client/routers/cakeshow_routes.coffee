@@ -14,5 +14,4 @@ class exports.CakeshowRoutes extends Backbone.Router
 		this.reloadRegistrants()
 	
 	reloadRegistrants: ->
-		app.registrants.reset()
-		app.registrants.fetch(add: true)
+		app.registrants.fetch()

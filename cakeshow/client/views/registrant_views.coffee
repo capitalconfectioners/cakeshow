@@ -20,7 +20,6 @@ exports.RegistrantListView = class RegistrantListView extends Backbone.View
 	initialize: ->
 		this.collection.bind('reset', this.render)
 		this.collection.bind('add', this.add)
-		this.collection.bind('parsed', this.parsed)
 		this.collection.view = this
 	
 	add: (registrant) =>
@@ -29,14 +28,15 @@ exports.RegistrantListView = class RegistrantListView extends Backbone.View
 		
 	render: =>
 		this.$el.html('<ul id="registrants"></ul><a class="prev">prev</a><a class="next">next</a>')
-		return this
-	
-	parsed: =>
+		
+		this.add(registrant) for registrant in this.collection.models
+		
 		this.$el.find('.next').button(disabled: not this.collection.next?)
 		this.$el.find('.prev').button(disabled: not this.collection.prev?)
+		return this
 	
 	next: =>
-		this.collection.nextPage()
+		app.router.navigate(this.collection.next, trigger: true)
 	
 	prev: =>
-		this.collection.prevPage()
+		app.router.navigate(this.collection.prev, trigger: true)

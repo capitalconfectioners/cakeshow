@@ -3,8 +3,7 @@ p Welcome to #{title}
 div#registrant_list
 script
   $(document).ready(function(){
-    console.log('running!');
     cakeshow = require('cakeshowClient');
     app = new cakeshow.Cakeshow();
-    app.initialize('#{route}');
+    app.initialize(!{initialState});
   });

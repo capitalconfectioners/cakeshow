@@ -34,10 +34,7 @@ app.configure('production', ->
 # Routes
 app.get('/cakeshow.js', clientPackage.createServer())
 
-middleware = new routes.DatabaseMiddleware(cakeshowDB)
-
-app.get('/registrants', middleware.allRegistrants, routes.registrants)
-app.get('*', routes.index)
+routes.register(app, cakeshowDB)
 
 app.listen(3000)
 console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env)

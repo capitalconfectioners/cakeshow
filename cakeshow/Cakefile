@@ -66,7 +66,7 @@ runSqlScript = (options, script, onSuccess) ->
 	sqlProc.on('exit', handler.onExit)
 
 createCakeshowDB = (options, onSuccess = ->) ->
-	db.connect(options.user, options.password)
+	db.connect(options.user, options.password, options.verbose?)
 	
 	if( options.replace? )
 		console.log('Overwriting previous DB')

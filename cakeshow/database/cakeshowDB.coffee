@@ -58,8 +58,11 @@ class CakeshowDB
 				default: false
 		)
 		
-		this.Registrant.hasMany(this.Signup, {as: 'Signups'})
-		this.Signup.hasMany(this.Entry, {as: 'Entries'})
+		this.Registrant.hasMany(this.Signup, as: 'Signups')
+		this.Signup.belongsTo(this.Registrant, as: 'Registrant')
+		
+		this.Signup.hasMany(this.Entry, as: 'Entries')
+		this.Entry.belongsTo(this.Signup, as: 'Signup')
 		
 		this.cakeshowDB.sync()
 

@@ -90,9 +90,27 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
       next(new Error('Could not count registrants: ' + error))
     )
   
+  disambiguate: (model) ->
+    result = []
+    for column of model.rawAttributes
+      sqlSelect = "`#{model.tableName}`.`#{column}`"
+      if column == 'id'
+        result.push([sqlSelect, "#{model.tableName}_#{column}"])
+      else
+        result.push(sqlSelect)
+    return result
+  
+  joinAttributes: (left, right) ->
+    attributes = this.disambiguate(left).concat(this.disambiguate(right))
+    return attributes
+  
   signups: (request, response, next) =>
     #{page, limit, offset} = this.pages(request)
-    this.cakeshowDB.Signup.findAll(where: {year: request.param('year','2012')} ).success( (signups) ->
+    #this.cakeshowDB.Signup.findAll(where: {year: request.param('year','2012')} ).success( (signups) ->
+    this.cakeshowDB.Signup.findAllJoin( 'Registrants', 
+      attributes: this.joinAttributes(this.cakeshowDB.Signup,this.cakeshowDB.Registrant)
+      where: "Registrants.id = Signups.RegistrantID and year = '#{request.param('year','2012')}'")
+    .success( (signups) ->
       request.signups = signups
       next()
     )

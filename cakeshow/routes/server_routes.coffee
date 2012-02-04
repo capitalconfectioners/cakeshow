@@ -35,12 +35,15 @@ addLinks = (request, response, next) ->
 addLinksTo = (route) ->
   return [route, addLinks]
 
+sanitizeRegistrant = (registrant) ->
+  rawRegistrant = {}
+  rawRegistrant[key] = value for key, value of registrant.values when key != 'password'
+  return rawRegistrant  
+
 exports.registrants = (request, response, next) -> 
   request.sanitizedRegistrants = []
   for registrant in request.registrants
-    rawRegistrant = {}
-    rawRegistrant[key]= value for key, value of registrant.values when key != 'password'
-    request.sanitizedRegistrants.push(rawRegistrant)
+    request.sanitizedRegistrants.push(sanitizeRegistrant(registrant))
 
   if request.accepts('json')
     response.json(request.sanitizedRegistrants)
@@ -48,8 +51,13 @@ exports.registrants = (request, response, next) ->
     next()
 
 exports.signups = (request, response, next) ->
-  result = (signup.values for signup in request.signups)
-  console.log(request.signups[0])
+  result = []
+  for signup in request.signups
+    result.push(
+      signup: signup.Signup.values
+      registrant: sanitizeRegistrant(signup.Registrant)
+    )
+  
   response.json(result)
 
 exports.DatabaseMiddleware = class DatabaseMiddleware
@@ -106,10 +114,10 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
   
   signups: (request, response, next) =>
     #{page, limit, offset} = this.pages(request)
-    #this.cakeshowDB.Signup.findAll(where: {year: request.param('year','2012')} ).success( (signups) ->
-    this.cakeshowDB.Signup.findAllJoin( 'Registrants', 
-      attributes: this.joinAttributes(this.cakeshowDB.Signup,this.cakeshowDB.Registrant)
-      where: "Registrants.id = Signups.RegistrantID and year = '#{request.param('year','2012')}'")
+    
+    this.cakeshowDB.Signup.joinTo( this.cakeshowDB.Registrant, 
+      where: year: request.param('year','2012')
+    )
     .success( (signups) ->
       request.signups = signups
       next()

@@ -10,7 +10,7 @@ clientPackage = stitch.createPackage(
 
 app = module.exports = express.createServer();
 
-cakeshowDB.connect('root','',true)
+cakeshowDB.connect()
 
 # Configuration
 

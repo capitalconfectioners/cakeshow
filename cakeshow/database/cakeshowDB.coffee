@@ -1,4 +1,5 @@
 Sequelize = require('sequelize')
+Joinalize = require('../lib/joinalize')
 
 class CakeshowDB
 	connect: (username='root', password='', logging=false) =>
@@ -64,6 +65,7 @@ class CakeshowDB
 		this.Signup.hasMany(this.Entry, as: 'Entries')
 		this.Entry.belongsTo(this.Signup, as: 'Signup')
 		
+		Joinalize.register(this.cakeshowDB)
 		this.cakeshowDB.sync()
 
 module.exports = new CakeshowDB()

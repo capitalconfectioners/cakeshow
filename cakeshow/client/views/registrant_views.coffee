@@ -1,8 +1,10 @@
+{PagedListView} = require('./paged_views')
+
 registrantTemplate = require('./templates/registrant')
 registrantListTemplate = require('./templates/registrant_list')
 
 exports.RegistrantView = class RegistrantView extends Backbone.View
-	tagName: 'li'
+	className: 'registrant'
 	
 	initialize: ->
 		this.model.bind('all', this.render)
@@ -13,20 +15,17 @@ exports.RegistrantView = class RegistrantView extends Backbone.View
 		this.$el.html(registrantTemplate.render(json))
 		return this
 
-exports.RegistrantListView = class RegistrantListView extends Backbone.View
-	el: '#registrant_list'
-	
-	events:
-		'click .next': 'next'
-		'click .prev': 'prev'
+exports.RegistrantListView = class RegistrantListView extends PagedListView
+	el: '#content'
 	
 	initialize: ->
+		this.register('registrants')
 		this.collection.bind('reset', this.render)
 		this.collection.bind('add', this.add)
 		this.collection.view = this
 	
 	add: (registrant) =>
-		view = new RegistrantView( {model: registrant} )
+		view = new RegistrantView( {tagName: 'li', model: registrant} )
 		this.$el.find('#registrants').append(view.render().el)
 		
 	render: =>
@@ -34,12 +33,5 @@ exports.RegistrantListView = class RegistrantListView extends Backbone.View
 		
 		this.add(registrant) for registrant in this.collection.models
 		
-		this.$el.find('.next').button(disabled: not this.collection.next?)
-		this.$el.find('.prev').button(disabled: not this.collection.prev?)
+		super()
 		return this
-	
-	next: =>
-		app.router.navigate(this.collection.next, trigger: true)
-	
-	prev: =>
-		app.router.navigate(this.collection.prev, trigger: true)

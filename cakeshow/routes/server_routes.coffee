@@ -1,31 +1,62 @@
+url = require('url')
+
 exports.register = (app, cakeshowDB) ->
   middleware = new exports.DatabaseMiddleware(cakeshowDB)
 
-  app.get('/registrants', addLinksTo(middleware.allRegistrants), exports.registrants)
-  app.get('/signups/:year', addLinksTo(middleware.signups), exports.signups)
-  app.get('*', exports.index)
+  app.get('*', log)
+  app.get('/registrants', addLinksTo(middleware.allRegistrants), registrants)
+  app.get('/signups/:year', addLinksTo(middleware.signups), signups)
+  app.get('*', jsonResponse)
+  app.get('*', htmlResponse)
 
-exports.index = (request, response, next) ->
+log = (request, response, next) ->
+  console.log('Request at ' + request.originalUrl)
+  next()
+
+jsonResponse = (request, response, next) ->
+  if request.accepts('json')
+    response.json(request.jsonResults)
+  else
+    next()
+
+htmlResponse = (request, response, next) ->
   response.render('index', 
     title: 'Cakeshow'
     initialState: JSON.stringify(
       route: request.url
       link: response.header('Link')
-      data: request.sanitizedRegistrants
+      data: request.jsonResults
     )
   )
 
 addLinks = (request, response, next) ->
   if request.next_page?
-    link = "<#{request.route.path}?page=#{request.next_page}>; rel=\"next\""
+    nextUrl = url.parse(request.originalUrl, true)
+    
+    if nextUrl.query?
+      nextUrl.query.page = request.next_page
+    else
+      nextUrl.query = {page: request.next_page}
+    delete nextUrl.search
+    
+    link = "<#{url.format(nextUrl)}>; rel=\"next\""
   
   if request.prev_page?
+    prevUrl = url.parse(request.originalUrl, true)
+    
+    if prevUrl.query?
+      prevUrl.query.page = request.prev_page
+    else
+      prevUrl.query = {page: request.prev_page}
+    
+    delete prevUrl.search
+    
     if link?
       link += ", "
     else
       link = ""
     
-    link += "<#{request.route.path}?page=#{request.prev_page}>; rel=\"prev\""
+    link += "<#{url.format(prevUrl)}>; rel=\"prev\""
   
   if link?
     response.header('Link', link)
@@ -40,31 +71,28 @@ sanitizeRegistrant = (registrant) ->
   rawRegistrant[key] = value for key, value of registrant.values when key != 'password'
   return rawRegistrant  
 
-exports.registrants = (request, response, next) -> 
-  request.sanitizedRegistrants = []
+registrants = (request, response, next) -> 
+  request.jsonResults = []
   for registrant in request.registrants
-    request.sanitizedRegistrants.push(sanitizeRegistrant(registrant))
+    request.jsonResults.push(sanitizeRegistrant(registrant))
 
-  if request.accepts('json')
-    response.json(request.sanitizedRegistrants)
-  else
-    next()
+  next()
 
-exports.signups = (request, response, next) ->
-  result = []
+signups = (request, response, next) ->
+  request.jsonResults = []
   for signup in request.signups
-    result.push(
+    request.jsonResults.push(
       signup: signup.Signup.values
       registrant: sanitizeRegistrant(signup.Registrant)
     )
   
-  response.json(result)
+  next()
 
 exports.DatabaseMiddleware = class DatabaseMiddleware
   constructor: (cakeshowDB) ->
     this.cakeshowDB = cakeshowDB
   
-  pages: (request) ->
+  attachPagination: (request, count) ->
     result = {}
     
     result.page = parseInt(request.param('page','1'), 10)
@@ -72,21 +100,29 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     
     result.offset = (result.page-1)*result.limit
     
+    console.log(result)
+    console.log(count)
+    
+    request.total_results = count
+      
+    if result.page > 1 
+      request.prev_page = result.page-1
+    
+    if result.offset + result.limit < count
+      request.next_page = result.page+1
+    
     return result
   
   allRegistrants: (request, response, next) =>
-    {page, limit, offset} = this.pages(request)
     
     this.cakeshowDB.Registrant.count().success( (count) =>
-      request.total_registrants = count
+      {page, limit, offset} = this.attachPagination(request, count)
       
-      if page > 1 
-        request.prev_page = page-1
-      
-      if offset + limit < count
-        request.next_page = page+1
-      
-      this.cakeshowDB.Registrant.findAll(offset:offset, limit:limit, order: 'lastname ASC, firstname ASC').success( (registrants) ->
+      this.cakeshowDB.Registrant.findAll(
+        offset:offset
+        limit:limit
+        order: 'lastname ASC, firstname ASC')
+      .success( (registrants) ->
         request.registrants = registrants
         next()
       )
@@ -98,30 +134,26 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
       next(new Error('Could not count registrants: ' + error))
     )
   
-  disambiguate: (model) ->
-    result = []
-    for column of model.rawAttributes
-      sqlSelect = "`#{model.tableName}`.`#{column}`"
-      if column == 'id'
-        result.push([sqlSelect, "#{model.tableName}_#{column}"])
-      else
-        result.push(sqlSelect)
-    return result
-  
-  joinAttributes: (left, right) ->
-    attributes = this.disambiguate(left).concat(this.disambiguate(right))
-    return attributes
-  
   signups: (request, response, next) =>
-    #{page, limit, offset} = this.pages(request)
     
-    this.cakeshowDB.Signup.joinTo( this.cakeshowDB.Registrant, 
-      where: year: request.param('year','2012')
-    )
-    .success( (signups) ->
-      request.signups = signups
-      next()
+    this.cakeshowDB.Signup.count( where: year: request.param('year','2012') )
+    .success( (count) =>
+      {page, limit, offset} = this.attachPagination(request, count)
+      
+      this.cakeshowDB.Signup.joinTo( this.cakeshowDB.Registrant, 
+        where: year: request.param('year','2012')
+        offset:offset
+        limit:limit
+        order: 'lastname ASC, firstname ASC'
+      )
+      .success( (signups) ->
+        request.signups = signups
+        next()
+      )
+      .error( (error) ->
+        next(new Error('Could not load signups: ' + error))
+      )
     )
     .error( (error) ->
-      next(new Error('Could not load signups: ' + error))
+      next(new Error('Could not count signups: ' + error))
     )

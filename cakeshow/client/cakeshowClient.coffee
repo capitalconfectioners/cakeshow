@@ -1,5 +1,9 @@
-models = require('models/registrant_models')
-views = require('views/registrant_views')
+registrantModels = require('models/registrant_models')
+signupModels = require('models/signup_models')
+
+registrantViews = require('views/registrant_views')
+signupViews = require('views/signup_views')
+
 routers = require('routers/cakeshow_routes')
 
 exports.Cakeshow = class Cakeshow
@@ -12,13 +16,18 @@ exports.Cakeshow = class Cakeshow
 		
 		route = '/registrants' if route == '/'
 	
-		this.registrants = new models.RegistrantList()
-		this.registrantsView = new views.RegistrantListView({collection: this.registrants})
+		this.registrants = new registrantModels.RegistrantList()
+		this.registrantsView = new registrantViews.RegistrantListView({collection: this.registrants})
+		
+		this.registrantSignups = new signupModels.RegistrantSignupList()
+		this.registrantSignupsView = new signupViews.RegistrantSignupListView(collection: this.registrantSignups)
 	
 		this.router = new routers.CakeshowRoutes()
 		Backbone.history.start(pushState: true, silent: true);
 		
-		this.registrants.fillData(link, data)
+		this.router.queueData(link, data)
 		
-		this.router.navigate(route)
+		# router.navigate won't trigger the route, because the current Window URL will
+		# always match the URL that was passed in
+		Backbone.history.loadUrl(route)
 		

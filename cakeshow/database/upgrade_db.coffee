@@ -158,7 +158,7 @@ class SignupUpgrader
       if entryStyle.type == "number"
         count = oldRegistrant[style] ? 0
         if count > 0
-          for i in [0..oldRegistrant[style]]
+          for i in [0..count-1]
             entry = this.cakeshowDB.Entry.build(
               category: entryStyle.name
             )

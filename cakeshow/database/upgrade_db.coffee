@@ -154,7 +154,7 @@ class SignupUpgrader
     entryChain = new Sequelize.Utils.QueryChainer
     entries = []
     
-    for style, entryStyle of styleMap when oldRegistrant[style]?
+    for style, entryStyle of styleMap when oldRegistrant[style]? and oldRegistrant[style] != ''
       if entryStyle.type == "number"
         count = oldRegistrant[style] ? 0
         if count > 0

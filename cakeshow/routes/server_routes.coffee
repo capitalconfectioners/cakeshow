@@ -6,6 +6,7 @@ exports.register = (app, cakeshowDB) ->
   app.get('*', log)
   app.get('/registrants', addLinksTo(middleware.allRegistrants), registrants)
   app.get('/signups/:year', addLinksTo(middleware.signups), signups)
+  app.get('/signups/:id/entries', middleware.entries, entries)
   app.get('*', jsonResponse)
   app.get('*', htmlResponse)
 
@@ -88,6 +89,13 @@ signups = (request, response, next) ->
   
   next()
 
+entries = (request, response, next) ->
+  request.jsonResults = []
+  for entry in request.entries
+    request.jsonResults.push( entry.values )
+  
+  response.json(request.jsonResults)
+
 exports.DatabaseMiddleware = class DatabaseMiddleware
   constructor: (cakeshowDB) ->
     this.cakeshowDB = cakeshowDB
@@ -156,4 +164,15 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     )
     .error( (error) ->
       next(new Error('Could not count signups: ' + error))
+    )
+  
+  entries: (request, response, next) =>
+    id = request.param('id')
+    this.cakeshowDB.Entry.findAll( where: SignupID: id )
+    .success( (entries) ->
+      request.entries = entries
+      next()
+    )
+    .error( (error) ->
+      next(new Error("Could not load entries for signup #{id}: " + error))
     )

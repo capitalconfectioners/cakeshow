@@ -8,6 +8,7 @@ option '-u', '--user [USER]', 'specify MySQL username'
 option '-p', '--password [PASSWORD]', 'specify MySQL password'
 option '-v', '--verbose', 'print verbose output'
 option '-c', '--compile', 'compile coffeescript before running'
+option '-w', '--watch', 'launch Coffeescript compiler in watch mode'
 
 class ExitHandler
 	constructor: (options, onSuccess) ->
@@ -55,6 +56,9 @@ mysql = (options, args = []) ->
 coffee = (script, args, options) ->
 	if options?
 		env = childEnv(options)
+	
+	if options.watch?
+	  args.push('-w')
 	
 	return redirect(spawn('coffee', [script].concat(args), {env: env}))
 

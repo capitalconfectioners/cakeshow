@@ -2,7 +2,22 @@
 
 RegistrantModels = require('./registrant_models')
 
+exports.Entry = class Entry extends Backbone.Model
+  
+exports.EntryList = class EntryList extends Backbone.Collection
+  model: Entry
+  
+  setParent: (signup) ->
+    this.url = "#{signup.url()}/entries"
+
 exports.Signup = class Signup extends Backbone.Model
+  urlRoot: '/signups'
+  
+  getEntries: =>
+    unless this.entries?
+      this.entries = new EntryList()
+      this.entries.setParent(this)
+    return this.entries
 
 exports.RegistrantSignup = class RegistrantSignup extends Backbone.Model
   parse: (response, xhr) =>

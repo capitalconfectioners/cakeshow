@@ -1,6 +1,8 @@
 Sequelize = require('sequelize')
 Joinalize = require('../lib/joinalize')
 
+validations = require('../shared/validations')
+
 class CakeshowDB
 	connect: (username='root', password='', logging=false) =>
 		this.cakeshowDB = new Sequelize('cakeshow', username, password,
@@ -50,7 +52,7 @@ class CakeshowDB
 		this.Entry = this.cakeshowDB.define('Entry',
 			category:
 				type: Sequelize.STRING
-				validate: {isIn: ['showcase','style1','style2','style3','style4','style5','style6','style7','special1','special2','special3','special4','special5','cupcakes','tasting']}
+				validate: {isIn: validations.entryTypes}
 			didBring: 
 				type: Sequelize.BOOLEAN
 				default: false

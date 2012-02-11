@@ -3,7 +3,8 @@
 RegistrantModels = require('./registrant_models')
 
 exports.Entry = class Entry extends Backbone.Model
-  
+  urlRoot: '/entries'
+    
 exports.EntryList = class EntryList extends Backbone.Collection
   model: Entry
   

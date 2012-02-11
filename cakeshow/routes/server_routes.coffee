@@ -2,17 +2,17 @@ url = require('url')
 
 exports.register = (app, cakeshowDB) ->
   middleware = new exports.DatabaseMiddleware(cakeshowDB)
-
-  app.get('*', log)
+  
   app.get('/registrants', addLinksTo(middleware.allRegistrants), registrants)
   app.get('/signups/:year', addLinksTo(middleware.signups), signups)
-  app.get('/signups/:id/entries', middleware.entries, entries)
+  app.get('/signups/:signupID/entries', middleware.entriesForSignup, entries)
+  
+  app.put('/signups/:signupID/entries/:id', middleware.entry, putEntry)
+  app.put('/entries/:id', middleware.entry, putEntry)
+  
   app.get('*', jsonResponse)
   app.get('*', htmlResponse)
 
-log = (request, response, next) ->
-  console.log('Request at ' + request.originalUrl)
-  next()
 
 jsonResponse = (request, response, next) ->
   if request.accepts('json')
@@ -96,6 +96,12 @@ entries = (request, response, next) ->
   
   response.json(request.jsonResults)
 
+putEntry = (request, response, next) ->
+  request.entry.updateAttributes(request.body)
+  .error( (error) ->
+    next(new Error("Could not save entry #{id} with values #{request.body}: " + error))
+  )
+
 exports.DatabaseMiddleware = class DatabaseMiddleware
   constructor: (cakeshowDB) ->
     this.cakeshowDB = cakeshowDB
@@ -107,9 +113,6 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     result.limit = parseInt(request.param('page_size','25'), 10)
     
     result.offset = (result.page-1)*result.limit
-    
-    console.log(result)
-    console.log(count)
     
     request.total_results = count
       
@@ -166,13 +169,27 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
       next(new Error('Could not count signups: ' + error))
     )
   
-  entries: (request, response, next) =>
-    id = request.param('id')
-    this.cakeshowDB.Entry.findAll( where: SignupID: id )
+  entriesForSignup: (request, response, next) =>
+    signupID = request.param('signupID')
+    this.cakeshowDB.Entry.findAll( where: SignupID: signupID )
     .success( (entries) ->
+      for entry in entries
+        entry.didBring = if entry.didBring == 0 then false else true
+        entry.styleChange = if entry.styleChange == 0 then false else true
       request.entries = entries
       next()
     )
     .error( (error) ->
       next(new Error("Could not load entries for signup #{id}: " + error))
+    )
+  
+  entry: (request, response, next) =>
+    id = parseInt(request.param('id'), 10)
+    this.cakeshowDB.Entry.find(id)
+    .success( (entry) ->
+      request.entry = entry
+      next()
+    )
+    .error( (error) ->
+      next(new Error("Could not find entry with id #{id}: " + error))
     )

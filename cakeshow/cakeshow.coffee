@@ -1,11 +1,14 @@
 express = require('express')
+
 stitch = require('stitch')
-routes = require('./routes/server_routes')
-cakeshowDB = require('./database/cakeshowDB')
 require('./lib/stitch_jade').register(stitch)
 
+routes = require('./routes/server_routes')
+cakeshowDB = require('./database/cakeshowDB')
+
+
 clientPackage = stitch.createPackage(
-	paths: [ __dirname + '/client' ]
+	paths: [ __dirname + '/client', __dirname + '/shared' ]
 )
 
 app = module.exports = express.createServer();
@@ -32,9 +35,17 @@ app.configure('production', ->
 )
 
 # Routes
+app.configure('development', ->
+  app.get('*', log)
+)
+
 app.get('/cakeshow.js', clientPackage.createServer())
 
 routes.register(app, cakeshowDB)
 
 app.listen(3000)
 console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env)
+
+log = (request, response, next) ->
+  console.log('Request at ' + request.originalUrl)
+  next()

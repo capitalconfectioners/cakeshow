@@ -1,3 +1,8 @@
-td #{category}
-td #{didBring}
-td #{styleChange}
+td 
+  select.style
+    for style in styles
+      option #{style}
+td
+  input.didBring(type="checkbox", checked=didBring)
+td
+  input.styleChange(type="checkbox", checked=styleChange)

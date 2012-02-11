@@ -161,12 +161,16 @@ class SignupUpgrader
           for i in [0..count-1]
             entry = this.cakeshowDB.Entry.build(
               category: entryStyle.name
+              didBring: false
+              styleChange: false
             )
             entryChain.add(entry.save())
             entries.push(entry)
       else
         entry = this.cakeshowDB.Entry.build(
           category: entryStyle.name
+          didBring: false
+          styleChange: false
         )
         entryChain.add(entry.save())
         entries.push(entry)

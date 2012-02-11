@@ -6,3 +6,16 @@ body {
 a {
   color: #00B7FF;
 }
+
+ul#registrant-signups {
+  list-style-type: none;
+}
+
+ul#registrant-signups li {
+  padding-bottom: 2em;
+}
+
+.registrant-name {
+  font-size: large;
+  font-weight: bold;
+}

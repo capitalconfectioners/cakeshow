@@ -10,7 +10,7 @@ exports.register = (app, cakeshowDB) ->
   app.put('/signups/:signupID/entries/:id', middleware.entry, putEntry)
   app.put('/entries/:id', middleware.entry, putEntry)
   
-  app.get('*', alwaysJSON)
+  #app.get('*', alwaysJSON)
   
   app.get('*', jsonResponse)
   app.get('*', htmlResponse)

@@ -38,4 +38,13 @@ exports.RegistrantSignupList = class RegistrantSignupList extends PagedCollectio
   setYear: (year) ->
     this.baseUrl = this.unfilteredUrl + '/' + year
     this.url = this.baseUrl
+  
+  search: (phrase, callback, error) =>
+    $.ajax(this.baseUrl + '?search=' + phrase,
+      success: (data, textStatus, xhr) ->
+        callback(data)
+      error: (xhr, textStatus, errorThrown) ->
+        if error?
+          error(textStatus, errorThrown)
+    )
     

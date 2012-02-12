@@ -108,10 +108,27 @@ exports.RegistrantSignupListView = class RegistrantSignupListView extends PagedL
     this.$el.find('#registrant-signups').append(view.render().el)
     
   render: =>
+    $('div.search-fields input').autocomplete(
+      minLength: 2
+      source: this.searchSuggestions
+      select: this.searchSelected
+    )
     this.$el.html(registrantSignupListTemplate.render())
     
     this.add(registrantSignup) for registrantSignup in this.collection.models
     
     super()
     return this
+  
+  searchSuggestions: (request, callback) =>
+    this.collection.search(request.term, (results) ->
+      for result in results
+        result.value = result.registrant.firstname + " " + result.registrant.lastname
+      
+      callback(results)
+    )
+  
+  searchSelected: (event, ui) =>
+    console.log('search selected')
+    console.log([event,ui])
     

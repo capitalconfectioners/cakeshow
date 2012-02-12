@@ -24,7 +24,7 @@ exports.EntryView = class EntryView extends Backbone.View
     renderParams = this.model.toJSON()
     renderParams.styles = validations.entryTypes
     this.$el.html(entryTemplate.render(renderParams))
-    selectedIndex =  i for option, i in validations.entryTypes when option == renderParams.category
+    selectedIndex = _.indexOf(validations.entryTypes, renderParams.category)
     this.$el.find('select.style')[0].selectedIndex = selectedIndex
     return this
   
@@ -83,6 +83,9 @@ exports.SignupView = class SignupView extends Backbone.View
 
 exports.RegistrantSignupView = class RegistrantSignupView extends Backbone.View
   className: 'registrantSignup'
+    
+  initialize: =>
+    this.model.bind('change', this.render)
   
   render: =>
     this.$el.html(registrantSignupTemplate.render())
@@ -129,6 +132,5 @@ exports.RegistrantSignupListView = class RegistrantSignupListView extends PagedL
     )
   
   searchSelected: (event, ui) =>
-    console.log('search selected')
-    console.log([event,ui])
+    app.router.navigate('/signups/' + ui.item.signup.id, trigger: true)
     

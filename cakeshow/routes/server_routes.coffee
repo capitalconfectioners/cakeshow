@@ -4,19 +4,15 @@ exports.register = (app, cakeshowDB) ->
   middleware = new exports.DatabaseMiddleware(cakeshowDB)
   
   app.get('/registrants', addLinksTo(middleware.allRegistrants), registrants)
-  app.get('/signups/:year', addLinksTo(middleware.signups), signups)
+  app.get('/shows/:year/signups', addLinksTo(middleware.signups), signups)
+  
+  app.get('/signups/:id', middleware.singleSignup, singleSignup)
+  
   app.get('/signups/:signupID/entries', middleware.entriesForSignup, entries)
-  
   app.put('/signups/:signupID/entries/:id', middleware.entry, putEntry)
-  app.put('/entries/:id', middleware.entry, putEntry)
-  
-  #app.get('*', alwaysJSON)
   
   app.get('*', jsonResponse)
   app.get('*', htmlResponse)
-
-alwaysJSON = (request, response, next) ->
-  response.json(request.jsonResults)
 
 jsonResponse = (request, response, next) ->
   if request.accepts('json')
@@ -83,13 +79,21 @@ registrants = (request, response, next) ->
 
   next()
 
+signupToJSON = (signup) ->
+  return {
+    signup: signup.Signup.values
+    registrant: sanitizeRegistrant(signup.Registrant)
+  }
+
+singleSignup = (request, response, next) ->
+  request.jsonResults = signupToJSON(request.signup)
+  
+  next()
+
 signups = (request, response, next) ->
   request.jsonResults = []
   for signup in request.signups
-    request.jsonResults.push(
-      signup: signup.Signup.values
-      registrant: sanitizeRegistrant(signup.Registrant)
-    )
+    request.jsonResults.push(signupToJSON(signup))
   
   next()
 
@@ -147,6 +151,19 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     )
     .error( (error) ->
       next(new Error('Could not count registrants: ' + error))
+    )
+  
+  singleSignup: (request, response, next) =>
+    id = parseInt(request.param('id'), 10)
+    
+    this.cakeshowDB.Signup.joinTo( this.cakeshowDB.Registrant, where: id )
+    .success( (signup) ->
+      console.log(signup)
+      request.signup = signup[0]
+      next()
+    )
+    .error( (error) ->
+      next(new Error("Could not load signup #{id}: " + error))
     )
   
   signups: (request, response, next) =>

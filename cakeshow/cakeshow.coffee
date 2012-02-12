@@ -20,6 +20,7 @@ cakeshowDB.connect()
 app.configure( ->
   app.set('views', __dirname + '/views')
   app.set('view engine', 'jade')
+  app.use(express.logger(format: ':method :url', immediate: true))
   app.use(express.bodyParser())
   app.use(express.methodOverride())
   app.use(express.static(__dirname + '/public'))
@@ -35,9 +36,6 @@ app.configure('production', ->
 )
 
 # Routes
-app.configure('development', ->
-  app.get('*', log)
-)
 
 app.get('/cakeshow.js', clientPackage.createServer())
 

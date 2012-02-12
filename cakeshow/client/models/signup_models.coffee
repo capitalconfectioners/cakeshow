@@ -21,22 +21,27 @@ exports.Signup = class Signup extends Backbone.Model
     return this.entries
 
 exports.RegistrantSignup = class RegistrantSignup extends Backbone.Model
+  urlRoot: '/signups'
+  
   parse: (response, xhr) =>
     this.signup = new exports.Signup(response.signup)
     this.registrant = new RegistrantModels.Registrant(response.registrant)
     
-    return {}
+    return {
+      signup: this.signup
+      registrant: this.registrant
+    }
   
 exports.RegistrantSignupList = class RegistrantSignupList extends PagedCollection
   model: RegistrantSignup
-  unfilteredUrl: '/signups'
+  unfilteredUrl: '/shows'
   
   initialize: () ->
     this.baseUrl = this.unfilteredUrl 
     this.url = this.baseUrl
   
   setYear: (year) ->
-    this.baseUrl = this.unfilteredUrl + '/' + year
+    this.baseUrl = this.unfilteredUrl + '/' + year + '/signups'
     this.url = this.baseUrl
   
   search: (phrase, callback, error) =>

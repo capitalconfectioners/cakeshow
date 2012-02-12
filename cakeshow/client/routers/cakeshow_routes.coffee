@@ -1,12 +1,15 @@
-models = require('models/registrant_models')
+signupModels = require('models/signup_models')
+signupViews = require('views/signup_views')
 
 class exports.CakeshowRoutes extends Backbone.Router
   routes:
     'registrants': 'registrants'
     'registrants?:querystring': 'registrants'
     
-    'signups/:year': 'signups'
-    'signups/:year?:querystring': 'signups'
+    'shows/:year/signups': 'signups'
+    'shows/:year/signups?:querystring': 'signups'
+    
+    'signups/:id': 'singleSignup'
     
   namedParam: /:\w+/g;
   splatParam: /\*\w+/g;
@@ -24,24 +27,43 @@ class exports.CakeshowRoutes extends Backbone.Router
       .replace(this.splatParam, '(.*?)')
     return new RegExp('^' + route + '$')
   
-  registrants: (querystring)->
+  registrants: (querystring) ->
+    this.currentView = app.registrantsView
+    this.currentModel = app.registrants
+    
     app.registrants.setQueryString(querystring)
     this.fetchData(app.registrants)
   
   signups: (year, querystring) ->
+    this.currentView = app.registrantSignupsView
+    this.currentModel = app.registrantSignups
+    
     app.registrantSignups.setYear(year)
     app.registrantSignups.setQueryString(querystring)
     this.fetchData(app.registrantSignups)
+  
+  singleSignup: (id) ->
+    console.log('single signup: ' + id)
+    this.currentModel = new signupModels.RegistrantSignup(id: id)
+    this.currentView = new signupViews.RegistrantSignupView(
+      el: '#content'
+      model: this.currentModel
+    )
+    
+    this.fetchData(this.currentModel)
   
   queueData: (link, data) ->
     this.dataQueue = 
       link: link
       data: data
   
-  fetchData: (collection) ->
+  fetchData: (model) ->
     if this.dataQueue?
-      collection.fillData(this.dataQueue.link, this.dataQueue.data)
+      if model.fillData?
+        model.fillData(this.dataQueue.link, this.dataQueue.data)
+      else
+        model.set(model.parse(this.dataQueue.data))
       this.dataQueue = null
     else
-      collection.fetch()
+      model.fetch()
     

@@ -1,11 +1,7 @@
-qualified = (model, column) ->
-  # Sequelize splits and re-quotes on "." in a WHERE clause
-  return "#{model.tableName}.#{column}"
-
 unambiguousAttributes = (model) ->
   result = []
   for column of model.rawAttributes
-    result.push(["`#{model.tableName}`.`#{column}`","#{model.tableName}.#{column}"])
+    result.push([model.quoted(column), model.qualified(column)])
   return result
 
 joinAttributes = (left, right) ->
@@ -39,12 +35,18 @@ class JoinedResultFactory
 ###
 Will automatically add a joining clause if options.where is a map or number (id).
 
-If options.where is a raw SQL string, or an array (a format string), then it must
-include the joining clause.
+If options.where is an array (a format string), then it must include the joining clause.
 ###
 joinalize = (factory) ->
-  factory.joinTo = (Target, options = {}) ->
-    options.attributes = options.attributes ? joinAttributes(this, Target)
+  factory.qualified = (column) ->
+    # Sequelize splits and re-quotes on "." in a WHERE clause
+    return "#{this.tableName}.#{column}"
+  
+  factory.quoted = (column) ->
+    return "`#{this.tableName}`.`#{column}`"
+  
+  factory._buildJoinOptions = (Target, options = {}) ->
+    options.attributes = (options.attributes ? []).concat(joinAttributes(this, Target))
     
     association = assc for name,assc of this.associations when assc.target.tableName == Target.tableName
     
@@ -54,17 +56,35 @@ joinalize = (factory) ->
     if typeof options.where != 'string' and not Array.isArray(options.where)
       newWhere = {}
       
-      newWhere[qualified(this,association.identifier)] = {join: qualified(Target,'id')}
+      newWhere[this.qualified(association.identifier)] = {join: Target.qualified('id')}
       
       if typeof options.where == 'object' and not options.where.hasOwnProperty('length')
         for attr, val of options.where
-          newWhere[qualified(this,attr)] = val
+          newWhere[this.qualified(attr)] = val
       else if typeof options.where == 'number'
-        newWhere[qualified(this,'id')] = options.where
+        newWhere[this.qualified('id')] = options.where
       
       options.where = newWhere
+    else if typeof options.where == 'string'
+      options.where = "(#{options.where}) AND (#{this.quoted(association.identifier)} = #{Target.quoted('id')})"
       
+    return options
+  
+  factory.joinTo = (Target, options = {}) ->
+    options = this._buildJoinOptions(Target, options)
+    
     return this.QueryInterface.select(new JoinedResultFactory(this,Target), [this.tableName,Target.tableName], options)
+  
+  factory.countJoined = (Target, options = {}) ->
+    options.attributes = [['count(*)', 'count']]
+    
+    options = this._buildJoinOptions(Target, options)
+    
+    factory = build: (values, options) ->
+      return parseInt(values.count,10)
+    
+    return this.QueryInterface.select(factory, [this.tableName,Target.tableName], options)
+      
 
 exports.register = (sequelize) ->
   for model in sequelize.modelFactoryManager.models

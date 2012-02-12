@@ -10,9 +10,13 @@ exports.register = (app, cakeshowDB) ->
   app.put('/signups/:signupID/entries/:id', middleware.entry, putEntry)
   app.put('/entries/:id', middleware.entry, putEntry)
   
+  app.get('*', alwaysJSON)
+  
   app.get('*', jsonResponse)
   app.get('*', htmlResponse)
 
+alwaysJSON = (request, response, next) ->
+  response.json(request.jsonResults)
 
 jsonResponse = (request, response, next) ->
   if request.accepts('json')
@@ -146,13 +150,26 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     )
   
   signups: (request, response, next) =>
+    filter = 
+      year: request.param('year','2012')
     
-    this.cakeshowDB.Signup.count( where: year: request.param('year','2012') )
+    search = request.param('search')
+    if search?
+      yearFilter = this.cakeshowDB.Signup.quoted('year') + " = '#{filter.year}'"
+      
+      firstnameFilter = this.cakeshowDB.Registrant.quoted('firstname') + " LIKE '%#{search}%'"
+      lastnameFilter = this.cakeshowDB.Registrant.quoted('lastname') + " LIKE '%#{search}%'"
+      
+      nameFilter = [firstnameFilter, lastnameFilter].join(" OR ")
+      
+      filter = [yearFilter, '(' + nameFilter + ')'].join(" AND ")
+    
+    this.cakeshowDB.Signup.countJoined( this.cakeshowDB.Registrant, where: filter )
     .success( (count) =>
       {page, limit, offset} = this.attachPagination(request, count)
       
       this.cakeshowDB.Signup.joinTo( this.cakeshowDB.Registrant, 
-        where: year: request.param('year','2012')
+        where: filter
         offset:offset
         limit:limit
         order: 'lastname ASC, firstname ASC'

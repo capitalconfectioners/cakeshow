@@ -3,6 +3,8 @@ url = require('url')
 exports.register = (app, cakeshowDB) ->
   middleware = new exports.DatabaseMiddleware(cakeshowDB)
   
+  app.get('/toc', middleware.shows, toc)
+  
   app.get('/registrants', addLinksTo(middleware.allRegistrants), registrants)
   app.get('/shows/:year/signups', addLinksTo(middleware.signups), signups)
   
@@ -67,6 +69,16 @@ addLinks = (request, response, next) ->
 addLinksTo = (route) ->
   return [route, addLinks]
 
+toc = (request, response, next) ->
+  toc = 
+    Registrants: '/registrants'
+    Shows: {}
+  
+  for show in request.shows
+    toc.Shows[show] = '/shows/' + show + '/signups'
+  
+  response.json(toc)
+
 sanitizeRegistrant = (registrant) ->
   rawRegistrant = {}
   rawRegistrant[key] = value for key, value of registrant.values when key != 'password'
@@ -113,6 +125,22 @@ putEntry = (request, response, next) ->
 exports.DatabaseMiddleware = class DatabaseMiddleware
   constructor: (cakeshowDB) ->
     this.cakeshowDB = cakeshowDB
+  
+  shows: (request, response, next) =>
+    distinct = 
+      build: (values) ->
+        return values.year
+      
+    this.cakeshowDB.cakeshowDB.getQueryInterface().select(distinct, this.cakeshowDB.Signup.tableName, 
+      attributes: [['distinct year', 'year']]
+    )
+    .success( (years) ->
+      request.shows = years
+      next()
+    )
+    .error( (error) ->
+      next(new Error("Could not select show list: " + error))
+    )
   
   attachPagination: (request, count) ->
     result = {}

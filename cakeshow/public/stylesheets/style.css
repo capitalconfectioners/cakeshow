@@ -11,6 +11,9 @@ div.search-fields {
   float: right;
 }
 
+div#toc {
+}
+
 ul#registrant-signups {
   list-style-type: none;
 }

@@ -9,36 +9,37 @@ signupTemplate = require('./templates/signup')
 registrantSignupTemplate = require('./templates/registrant_signup')
 registrantSignupListTemplate = require('./templates/registrant_signup_list')
 
-validations = require('../validations')
-
 exports.EntryView = class EntryView extends Backbone.View
   tagName: 'tr'
   className: 'entry'
   
   events:
     'click input.didBring': 'didBringClicked'
-    'click input.styleChange': 'styleChangeClicked'
-    'change select.style': 'styleChanged'
+    'click input.styleChange': 'categoryChangeClicked'
+    'change select.category': 'categoryChanged'
+  
+  initialize: =>
+    this.categories = this.model.getCategories()
   
   render: =>
     renderParams = this.model.toJSON()
-    renderParams.styles = validations.entryTypes
+    renderParams.categories = this.categories
     this.$el.html(entryTemplate.render(renderParams))
-    selectedIndex = _.indexOf(validations.entryTypes, renderParams.category)
-    this.$el.find('select.style')[0].selectedIndex = selectedIndex
+    selectedIndex = _.indexOf(this.categories, this.model.categoryName())
+    this.$el.find('select.category')[0].selectedIndex = selectedIndex
     return this
   
   didBringClicked: =>
     this.model.set('didBring', this.$el.find('.didBring')[0].checked)
     this.model.save()
   
-  styleChangeClicked: =>
+  categoryChangeClicked: =>
     this.model.set('styleChange', this.$el.find('.styleChange')[0].checked)
     this.model.save()
   
-  styleChanged: =>
-    selected = this.$el.find('select.style')[0].selectedIndex
-    this.model.set('category', validations.entryTypes[selected])
+  categoryChanged: =>
+    selected = this.$el.find('select.category')[0].selectedIndex
+    this.model.setCategoryName(this.categories[selected])
     this.model.set('styleChange', true)
     this.$el.find('input.styleChange')[0].checked = true
     this.model.save()

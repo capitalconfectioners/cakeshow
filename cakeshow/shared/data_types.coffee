@@ -17,7 +17,7 @@ exports.entryTypes = [
 
 exports.entryNames =
   '2012': 
-    showcase: 'ShowCakes'
+    showcase: 'Showcakes'
     style1: 'Novelty Single'
     style2: 'Sculpted'
     style3: 'Novelty Tiered'

@@ -2,8 +2,20 @@
 
 RegistrantModels = require('./registrant_models')
 
+cakeshowTypes = require('../data_types')
+
 exports.Entry = class Entry extends Backbone.Model
   urlRoot: '/entries'
+  
+  getCategories: =>
+    return (value for key, value of cakeshowTypes.entryNames[this.get('year')])
+  
+  categoryName: =>
+    return cakeshowTypes.entryNames[this.get('year')][this.get('category')]
+  
+  setCategoryName: (categoryName) =>
+    category = key for key, value of cakeshowTypes.entryNames[this.get('year')] when value == categoryName
+    this.set('category', category)
     
 exports.EntryList = class EntryList extends Backbone.Collection
   model: Entry

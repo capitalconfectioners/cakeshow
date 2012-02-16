@@ -1,10 +1,12 @@
-h1= title
-p Welcome to #{title}
-.search-fields
-  label Search: 
-  input#search
 #toc
-#content
+.content-column
+  .header
+    h1= title
+    p Welcome to #{title}
+  .search-fields
+    label Search: 
+    input#search
+  #content
 script
   $(document).ready(function(){
     cakeshow = require('cakeshowClient');

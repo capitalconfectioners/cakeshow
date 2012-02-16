@@ -1,28 +1,50 @@
 body {
-  padding: 50px;
+  padding: 1em 4em;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+div.header {
+  margin: 2em;
+  text-align: center;
 }
 
 a {
   color: #00B7FF;
 }
 
+div#toc {
+  position: fixed;
+  margin: 0.5em;
+}
+
+div#toc > ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+div.content-column {
+  margin: 0 auto;
+  width: 40em;
+}
+
 div.search-fields {
   float: right;
 }
 
-div#toc {
-}
-
 ul#registrant-signups {
   list-style-type: none;
+  padding-left: 0;
 }
 
 ul#registrant-signups li {
-  padding-bottom: 2em;
+  margin-bottom: 2em;
 }
 
 .registrant-name {
   font-size: large;
   font-weight: bold;
+}
+
+a.next {
+  float: right;
 }

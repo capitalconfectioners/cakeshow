@@ -6,51 +6,20 @@ exit = (message) ->
   process.exit(1)
 
 styleMap = 
-  showcasecakes: 
-    name: "showcase"
-    type: "number"
-  style1: 
-    name: "style1"
-    type: "number"
-  style2: 
-    name: "style2"
-    type: "number"
-  style3: 
-    name: "style3"
-    type: "number"
-  style4: 
-    name: "style4"
-    type: "number"
-  style5: 
-    name: "style5"
-    type: "number"
-  style6: 
-    name: "style6"
-    type: "number"
-  style7: 
-    name: "style7"
-    type: "number"
-  special1: 
-    name: "special1"
-    type: "number"
-  special2: 
-    name: "special2"
-    type: "number"
-  special3: 
-    name: "special3"
-    type: "number"
-  special4: 
-    name: "special4"
-    type: "number"
-  special5: 
-    name: "special5"
-    type: "number"
-  cupcakesentries: 
-    name: "cupcakes"
-    type: "number"
-  tastingcomp: 
-    name: "tasting"
-    type: "boolean"
+  showcasecakes: "showcase"
+  style1: "style1"
+  style2: "style2"
+  style3: "style3"
+  style4: "style4"
+  style5: "style5"
+  style6: "style6"
+  style7: "style7"
+  special1: "special1"
+  special2: "special2"
+  special3: "special3"
+  special4: "special4"
+  special5: "special5"
+  cupcakesentries: "cupcakes"
 
 
 signupMap =
@@ -155,25 +124,17 @@ class SignupUpgrader
     entries = []
     
     for style, entryStyle of styleMap when oldRegistrant[style]? and oldRegistrant[style] != ''
-      if entryStyle.type == "number"
-        count = oldRegistrant[style] ? 0
-        if count > 0
-          for i in [0..count-1]
-            entry = this.cakeshowDB.Entry.build(
-              category: entryStyle.name
-              didBring: false
-              styleChange: false
-            )
-            entryChain.add(entry.save())
-            entries.push(entry)
-      else
-        entry = this.cakeshowDB.Entry.build(
-          category: entryStyle.name
-          didBring: false
-          styleChange: false
-        )
-        entryChain.add(entry.save())
-        entries.push(entry)
+      count = oldRegistrant[style] ? 0
+      if count > 0
+        for i in [0..count-1]
+          entry = this.cakeshowDB.Entry.build(
+            year: this.year
+            category: entryStyle
+            didBring: false
+            styleChange: false
+          )
+          entryChain.add(entry.save())
+          entries.push(entry)
     
     entryChain.run()
       .error( (errors) ->
@@ -210,7 +171,7 @@ class SignupUpgrader
               if converted == ""
                 converted = 0
               else
-                converted = parseInt(converted)     
+                converted = parseInt(converted,10)     
         
         newRow[newCol] = converted
   

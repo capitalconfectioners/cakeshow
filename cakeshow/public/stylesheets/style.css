@@ -1,20 +1,30 @@
 body {
-  padding: 1em 4em;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  margin: 0;
 }
 
 div.header {
-  margin: 2em;
+  margin: 2em 12em;
   text-align: center;
 }
 
+div.header h1 {
+  font-size: xx-large;
+}
+
 a {
-  color: #00B7FF;
+  color: #1C94C4;
 }
 
 div#toc {
   position: fixed;
-  margin: 0.5em;
+  height: 100%;
+  padding: 2em;
+  background-image: url(cakeshow-light-theme/images/ui-bg_highlight-soft_100_eeeeee_1x100.png);
+  background-repeat: repeat no-repeat;
+  background-color: #EEE;
+  border-right: 1px solid #DDD;
+  font-weight: bold;
 }
 
 div#toc > ul {
@@ -23,11 +33,17 @@ div#toc > ul {
 }
 
 div.content-column {
+  padding: 1em 4em;
   margin: 0 auto;
-  width: 40em;
+  width: 60em;
 }
 
 div.search-fields {
+  float: right;
+  padding: 0.25em 0.5em;
+}
+
+a.next {
   float: right;
 }
 
@@ -43,8 +59,13 @@ ul#registrant-signups li {
 .registrant-name {
   font-size: large;
   font-weight: bold;
+  padding-bottom: 0.5ex;
 }
 
-a.next {
-  float: right;
+.signup-cell {
+  padding-bottom: 0.5ex;
+}
+
+.entry-cell {
+  padding: 1px 0.5em;
 }

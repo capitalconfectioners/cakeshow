@@ -21,7 +21,7 @@ exports.TOCView = class TOCView extends Backbone.View
     return html
   
   render: =>
-    tocHTML = this.renderLevel(this.model.toJSON())
+    tocHTML = "Cakeshow" + this.renderLevel(this.model.toJSON())
     this.$el.html(tocHTML)
       
   linkClicked: =>

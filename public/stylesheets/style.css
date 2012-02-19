@@ -3,15 +3,6 @@ body {
   margin: 0;
 }
 
-div.header {
-  margin: 2em 12em;
-  text-align: center;
-}
-
-div.header h1 {
-  font-size: xx-large;
-}
-
 a {
   color: #1C94C4;
 }
@@ -19,9 +10,7 @@ a {
 div#toc {
   position: fixed;
   height: 100%;
-  padding: 2em;
-  background-image: url(cakeshow-light-theme/images/ui-bg_highlight-soft_100_eeeeee_1x100.png);
-  background-repeat: repeat no-repeat;
+  padding: 3em 2em;
   background-color: #EEE;
   border-right: 1px solid #DDD;
   font-weight: bold;
@@ -36,6 +25,15 @@ div.content-column {
   padding: 1em 4em;
   margin: 0 auto;
   width: 60em;
+}
+
+div.header {
+  margin: 2em 12em;
+  text-align: center;
+}
+
+div.header h1 {
+  font-size: xx-large;
 }
 
 div.search-fields {

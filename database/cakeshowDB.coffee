@@ -60,6 +60,7 @@ class CakeshowDB
       styleChange: 
         type: Sequelize.BOOLEAN
         default: false
+      entryNumber: Sequelize.INTEGER
     )
     
     this.Registrant.hasMany(this.Signup, as: 'Signups')

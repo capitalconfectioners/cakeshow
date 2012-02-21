@@ -17,6 +17,8 @@ exports.EntryView = class EntryView extends Backbone.View
     'click input.didBring': 'didBringClicked'
     'click input.styleChange': 'categoryChangeClicked'
     'change select.category': 'categoryChanged'
+    'keydown input.entryNumber': 'syncEntryNumber'
+    'change input.entryNumber': 'syncEntryNumber'
   
   initialize: =>
     this.categories = this.model.getCategories()
@@ -43,6 +45,31 @@ exports.EntryView = class EntryView extends Backbone.View
     this.model.set('styleChange', true)
     this.$el.find('input.styleChange')[0].checked = true
     this.model.save()
+  
+  clearEntryNumberTimer: =>
+    if this.entryNumTimer?
+      window.clearTimeout(this.entryNumTimer)
+    this.entryNumTimer = null
+    this.$el.find('div.sync-icon').css('visibility', 'hidden')
+      
+  restartEntryNumberTimer: =>
+    this.clearEntryNumberTimer()
+    this.entryNumTimer = window.setTimeout(this.entryNumberTimeout, 5000)
+    this.$el.find('div.sync-icon').css('visibility', 'visible')
+  
+  syncEntryNumber: =>
+    numInput = this.$el.find('input.entryNumber')[0]
+    if numInput.value != ''
+      entryNumber = parseInt(numInput.value, 10)
+      if entryNumber != NaN
+        this.model.set('entryNumber', entryNumber)
+        this.model.save()
+      else
+        
+    this.clearEntryNumberTimer()
+  
+  entryNumberKeyPress: =>
+    this.restartEntryNumberTimer()
 
 exports.EntryListView = class EntryListView extends Backbone.View
   tagName: 'table'

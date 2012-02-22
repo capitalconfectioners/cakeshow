@@ -10,7 +10,7 @@ a {
 div#toc {
   position: fixed;
   height: 100%;
-  padding: 3em 2em;
+  padding: 3em 3em;
   background-color: #EEE;
   border-right: 1px solid #DDD;
   font-weight: bold;

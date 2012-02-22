@@ -45,6 +45,21 @@ a.next {
   float: right;
 }
 
+.error-widget {
+  margin: auto;
+  width: 50%;
+  display: none;
+}
+
+.ui-state-error {
+  padding: 0.7em;
+}
+
+.ui-icon-alert {
+  float: left;
+  margin-right: 0.3em;
+}
+
 ul#registrant-signups {
   list-style-type: none;
   padding-left: 0;

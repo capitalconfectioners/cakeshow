@@ -119,7 +119,7 @@ entries = (request, response, next) ->
 putEntry = (request, response, next) ->
   request.entry.updateAttributes(request.body)
   .error( (error) ->
-    next(new Error("Could not save entry #{id} with values #{request.body}: " + error))
+    next(new Error("Could not save entry #{request.entry.id} with values #{request.body}: " + error))
   )
 
 exports.DatabaseMiddleware = class DatabaseMiddleware

@@ -17,11 +17,12 @@ exports.EntryView = class EntryView extends Backbone.View
     'click input.didBring': 'didBringClicked'
     'click input.styleChange': 'categoryChangeClicked'
     'change select.category': 'categoryChanged'
-    'keydown input.entryNumber': 'syncEntryNumber'
+    'keydown input.entryNumber': 'entryNumberKeyPressed'
     'change input.entryNumber': 'syncEntryNumber'
   
   initialize: =>
     this.categories = this.model.getCategories()
+    this.badEntryNumber = false
   
   render: =>
     renderParams = this.model.toJSON()
@@ -54,25 +55,28 @@ exports.EntryView = class EntryView extends Backbone.View
       
   restartEntryNumberTimer: =>
     this.clearEntryNumberTimer()
-    this.entryNumTimer = window.setTimeout(this.entryNumberTimeout, 5000)
+    this.entryNumTimer = window.setTimeout(this.syncEntryNumber, 5000)
     this.$el.find('div.sync-icon').css('visibility', 'visible')
   
-  syncEntryNumber: =>
+  syncEntryNumber: =>  
     numInput = this.$el.find('input.entryNumber')[0]
     if numInput.value != ''
       entryNumber = parseInt(numInput.value, 10)
-      if entryNumber != NaN
+      if isNaN(entryNumber)
+        this.badEntryNumber = true
+        this.$el.parents('.entries').find('.error-widget').show('blind')
+      else
+        if this.badEntryNumber
+          this.$el.parents('.entries').find('.error-widget').hide('blind')
+        this.badEntryNumber = false
         this.model.set('entryNumber', entryNumber)
         this.model.save()
-      else
-        
     this.clearEntryNumberTimer()
   
-  entryNumberKeyPress: =>
+  entryNumberKeyPressed: =>
     this.restartEntryNumberTimer()
 
 exports.EntryListView = class EntryListView extends Backbone.View
-  tagName: 'table'
   className: 'entry-list'
   
   initialize: ->
@@ -82,7 +86,7 @@ exports.EntryListView = class EntryListView extends Backbone.View
   
   add: (entry) =>
     view = new EntryView(model: entry)
-    this.$el.append(view.render().el)
+    this.$el.find('table').append(view.render().el)
     
   render: =>
     this.$el.html(entryListTemplate.render())

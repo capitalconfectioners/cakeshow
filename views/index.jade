@@ -1,12 +1,14 @@
-#toc
-.content-column
-  .header.ui-widget-header.ui-corner-all
-    h1= title
-    p Welcome to #{title}
-  .search-fields.ui-widget.ui-widget-content.ui-corner-all
-    label Search: 
-    input#search
-  #content
+.container-fluid
+  .row-fluid
+    #toc.span2
+    .content-column.span10
+      .header.hero-unit
+        h1= title
+        p Welcome to #{title}
+      .search-fields.ui-widget.ui-widget-content.ui-corner-all
+        label Search: 
+        input#search
+      #content
 script
   $(document).ready(function(){
     cakeshow = require('cakeshowClient');

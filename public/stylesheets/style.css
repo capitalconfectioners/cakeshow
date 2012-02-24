@@ -1,48 +1,37 @@
-@linkColor: #1C94C4;
-
 div.search-fields {
   float: right;
   padding: 0.25em 0.5em;
 }
-
 a.next {
   float: right;
 }
-
 .error-widget {
   margin: auto;
   width: 50%;
   display: none;
 }
-
 .ui-state-error {
   padding: 0.7em;
 }
-
 .ui-icon-alert {
   float: left;
   margin-right: 0.3em;
 }
-
 ul#registrant-signups {
   list-style-type: none;
   padding-left: 0;
 }
-
 ul#registrant-signups li {
   margin-bottom: 2em;
 }
-
 .registrant-name {
   font-size: large;
   font-weight: bold;
   padding-bottom: 0.5ex;
 }
-
 .signup-cell {
   padding-bottom: 0.5ex;
 }
-
 .entry-cell {
   padding: 1px 0.5em;
 }

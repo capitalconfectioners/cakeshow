@@ -23,6 +23,7 @@ app.configure( ->
   app.use(express.logger(format: ':method :url', immediate: true))
   app.use(express.bodyParser())
   app.use(express.methodOverride())
+  app.use(express.compiler(src: __dirname + '/public', enable: ['less']))
   app.use(express.static(__dirname + '/public'))
   app.use(app.router)
 )

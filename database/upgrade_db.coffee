@@ -42,6 +42,7 @@ class Upgrader
       for showNumber of this.cakeshowDBs
         this.upgradeCakeshow(showNumber, ->
           completed++
+          console.log("Completed upgrading #{completed} years")
           if completed == showsToUpgrade
             onSuccess()
         )

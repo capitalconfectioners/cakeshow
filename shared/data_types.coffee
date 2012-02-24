@@ -28,5 +28,5 @@ exports.entryNames =
     special1: 'Birthday Tasting'
     special2: 'Cupcakes Tasting'
     special3: 'Renaissance Tasting'
-    # special4 not used
+    special4: 'Unknown'
     special5: 'Cookies Tasting'

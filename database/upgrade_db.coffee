@@ -22,7 +22,7 @@ styleMap =
   cupcakesentries: "cupcakes"
 
 
-signupMap =
+signupColumnMap =
   registrationTime: "registration"
   RegistrantId: "registrantid"
 
@@ -62,7 +62,9 @@ class Upgrader
         if error
           exit("Error: " + error)
         
-        completed = 0
+        console.log("Adding #{rows.length} registrants")
+        
+        registrantChain = new Sequelize.Utils.QueryChainer
         
         for row in rows
           newRow = {}
@@ -70,19 +72,22 @@ class Upgrader
             newRow[col] = row[col]
           
           registrant = this.cakeshowDB.Registrant.build(newRow)
-          registrant.save()
-            .error( (error) ->
-              console.log('Error inserting registrant: ' + error)
-            )
-            .success( =>
-              completed++
-              if completed == rows.length
-                this.registrantsDB.end()
-                onSuccess()
-            )
+          
+          registrantChain.add(registrant.save())
+        
+        registrantChain.run()
+          .error( (error) ->
+            console.log('Error inserting registrant: ' + error)
+          )
+          .success( =>
+            console.log("Registrants done")
+            this.registrantsDB.end()
+            onSuccess()
+          )
     )
 
   upgradeCakeshow : (number, onSuccess= ->) =>
+    year = this.cakeshowDBs[number]
     dbName = "capitalc_cakeshow" + number
     this[dbName] = new mysql.createClient(
       hostname: "localhost"
@@ -93,18 +98,82 @@ class Upgrader
     
     signupUpgrader = new SignupUpgrader(this, this.cakeshowDBs[number])
     
-    signups = this[dbName].query(
-      "SELECT *" +
-      "FROM contestantsignups;",
+    this[dbName].query(
+      "SHOW TABLES like 'contestantsignups';",
       (error, rows, columns) =>
-        completed = 0
-        for row in rows
-          signupUpgrader.insertRegistrant(row, =>
-            completed++
-            if completed == rows.length
-              this[dbName].end()
-              onSuccess()
+        if rows? and rows.length > 0
+          this[dbName].query(
+            "SELECT * FROM contestantsignups;",
+            (error, rows, columns) =>
+              if error?
+                console.log("Error upgrading #{dbName}: " + error)
+                onSuccess()
+              else
+                signupChainer = new Sequelize.Utils.QueryChainer
+                signups = []
+                
+                for row in rows
+                  signupMap = 
+                    row: row
+                    signup: signupUpgrader.createSignup(row)
+                  
+                  signupChainer.add(signupMap.signup.save())
+                  signups.push(signupMap)
+                
+                console.log("Adding #{rows.length} signups from #{year}")
+                
+                signupChainer.run()
+                .success( =>
+                  console.log("Signups added for #{year}")
+                  
+                  entryChain = new Sequelize.Utils.QueryChainer
+                  entryCount = 0
+                  
+                  for signupMap in signups
+                    entries = signupUpgrader.createEntries(entryChain, signupMap.signup, signupMap.row)
+                    signupMap.entries = entries
+                    entryCount += entries.length
+                  
+                  console.log("Creating #{entryCount} entries for #{year}")
+                  
+                  entryChain.run()
+                  .success( =>
+                    console.log("Entries created for #{year}")
+                    
+                    addEntriesChain = new Sequelize.Utils.QueryChainer
+                    
+                    for signupMap in signups
+                      addEntriesChain.add(signupMap.signup.setEntries(signupMap.entries))
+                    
+                    console.log("Linking entries to signups for #{year}")
+                    
+                    addEntriesChain.run()
+                    .success( =>
+                      console.log("Entries linked to signups for #{year}")
+                      this[dbName].end()
+                      onSuccess()
+                    )
+                    .error( (err) =>
+                      console.log("Error linking entries to signups for #{year}: " + err)
+                      this[dbName].end()
+                      onSuccess()
+                    )
+                  )
+                  .error( (err) =>
+                    console.log("Error creating entries for #{year}: " + err)
+                    this[dbName].end()
+                    onSuccess()
+                  )
+                )
+                .error( (err) =>
+                  console.log("Error creating signups for #{year}: " + err)
+                  this[dbName].end()
+                  onSuccess()
+                )
           )
+        else
+          console.log("No signups from #{this.cakeshowDBs[number]}")
+          onSuccess()
     )
 
 class SignupUpgrader
@@ -113,14 +182,11 @@ class SignupUpgrader
     this.year = year
     this.cakeshowDB = upgrader.cakeshowDB
 
-  insertRegistrant : (row, onSuccess= ->) =>
-    signup = this.cakeshowDB.Signup.build(this.mapSignup(row, this.year))
-    signup.save().success( =>
-      this.insertRegistrantEntries(signup, row, onSuccess)
-    )
+  createSignup : (row) =>
+    return this.cakeshowDB.Signup.build(this.mapSignup(row, this.year))
   
-  insertRegistrantEntries : (signup, oldRegistrant, onSuccess= ->) =>
-    entryChain = new Sequelize.Utils.QueryChainer
+  createEntries : (entryChain, signup, oldRegistrant, onSuccess= ->) =>
+    
     entries = []
     
     for style, entryStyle of styleMap when oldRegistrant[style]? and oldRegistrant[style] != ''
@@ -136,25 +202,13 @@ class SignupUpgrader
           entryChain.add(entry.save())
           entries.push(entry)
     
-    entryChain.run()
-      .error( (errors) ->
-          console.log("Error inserting entries: " + errors)
-      )
-      .success( ->
-        signup.setEntries(entries)
-          .error( (error) ->
-            console.log("Error linking entries to signup: " + error)
-          )
-          .success( ->
-            onSuccess()
-        )
-    )
+    return entries
   
   mapSignup: (row, year) =>
     newRow = {}
     for newCol, colInfo of this.cakeshowDB.Signup.rawAttributes when newCol != 'id'
-      oldCol = signupMap[newCol] ? newCol
-  
+      oldCol = signupColumnMap[newCol] ? newCol
+      
       if row[oldCol]?
         type = colInfo.type ? colInfo
         

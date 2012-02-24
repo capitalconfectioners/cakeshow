@@ -7,21 +7,24 @@ exports.TOCView = class TOCView extends Backbone.View
   initialize: ->
     this.model.bind('change', this.render)
   
-  renderLevel: (level) =>
-    html = "<ul>"
+  renderLevel: (name, level) =>
+    html = "<li class=\"nav-header\">#{name}</li>"
     for name, value of level
-      html += "<li>"
       if typeof value == 'string'
-        html += "<a class=\"toc\" href=\"#{value}\">#{name}</a>"
+        html += "<li "
+        if window.location.toString().indexOf(value) >= 0
+          html += 'class="active"'
+        html += ">"
+        html += "<a href=\"#{value}\">#{name}</a>"
+        html += "</li>"
       else
-        html += "#{name}" + this.renderLevel(value)
-      html += "</li>"
-    html += "</ul>"
-    
+        html += this.renderLevel(name, value)
     return html
   
   render: =>
-    tocHTML = "Cakeshow" + this.renderLevel(this.model.toJSON())
+    tocHTML = '<ul class="nav nav-list">'
+    tocHTML += this.renderLevel('Cakeshow', this.model.toJSON())
+    tocHTML += '</ul>'
     this.$el.html(tocHTML)
       
   linkClicked: =>

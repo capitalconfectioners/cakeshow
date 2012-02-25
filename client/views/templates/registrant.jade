@@ -1,1 +1,10 @@
-.registrant-name #{firstname} #{lastname}
+address
+  .registrant-name #{firstname} #{lastname}
+  .registrant-street #{address}
+  .registrant-mailstop
+    span.registrant-city #{city}, 
+    span.registrant-state #{state} 
+    span.registrant-zip #{zipcode}
+  .registrant-phone #{phone}
+  .registrant-email 
+    a(href='mailto:#{email}') #{email}

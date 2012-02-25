@@ -1,5 +1,8 @@
-.registration-type.signup-cell Registration: #{registrationTime}
 .registration-class.signup-cell Class: #{locals['class']}
+.registration-id.signup-cell Paid: 
+  case paid
+    when 0: span no
+    default: span yes
 .accordion.signup-cell
   h3 
     a Entries

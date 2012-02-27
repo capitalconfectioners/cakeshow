@@ -143,7 +143,7 @@ exports.RegistrantSignupListView = class RegistrantSignupListView extends PagedL
     this.$el.find('#registrant-signups').append(view.render().el)
     
   render: =>
-    $('div.search-fields input').autocomplete(
+    $('input#search').autocomplete(
       minLength: 2
       source: this.searchSuggestions
       select: this.searchSelected

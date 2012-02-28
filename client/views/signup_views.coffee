@@ -99,19 +99,16 @@ exports.SignupView = class SignupView extends Backbone.View
   
   render: =>
     this.$el.html(signupTemplate.render(this.model.toJSON()))
-    this.$el.find('.accordion').accordion(
-      collapsible: true
-      active: false
-      autoHeight: false
-      changestart: this.toggleEvents
-    )
+    collapse = this.$el.find('.collapse').collapse(
+      toggle: false
+    ).on('show', this.loadEvents)
     return this
   
-  toggleEvents: =>
+  loadEvents: =>
     unless this.entriesView?
       this.entriesView = new EntryListView(collection: this.model.getEntries())
       this.entriesView.collection.fetch()
-      this.$el.find('.entries').append(this.entriesView.render().el)
+      this.$el.find('.entries').html(this.entriesView.render().el)
 
 exports.RegistrantSignupView = class RegistrantSignupView extends Backbone.View
   className: 'registrantSignup'

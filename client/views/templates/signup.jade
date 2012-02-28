@@ -3,7 +3,11 @@
   case paid
     when 0: span no
     default: span yes
-.accordion.signup-cell
-  h3 
-    a Entries
-  .entries
+- var entries_id = 'entries-' + id
+.accordion-group
+  .accordion-heading
+    a.accordion-toggle(data-toggle='collapse', data-target='##{entries_id}') Entries
+  .accordion-body.collapse(id='#{entries_id}')
+    .accordion-inner
+      .entries
+        | Some Entry Text

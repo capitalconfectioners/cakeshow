@@ -31,6 +31,16 @@ exports.Signup = class Signup extends Backbone.Model
       this.entries = new EntryList()
       this.entries.setParent(this)
     return this.entries
+  
+  divisionName: =>
+    return cakeshowTypes.divisionNames[this.get('class')]
+  
+  setDivisionName: (divisionName) =>
+    division = key for key, value of cakeshowTypes.divisionNames when value == divisionName
+    this.set('class', division)
+  
+  getDivisions: ->
+    return (value for key, value of cakeshowTypes.divisionNames)
 
 exports.RegistrantSignup = class RegistrantSignup extends Backbone.Model
   urlRoot: '/signups'

@@ -29,7 +29,7 @@ class CakeshowDB
         validate: {isIn: ['early','late','student','child']}
       'class':
         type: Sequelize.STRING
-        validate: {isIn: ['adultint','culstudent','adultbeg','professional','junior','adultadv','child','teen','masters']}
+        validate: {isIn: cakeshowTypes.divisions}
       childage: Sequelize.INTEGER
       paid: 
         type: Sequelize.BOOLEAN

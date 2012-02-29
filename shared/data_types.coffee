@@ -30,3 +30,27 @@ exports.entryNames =
     special3: 'Renaissance Tasting'
     special4: 'Unknown'
     special5: 'Cookies Tasting'
+
+exports.divisions = [
+  'adultint'
+  'culstudent'
+  'adultbeg'
+  'professional'
+  'junior'
+  'adultadv'
+  'child'
+  'teen'
+  'masters'
+  ]
+  
+exports.divisionNames = 
+  'adultint': 'Adult Intermediate'
+  'culstudent': 'Culinary Student'
+  'adultbeg': 'Adult Beginner'
+  'professional': 'Professional'
+  'junior': 'Junior'
+  'adultadv': 'Adult Advanced'
+  'child': 'Child'
+  'teen': 'Teen'
+  'masters': 'Masters'
+  

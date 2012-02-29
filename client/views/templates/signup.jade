@@ -1,4 +1,8 @@
-.registration-class.signup-cell Class: #{locals['class']}
+.registration-class.signup-cell Division: 
+  td.entry-cell 
+    select.division
+      for division in divisions
+        option #{division}
 .registration-id.signup-cell Paid: 
   case paid
     when 0: span no

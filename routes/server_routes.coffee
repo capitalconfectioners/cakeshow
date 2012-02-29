@@ -10,6 +10,9 @@ exports.register = (app, cakeshowDB) ->
   
   app.get('/signups/:id', middleware.singleSignup, singleSignup)
   
+  app.put('/shows/:year/signups/:id', middleware.singleSignup, putSignup)
+  app.put('/signups/:id', middleware.singleSignup, putSignup)
+  
   app.get('/signups/:signupID/entries', middleware.entriesForSignup, entries)
   app.put('/signups/:signupID/entries/:id', middleware.entry, putEntry)
   
@@ -109,6 +112,12 @@ signups = (request, response, next) ->
   
   next()
 
+putSignup = (request, response, next) ->
+  request.signup.Signup.updateAttributes(request.body)
+  .error( (error) ->
+    next(new Error("Could not save signup #{request.signup.id} with values #{request.body}: " + error))
+  )
+
 entries = (request, response, next) ->
   request.jsonResults = []
   for entry in request.entries
@@ -186,7 +195,6 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     
     this.cakeshowDB.Signup.joinTo( this.cakeshowDB.Registrant, where: id )
     .success( (signup) ->
-      console.log(signup)
       request.signup = signup[0]
       next()
     )

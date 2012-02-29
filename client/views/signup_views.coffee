@@ -97,18 +97,36 @@ exports.EntryListView = class EntryListView extends Backbone.View
 exports.SignupView = class SignupView extends Backbone.View
   className: 'signup'
   
+  events:
+    'change select.division': 'divisionChanged'
+    
+  initialize: =>
+    this.divisions = this.model.getDivisions()
+  
   render: =>
-    this.$el.html(signupTemplate.render(this.model.toJSON()))
+    renderParams = this.model.toJSON()
+    renderParams.divisions = this.divisions
+    
+    this.$el.html(signupTemplate.render(renderParams))
+    
+    selectedIndex = _.indexOf(this.divisions, this.model.divisionName())
+    this.$el.find('select.division')[0].selectedIndex = selectedIndex
+    
     collapse = this.$el.find('.collapse').collapse(
       toggle: false
-    ).on('show', this.loadEvents)
+    ).on('show', this.loadEntries)
     return this
   
-  loadEvents: =>
+  loadEntries: =>
     unless this.entriesView?
       this.entriesView = new EntryListView(collection: this.model.getEntries())
       this.entriesView.collection.fetch()
       this.$el.find('.entries').html(this.entriesView.render().el)
+  
+  divisionChanged: =>
+    selected = this.$el.find('select.division')[0].selectedIndex
+    this.model.setDivisionName(this.divisions[selected])
+    this.model.save()
 
 exports.RegistrantSignupView = class RegistrantSignupView extends Backbone.View
   className: 'registrantSignup'

@@ -140,18 +140,23 @@ exports.RegistrantSignupListView = class RegistrantSignupListView extends PagedL
     this.$el.find('#registrant-signups').append(view.render().el)
     
   render: =>
-    $('input#search').autocomplete(
-      minLength: 2
-      source: this.searchSuggestions
-      select: this.searchSelected
-    )
     this.$el.html(registrantSignupListTemplate.render())
     
     this.add(registrantSignup) for registrantSignup in this.collection.models
     
     super()
     return this
+
+exports.SignupSearch = class SignupSearch extends Backbone.View
+  searchType: 'signups'
   
+  render: =>
+    $('input#search').autocomplete(
+      minLength: 2
+      source: this.searchSuggestions
+      select: this.searchSelected
+    )
+    
   searchSuggestions: (request, callback) =>
     this.collection.search(request.term, (results) ->
       for result in results

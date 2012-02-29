@@ -38,6 +38,8 @@ class exports.CakeshowRoutes extends Backbone.Router
     this.currentView = app.registrantSignupsView
     this.currentModel = app.registrantSignups
     
+    this.setSearchToSignups()
+    
     app.registrantSignups.setYear(year)
     app.registrantSignups.setQueryString(querystring)
     this.fetchData(app.registrantSignups)
@@ -50,7 +52,18 @@ class exports.CakeshowRoutes extends Backbone.Router
       model: this.currentModel
     )
     
+    this.setSearchToSignups()
+    
     this.fetchData(this.currentModel)
+  
+  setSearchToSignups: () ->
+    if this.searchView?.type == 'signups'
+      return
+    
+    this.searchView = new signupViews.SignupSearch(
+      collection: app.registrantSignups
+    )
+    this.searchView.render()
   
   queueData: (link, data) ->
     this.dataQueue = 

@@ -43,8 +43,13 @@ exports.EntryView = class EntryView extends Backbone.View
   categoryChanged: =>
     selected = this.$el.find('select.category')[0].selectedIndex
     this.model.setCategoryName(this.categories[selected])
+    
     this.model.set('styleChange', true)
     this.$el.find('input.styleChange')[0].checked = true
+    
+    this.model.set('didBring', true)
+    this.$el.find('input.didBring')[0].checked = true
+    
     this.model.save()
   
   clearEntryNumberTimer: =>
@@ -70,6 +75,10 @@ exports.EntryView = class EntryView extends Backbone.View
           this.$el.parents('.entries').find('.error-widget').hide('blind')
         this.badEntryNumber = false
         this.model.set('entryNumber', entryNumber)
+        
+        this.model.set('didBring', true)
+        this.$el.find('input.didBring')[0].checked = true
+        
         this.model.save()
     this.clearEntryNumberTimer()
   

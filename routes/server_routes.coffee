@@ -116,6 +116,9 @@ signups = (request, response, next) ->
 
 putSignup = (request, response, next) ->
   request.signup.Signup.updateAttributes(request.body)
+  .success( ->
+    response.json(request.signup.Signup.values)
+  )
   .error( (error) ->
     next(new Error("Could not save signup #{request.signup.id} with values #{request.body}: " + error))
   )
@@ -129,6 +132,9 @@ entries = (request, response, next) ->
 
 putEntry = (request, response, next) ->
   request.entry.updateAttributes(request.body)
+  .success( ->
+    response.json(request.entry.values)
+  )
   .error( (error) ->
     next(new Error("Could not save entry #{request.entry.id} with values #{request.body}: " + error))
   )

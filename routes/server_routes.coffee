@@ -6,7 +6,9 @@ exports.register = (app, cakeshowDB) ->
   app.get('/toc', middleware.shows, toc)
   
   app.get('/registrants', addLinksTo(middleware.allRegistrants), registrants)
-  app.get('/shows/:year/signups', addLinksTo(middleware.signups), signups)
+  
+  app.get('/shows/:year/signups', addLinksTo(middleware.signups), signups)  
+  app.get('/signups', addLinksTo(middleware.signups), signups)
   
   app.get('/signups/:id', middleware.singleSignup, singleSignup)
   
@@ -203,19 +205,29 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     )
   
   signups: (request, response, next) =>
-    filter = 
-      year: request.param('year','2012')
+    requestedYear = request.param('year')
+    
+    if requestedYear?
+      filter = 
+        year: requestedYear
+    else
+      filter = {}
     
     search = request.param('search')
     if search?
-      yearFilter = this.cakeshowDB.Signup.quoted('year') + " = '#{filter.year}'"
+      filters = []
+      
+      if filter.year?
+        yearFilter = this.cakeshowDB.Signup.quoted('year') + " = '#{filter.year}'"
+        filters.push(yearFilter)
       
       firstnameFilter = this.cakeshowDB.Registrant.quoted('firstname') + " LIKE '%#{search}%'"
       lastnameFilter = this.cakeshowDB.Registrant.quoted('lastname') + " LIKE '%#{search}%'"
       
       nameFilter = [firstnameFilter, lastnameFilter].join(" OR ")
+      filters.push('(' + nameFilter + ')')
       
-      filter = [yearFilter, '(' + nameFilter + ')'].join(" AND ")
+      filter = filters.join(" AND ")
     
     this.cakeshowDB.Signup.countJoined( this.cakeshowDB.Registrant, where: filter )
     .success( (count) =>

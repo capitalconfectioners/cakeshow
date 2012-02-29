@@ -56,14 +56,18 @@ exports.RegistrantSignup = class RegistrantSignup extends Backbone.Model
   
 exports.RegistrantSignupList = class RegistrantSignupList extends PagedCollection
   model: RegistrantSignup
-  unfilteredUrl: '/shows'
+  unfilteredUrl: '/signups'
+  showUrl: '/shows'
   
   initialize: () ->
-    this.baseUrl = this.unfilteredUrl 
-    this.url = this.baseUrl
+    this.clearYear()
   
   setYear: (year) ->
-    this.baseUrl = this.unfilteredUrl + '/' + year + '/signups'
+    this.baseUrl = this.showUrl + '/' + year + '/signups'
+    this.url = this.baseUrl
+  
+  clearYear: =>
+    this.baseUrl = this.unfilteredUrl
     this.url = this.baseUrl
   
   search: (phrase, callback, error) =>

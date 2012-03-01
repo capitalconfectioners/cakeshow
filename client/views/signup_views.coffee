@@ -88,6 +88,9 @@ exports.EntryView = class EntryView extends Backbone.View
 exports.EntryListView = class EntryListView extends Backbone.View
   className: 'entry-list'
   
+  events:
+    'click .add-entry': 'createEntry'
+  
   initialize: ->
     this.collection.bind('reset', this.render)
     this.collection.bind('add', this.add)
@@ -102,6 +105,12 @@ exports.EntryListView = class EntryListView extends Backbone.View
     this.add(entry) for entry in this.collection.models
     
     return this
+  
+  createEntry: =>
+    this.collection.create(
+      didBring: true
+      styleChange: true
+    , wait: true)
 
 exports.SignupView = class SignupView extends Backbone.View
   className: 'signup'

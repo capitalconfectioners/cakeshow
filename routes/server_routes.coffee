@@ -10,13 +10,14 @@ exports.register = (app, cakeshowDB) ->
   app.get('/shows/:year/signups', addLinksTo(middleware.signups), signups)  
   app.get('/signups', addLinksTo(middleware.signups), signups)
   
-  app.get('/signups/:id', middleware.singleSignup, singleSignup)
+  app.get('/signups/:signupID', middleware.singleSignup, singleSignup)
   
-  app.put('/shows/:year/signups/:id', middleware.singleSignup, putSignup)
-  app.put('/signups/:id', middleware.singleSignup, putSignup)
+  app.put('/shows/:year/signups/:signupId', middleware.singleSignup, putSignup)
+  app.put('/signups/:signupID', middleware.singleSignup, putSignup)
   
   app.get('/signups/:signupID/entries', middleware.entriesForSignup, entries)
   app.put('/signups/:signupID/entries/:id', middleware.entry, putEntry)
+  app.post('/signups/:signupID/entries', middleware.singleSignup, middleware.postEntry)
   
   app.get('*', jsonResponse)
   app.get('*', htmlResponse)
@@ -199,8 +200,7 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     )
   
   singleSignup: (request, response, next) =>
-    id = parseInt(request.param('id'), 10)
-    
+    id = parseInt(request.param('signupID'), 10)
     this.cakeshowDB.Signup.joinTo( this.cakeshowDB.Registrant, where: id )
     .success( (signup) ->
       request.signup = signup[0]
@@ -281,3 +281,24 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     .error( (error) ->
       next(new Error("Could not find entry with id #{id}: " + error))
     )
+  
+  postEntry: (request, response, next) =>
+    entryAttributes = request.body
+    entryAttributes.year = request.signup.Signup.year
+    
+    entry = this.cakeshowDB.Entry.build(entryAttributes)
+    
+    entry.save()
+    .success( ->
+      request.signup.Signup.addEntrie(entry)
+      .success( ->
+        response.json(entry.values)
+      )
+      .error( (error) ->
+        next(new Error("Could not add entry to signup: " + error))
+      )
+    )
+    .error( (error) ->
+      next(new Error("Could not create new entry: " + error))
+    )
+    

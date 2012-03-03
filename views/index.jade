@@ -3,9 +3,12 @@
     .container-fluid
       a.brand(href='/') Cakeshow
       form.navbar-search.pull-right
-        input#search.search-query(name='search')
-.container-fluid
-  .row-fluid
+        input#search.search-query(name='search', placeholder='Search')
+      ul.nav.pull-right
+        li
+          a.add Add
+.container-responsive
+  .row
     .well.span2
       #toc
     .content-column.span8

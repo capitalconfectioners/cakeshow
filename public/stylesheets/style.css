@@ -6765,6 +6765,9 @@ a.thumbnail:hover {
 body {
   padding-top: 60px;
 }
+button.save {
+  margin-right: 0.5em;
+}
 .error-widget {
   margin: auto;
   width: 50%;

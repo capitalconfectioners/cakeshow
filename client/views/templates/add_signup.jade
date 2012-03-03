@@ -1,0 +1,42 @@
+form
+  fieldset
+    legend Registrant
+    .row
+      .control-group.span3
+        label First Name
+        input#first-name.span3
+      .control-group.span3
+        label Last Name
+        input#last-name.span3
+    .row
+      .control-group.span6
+        label Address
+        textarea#address.span6(rows=3)
+    .row
+      .control-group.span3
+        label City
+        input#city.span3
+      .control-group.span1
+        label State
+        input#state.span1
+      .control-group.span1  
+        label Zipcode
+        input#zip.span1
+    .row
+      .control-group.span3
+        label Email
+        input#email.span3(type='email')
+      .control-group.span3
+        label Telephone
+        input#telephone.span3(type='tel')
+    .row
+      .control-group.span3
+        label Year
+        input#year.span3
+      .control-group.span2
+        label Paid
+        input#paid(type='checkbox')
+    .form-actions
+      button.btn.btn-primary.save(type='submit') Save
+      button.btn.cancel Cancel
+    

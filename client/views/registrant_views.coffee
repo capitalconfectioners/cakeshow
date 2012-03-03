@@ -19,7 +19,7 @@ exports.RegistrantListView = class RegistrantListView extends PagedListView
 	el: '#content'
 	
 	initialize: ->
-		this.register('registrants')
+		this.registerPagination('registrants')
 		this.collection.bind('reset', this.render)
 		this.collection.bind('add', this.add)
 		this.collection.view = this

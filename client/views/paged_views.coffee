@@ -1,5 +1,5 @@
 exports.PagedListView = class PagedListView extends Backbone.View
-  register: (name) =>
+  registerPagination: (name) =>
     this.listLinkName = name
     this.events = this.events ? []
     this.events["click #next-#{this.listLinkName}:not(.disabled)"] = 'next'

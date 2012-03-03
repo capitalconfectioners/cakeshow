@@ -9,6 +9,8 @@ signupTemplate = require('./templates/signup')
 registrantSignupTemplate = require('./templates/registrant_signup')
 registrantSignupListTemplate = require('./templates/registrant_signup_list')
 
+addSignupTemplate = require('./templates/add_signup')
+
 exports.EntryView = class EntryView extends Backbone.View
   tagName: 'tr'
   className: 'entry'
@@ -166,7 +168,7 @@ exports.RegistrantSignupListView = class RegistrantSignupListView extends PagedL
   el: '#content'
   
   initialize: =>
-    this.register('registrant-signups')
+    this.registerPagination('registrant-signups')
     this.collection.bind('reset', this.render)
     this.collection.bind('add', this.add)
     this.collection.view = this
@@ -182,10 +184,19 @@ exports.RegistrantSignupListView = class RegistrantSignupListView extends PagedL
     
     super()
     return this
+  
+exports.AddSignupView = class AddSignupView extends Backbone.View
+  el: '#content'
+  
+  render: =>
+    this.$el.html(addSignupTemplate.render())
 
-exports.SignupSearch = class SignupSearch extends Backbone.View
+exports.SignupNav = class SignupNav extends Backbone.View
   searchType: 'signups'
   el: 'body'
+  
+  events:
+    'click .navbar a.add': 'add'
   
   render: =>
     $('input#search').autocomplete(
@@ -193,6 +204,7 @@ exports.SignupSearch = class SignupSearch extends Backbone.View
       source: this.searchSuggestions
       select: this.searchSelected
     )
+    
     return this
     
   searchSuggestions: (request, callback) =>
@@ -205,4 +217,8 @@ exports.SignupSearch = class SignupSearch extends Backbone.View
   
   searchSelected: (event, ui) =>
     app.router.navigate('/signups/' + ui.item.signup.id, trigger: true)
-    
+  
+  add: =>
+    addView = new AddSignupView()
+    addView.render()
+  

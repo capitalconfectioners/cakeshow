@@ -2,12 +2,20 @@ exports.PagedListView = class PagedListView extends Backbone.View
   register: (name) =>
     this.listLinkName = name
     this.events = this.events ? []
-    this.events["click #next-#{this.listLinkName}"] = 'next'
-    this.events["click #prev-#{this.listLinkName}"] = 'prev'
+    this.events["click #next-#{this.listLinkName}:not(.disabled)"] = 'next'
+    this.events["click #prev-#{this.listLinkName}:not(.disabled)"] = 'prev'
     
   render: =>
-    this.$el.find("#next-#{this.listLinkName}").button(disabled: not this.collection.next?)
-    this.$el.find("#prev-#{this.listLinkName}").button(disabled: not this.collection.prev?)
+    if this.collection.next?
+      this.$el.find("li.next a").removeClass('disabled')
+    else
+      this.$el.find("li.next a").addClass('disabled')
+          
+    if this.collection.prev?
+      this.$el.find("li.previous a").removeClass('disabled')
+    else
+      this.$el.find("li.previous a").addClass('disabled')
+      
     return this
   
   next: =>

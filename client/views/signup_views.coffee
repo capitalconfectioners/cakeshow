@@ -185,6 +185,7 @@ exports.RegistrantSignupListView = class RegistrantSignupListView extends PagedL
 
 exports.SignupSearch = class SignupSearch extends Backbone.View
   searchType: 'signups'
+  el: 'body'
   
   render: =>
     $('input#search').autocomplete(
@@ -192,6 +193,7 @@ exports.SignupSearch = class SignupSearch extends Backbone.View
       source: this.searchSuggestions
       select: this.searchSelected
     )
+    return this
     
   searchSuggestions: (request, callback) =>
     this.collection.search(request.term, (results) ->

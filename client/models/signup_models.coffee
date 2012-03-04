@@ -45,6 +45,10 @@ exports.Signup = class Signup extends Backbone.Model
 exports.RegistrantSignup = class RegistrantSignup extends Backbone.Model
   urlRoot: '/signups'
   
+  initialize: =>
+    this.signup = this.get('signup')
+    this.registrant = this.get('registrant')
+  
   parse: (response, xhr) =>
     this.signup = new exports.Signup(response.signup)
     this.registrant = new RegistrantModels.Registrant(response.registrant)
@@ -52,6 +56,12 @@ exports.RegistrantSignup = class RegistrantSignup extends Backbone.Model
     return {
       signup: this.signup
       registrant: this.registrant
+    }
+  
+  toJSON: =>
+    return {
+      Signup: this.get('signup').toJSON()
+      Registrant: this.get('registrant').toJSON()
     }
   
 exports.RegistrantSignupList = class RegistrantSignupList extends PagedCollection
@@ -63,12 +73,26 @@ exports.RegistrantSignupList = class RegistrantSignupList extends PagedCollectio
     this.clearYear()
   
   setYear: (year) ->
+    this.year = year
     this.baseUrl = this.showUrl + '/' + year + '/signups'
     this.url = this.baseUrl
   
   clearYear: =>
+    this.year = null
     this.baseUrl = this.unfilteredUrl
     this.url = this.baseUrl
+  
+  newSignup: =>
+    signup = new exports.Signup()
+    registrant = new RegistrantModels.Registrant()
+    
+    if this.year?
+      signup.set('year', this.year)
+    
+    return new RegistrantSignup(
+      signup: signup
+      registrant: registrant
+    )
   
   search: (phrase, callback, error) =>
     $.ajax(this.baseUrl + '?search=' + phrase,

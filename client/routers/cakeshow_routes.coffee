@@ -8,8 +8,10 @@ class exports.CakeshowRoutes extends Backbone.Router
     
     'shows/:year/signups': 'signups'
     'shows/:year/signups?:querystring': 'signups'
+    'shows/:year/signups/add': 'addSignup'
     
     'signups/:id': 'singleSignup'
+    'signups/add': 'addSignup'
     
   namedParam: /:\w+/g;
   splatParam: /\*\w+/g;
@@ -55,6 +57,20 @@ class exports.CakeshowRoutes extends Backbone.Router
     this.setSearchToSignups()
     
     this.fetchData(this.currentModel)
+  
+  addSignup: (year) ->
+    this.currentModel = app.registrantSignups
+    
+    if year?
+      this.currentModel.setYear(year)
+    
+    this.currentView = new signupViews.AddSignupView(
+      el: '#content'
+      model: app.registrantSignups.newSignup()
+    )
+    
+    # nothing to fetch
+    this.currentView.render()
   
   setSearchToSignups: () ->
     if this.navView?.type == 'signups'

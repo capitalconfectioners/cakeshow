@@ -9,6 +9,9 @@ signupTemplate = require('./templates/signup')
 registrantSignupTemplate = require('./templates/registrant_signup')
 registrantSignupListTemplate = require('./templates/registrant_signup_list')
 
+editRegistrantTemplate = require('./templates/edit_registrant')
+editSignupTemplate = require('./templates/edit_signup')
+
 addSignupTemplate = require('./templates/add_signup')
 
 exports.EntryView = class EntryView extends Backbone.View
@@ -184,13 +187,56 @@ exports.RegistrantSignupListView = class RegistrantSignupListView extends PagedL
     
     super()
     return this
-  
+
+exports.EditRegistrantView = class EditRegistrantView extends Backbone.View
+  render: =>
+    this.$el.html(editRegistrantTemplate.render(this.model.toJSON()))
+    
+    return this
+
+exports.EditSignupView = class EditSignupView extends Backbone.View
+  initialize: =>
+    this.divisions = this.model.getDivisions()
+    
+  render: =>
+    renderParams = this.model.toJSON()
+    renderParams.divisions = this.divisions
+    
+    this.$el.html(editSignupTemplate.render(renderParams))
+    
+    selectedIndex = _.indexOf(this.divisions, this.model.divisionName())
+    this.$el.find('select#division')[0].selectedIndex = selectedIndex
+    
+    return this
+
 exports.AddSignupView = class AddSignupView extends Backbone.View
   el: '#content'
   
+  events:
+    'click button.save': 'save'
+    'click button.cancel': 'cancel'
+  
   render: =>
     this.$el.html(addSignupTemplate.render())
-
+    
+    if not this.editRegistrant?
+      this.editRegistrant = new EditRegistrantView(
+        el: '.edit-registrant'
+        model: this.model.registrant
+      )
+    
+    if not this.editSignup?
+      this.editSignup = new EditSignupView(
+        el: '.edit-signup'
+        model: this.model.signup
+      )
+    this.editRegistrant.render()
+    this.editSignup.render()
+  
+  save: =>
+  
+  cancel: =>
+  
 exports.SignupNav = class SignupNav extends Backbone.View
   searchType: 'signups'
   el: 'body'
@@ -219,6 +265,5 @@ exports.SignupNav = class SignupNav extends Backbone.View
     app.router.navigate('/signups/' + ui.item.signup.id, trigger: true)
   
   add: =>
-    addView = new AddSignupView()
-    addView.render()
+    app.router.navigate(app.registrantSignups.baseUrl + '/add', trigger: true)
   

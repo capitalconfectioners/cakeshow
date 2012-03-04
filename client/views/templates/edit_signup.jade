@@ -1,0 +1,14 @@
+fieldset
+  legend Signup
+  .row
+    .control-group.span2
+      label Division
+      select#division.span2
+        for division in divisions
+          option #{division}
+    .control-group.span1
+      label Year
+      input#year.span1
+    .control-group.span2
+      label Paid
+      input#paid(type='checkbox')

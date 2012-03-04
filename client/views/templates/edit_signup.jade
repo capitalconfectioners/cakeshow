@@ -4,8 +4,8 @@ fieldset
     .control-group.span2
       label Division
       select#division.span2
-        for division in divisions
-          option #{division}
+        each divisionName, division in divisions
+          option(value=division) #{divisionName}
     .control-group.span1
       label Year
       input#year.span1

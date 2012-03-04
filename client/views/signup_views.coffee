@@ -14,6 +14,8 @@ editSignupTemplate = require('./templates/edit_signup')
 
 addSignupTemplate = require('./templates/add_signup')
 
+cakeshowTypes = require('../data_types')
+
 exports.EntryView = class EntryView extends Backbone.View
   tagName: 'tr'
   className: 'entry'
@@ -195,12 +197,11 @@ exports.EditRegistrantView = class EditRegistrantView extends Backbone.View
     return this
 
 exports.EditSignupView = class EditSignupView extends Backbone.View
-  initialize: =>
-    this.divisions = this.model.getDivisions()
-    
   render: =>
     renderParams = this.model.toJSON()
-    renderParams.divisions = this.divisions
+    renderParams.divisions = cakeshowTypes.divisionNames
+    
+    console.log(renderParams.divisions)
     
     this.$el.html(editSignupTemplate.render(renderParams))
     

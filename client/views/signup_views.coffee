@@ -207,9 +207,6 @@ exports.EditSignupView = class EditSignupView extends Backbone.View
     
     this.$el.html(editSignupTemplate.render(renderParams))
     
-    #selectedIndex = _.indexOf(this.divisions, this.model.divisionName())
-    #this.$el.find('select#division')[0].selectedIndex = selectedIndex
-    
     Backbone.ModelBinding.bind(this)
     
     return this
@@ -244,7 +241,6 @@ exports.AddSignupView = class AddSignupView extends Backbone.View
     this.model.save({}
       wait: true
       success: (model, response) =>
-        console.log(response)
         app.router.queueData('', response)
         app.router.navigate(this.model.url() + '/' + response.signup.id, trigger: true)
       error: (model, response) ->
@@ -253,7 +249,8 @@ exports.AddSignupView = class AddSignupView extends Backbone.View
     )
   
   cancel: =>
-  
+    window.history.back()
+    
 exports.SignupNav = class SignupNav extends Backbone.View
   searchType: 'signups'
   el: 'body'

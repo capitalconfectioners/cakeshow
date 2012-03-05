@@ -194,6 +194,8 @@ exports.EditRegistrantView = class EditRegistrantView extends Backbone.View
   render: =>
     this.$el.html(editRegistrantTemplate.render(this.model.toJSON()))
     
+    Backbone.ModelBinding.bind(this)
+    
     return this
 
 exports.EditSignupView = class EditSignupView extends Backbone.View
@@ -205,8 +207,10 @@ exports.EditSignupView = class EditSignupView extends Backbone.View
     
     this.$el.html(editSignupTemplate.render(renderParams))
     
-    selectedIndex = _.indexOf(this.divisions, this.model.divisionName())
-    this.$el.find('select#division')[0].selectedIndex = selectedIndex
+    #selectedIndex = _.indexOf(this.divisions, this.model.divisionName())
+    #this.$el.find('select#division')[0].selectedIndex = selectedIndex
+    
+    Backbone.ModelBinding.bind(this)
     
     return this
 
@@ -235,6 +239,18 @@ exports.AddSignupView = class AddSignupView extends Backbone.View
     this.editSignup.render()
   
   save: =>
+    console.log(this.model)
+    this.model.signup.unset('class_text', silent: true)
+    this.model.save({}
+      wait: true
+      success: (model, response) =>
+        console.log(response)
+        app.router.queueData('', response)
+        app.router.navigate(this.model.url() + '/' + response.signup.id, trigger: true)
+      error: (model, response) ->
+        console.log('error saving signup: ')
+        console.log(response)
+    )
   
   cancel: =>
   

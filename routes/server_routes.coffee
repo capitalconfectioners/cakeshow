@@ -1,4 +1,5 @@
 url = require('url')
+Sequelize = require('sequelize')
 
 exports.register = (app, cakeshowDB) ->
   middleware = new exports.DatabaseMiddleware(cakeshowDB)
@@ -14,6 +15,9 @@ exports.register = (app, cakeshowDB) ->
   
   app.put('/shows/:year/signups/:signupId', middleware.singleSignup, putSignup)
   app.put('/signups/:signupID', middleware.singleSignup, putSignup)
+  
+  app.post('/shows/:year/signups', middleware.postSignup)
+  app.post('/signups', middleware.postSignup)
   
   app.get('/signups/:signupID/entries', middleware.entriesForSignup, entries)
   app.put('/signups/:signupID/entries/:id', middleware.entry, putEntry)
@@ -256,6 +260,35 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     .error( (error) ->
       next(new Error('Could not count signups: ' + error))
     )
+  
+  postSignup: (request, response, next) =>
+    registrantSignup = request.body
+    
+    if registrantSignup.signup.year? and request.param('year')? and 
+    registrantSignup.signup.year != request.param('year')
+      next(new Error('Years do not match'))
+    
+    registrant = this.cakeshowDB.Registrant.build(registrantSignup.registrant)
+    signup = this.cakeshowDB.Signup.build(registrantSignup.signup)
+    
+    chain = new Sequelize.Utils.QueryChainer()
+    
+    chain.add(registrant.save())
+    chain.add(signup.save())
+    chain.run()
+    .success( ->
+      registrant.addSignup(signup)
+      .success( ->
+        response.header('Location', '/signups/' + signup.id)
+        response.json(signupToJSON( Registrant: registrant, Signup: signup ))
+      )
+      .error( (error) ->
+        next(new Error('Could not link signup to registrant: ' + error))
+      )
+    )
+    .error( (error) ->
+      next(new Error('Could not create registrant and signup: ' + error))
+    ) 
   
   entriesForSignup: (request, response, next) =>
     signupID = request.param('signupID')

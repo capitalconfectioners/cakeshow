@@ -60,9 +60,12 @@ exports.RegistrantSignup = class RegistrantSignup extends Backbone.Model
   
   toJSON: =>
     return {
-      Signup: this.get('signup').toJSON()
-      Registrant: this.get('registrant').toJSON()
+      signup: this.get('signup').toJSON()
+      registrant: this.get('registrant').toJSON()
     }
+  
+  validate: =>
+    return null
   
 exports.RegistrantSignupList = class RegistrantSignupList extends PagedCollection
   model: RegistrantSignup

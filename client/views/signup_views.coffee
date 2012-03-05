@@ -267,24 +267,25 @@ exports.SignupNav = class SignupNav extends Backbone.View
     'click .navbar a.add': 'add'
   
   render: =>
-    $('input#search').autocomplete(
+    $('input#search').typeahead(
       minLength: 2
       source: this.searchSuggestions
-      select: this.searchSelected
+      onselect: this.searchSelected
+      property: 'value'
     )
     
     return this
     
-  searchSuggestions: (request, callback) =>
-    this.collection.search(request.term, (results) ->
+  searchSuggestions: (typeahead, query) =>
+    this.collection.search(query, (results) ->
       for result in results
         result.value = result.registrant.firstname + " " + result.registrant.lastname
       
-      callback(results)
+      typeahead.process(results)
     )
   
-  searchSelected: (event, ui) =>
-    app.router.navigate('/signups/' + ui.item.signup.id, trigger: true)
+  searchSelected: (item) =>
+    app.router.navigate('/signups/' + item.signup.id, trigger: true)
   
   add: =>
     app.router.navigate(app.registrantSignups.baseUrl + '/add', trigger: true)

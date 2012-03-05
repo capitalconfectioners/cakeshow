@@ -14,6 +14,8 @@ editSignupTemplate = require('./templates/edit_signup')
 
 addSignupTemplate = require('./templates/add_signup')
 
+alertTemplate = require('./templates/alert')
+
 cakeshowTypes = require('../data_types')
 
 exports.EntryView = class EntryView extends Backbone.View
@@ -63,12 +65,12 @@ exports.EntryView = class EntryView extends Backbone.View
     if this.entryNumTimer?
       window.clearTimeout(this.entryNumTimer)
     this.entryNumTimer = null
-    this.$el.find('div.sync-icon').css('visibility', 'hidden')
+    this.$el.find('.sync-icon').addClass('hide')
       
   restartEntryNumberTimer: =>
     this.clearEntryNumberTimer()
     this.entryNumTimer = window.setTimeout(this.syncEntryNumber, 5000)
-    this.$el.find('div.sync-icon').css('visibility', 'visible')
+    this.$el.find('.sync-icon').removeClass('hide')
   
   syncEntryNumber: =>  
     numInput = this.$el.find('input.entryNumber')[0]
@@ -76,10 +78,14 @@ exports.EntryView = class EntryView extends Backbone.View
       entryNumber = parseInt(numInput.value, 10)
       if isNaN(entryNumber)
         this.badEntryNumber = true
-        this.$el.parents('.entries').find('.error-widget').show('blind')
+        #this.$el.parents('.entries').prepend(alertTemplate.render(message: 'Entry number must be a number.'))
+        this.$('.error-msg').removeClass('hide')
+        this.$('fieldset.entryNumber').addClass('error')
       else
         if this.badEntryNumber
-          this.$el.parents('.entries').find('.error-widget').hide('blind')
+          #this.$el.parents('.entries').find('.alert').alert('close')
+          this.$('.error-msg').addClass('hide')
+          this.$('fieldset.entryNumber').removeClass('error')
         this.badEntryNumber = false
         this.model.set('entryNumber', entryNumber)
         
@@ -110,6 +116,8 @@ exports.EntryListView = class EntryListView extends Backbone.View
   render: =>
     this.$el.html(entryListTemplate.render())
     this.add(entry) for entry in this.collection.models
+    
+    this.$('.alert').alert()
     
     return this
   

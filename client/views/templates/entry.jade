@@ -7,6 +7,8 @@ td.entry-cell
 td.entry-cell
   input.styleChange(type="checkbox", checked=styleChange)
 td.entry_cell
-  input.entryNumber(type="text", value=entryNumber)
-td.entry_cell
-  .sync-icon.ui-icon.ui-icon-transferthick-e-w(style="visibility:hidden")
+  fieldset.entryNumber.control-group
+    input.entryNumber.span1(type="text", value=entryNumber)
+    | &nbsp;
+    i.sync-icon.icon-time.hide
+    span.error-msg.help-inline.hide Must be a number!

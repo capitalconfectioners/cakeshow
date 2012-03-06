@@ -7,15 +7,21 @@
       ul.nav.pull-right
         li
           a.add Add
-.container-responsive
+.container
   .row
     .well.span2
       #toc
     .content-column.span8
-      .header.hero-unit
-        h1= title
-        p Welcome to #{title}
+      .page-header
+        h1.page-title
       #content
+  hr
+  footer
+    p
+      | &copy; Thomas Stephens 2012
+      br
+      | Icons courtesy 
+      a(href='http://glyphicons.com') Glyphicons Free
 script
   $(document).ready(function(){
     cakeshow = require('cakeshowClient');

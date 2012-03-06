@@ -177,6 +177,9 @@ exports.RegistrantSignupView = class RegistrantSignupView extends Backbone.View
     
     return this
   
+  title: =>
+    return this.model.registrant.fullName()
+  
 exports.RegistrantSignupListView = class RegistrantSignupListView extends PagedListView
   el: '#content'
   
@@ -197,6 +200,13 @@ exports.RegistrantSignupListView = class RegistrantSignupListView extends PagedL
     
     super()
     return this
+  
+  title: =>
+    title = 'Signups'
+    if this.collection.year?
+      title += ' ' + this.collection.year
+    
+    return title
 
 exports.EditRegistrantView = class EditRegistrantView extends Backbone.View
   render: =>
@@ -226,7 +236,10 @@ exports.AddSignupView = class AddSignupView extends Backbone.View
     'click button.save': 'save'
     'click button.cancel': 'cancel'
   
-  render: =>
+  title: =>
+    return 'Add Registrant'
+  
+  render: =>  
     this.$el.html(addSignupTemplate.render())
     
     if not this.editRegistrant?

@@ -1,6 +1,8 @@
 signupModels = require('models/signup_models')
 signupViews = require('views/signup_views')
 
+{setTitle} = require('views/site_views')
+
 class exports.CakeshowRoutes extends Backbone.Router
   routes:
     'registrants': 'registrants'
@@ -71,6 +73,7 @@ class exports.CakeshowRoutes extends Backbone.Router
     
     # nothing to fetch
     this.currentView.render()
+    setTitle(this.currentView.title())
   
   setSearchToSignups: () ->
     if this.navView?.type == 'signups'
@@ -93,6 +96,14 @@ class exports.CakeshowRoutes extends Backbone.Router
       else
         model.set(model.parse(this.dataQueue.data))
       this.dataQueue = null
+      this.showTitle()
     else
-      model.fetch()
+      model.fetch(
+        success: =>
+          this.showTitle()
+      )
+  
+  showTitle: =>
+    if this.currentView.title?
+      setTitle(this.currentView.title())
     

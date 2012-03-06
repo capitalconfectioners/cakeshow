@@ -13,6 +13,8 @@ exports.entryTypes = [
   'special4'
   'special5'
   'cupcakes'
+  'child'
+  'junior'
   ]
 
 exports.entryNames =
@@ -30,6 +32,8 @@ exports.entryNames =
     special3: 'Renaissance Tasting'
     special4: 'Unknown'
     special5: 'Cookies Tasting'
+    child: 'Child'
+    junior: 'Junior'
 
 exports.divisions = [
   'adultint'

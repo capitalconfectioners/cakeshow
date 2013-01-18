@@ -40,77 +40,77 @@ mysql = (options, args = []) ->
     command = 'mysql'
   
   arguments = []
-
+  
   if options.database?
     arguments = arguments.concat(['-D', options.database])
   
-	if options.user?
-		arguments = arguments.concat(['-u', options.user])
-	
-	if options.password?
-		arguments = arguments.concat(['-p', options.password])
-		
-	if options.verbose?
-		arguments.push('--verbose')
-	
-	env = childEnv(options)
-		
-	return redirect(spawn(command, arguments.concat(args)), { env: env })
+  if options.user?
+    arguments = arguments.concat(['-u', options.user])
+  
+  if options.password?
+    arguments = arguments.concat(['-p', options.password])
+    
+  if options.verbose?
+    arguments.push('--verbose')
+  
+  env = childEnv(options)
+    
+  return redirect(spawn(command, arguments.concat(args)), { env: env })
 
 coffee = (script, args, options) ->
-	if options?
-		env = childEnv(options)
-	
-	if options.watch?
-	  args.push('-w')
-	
-	return redirect(spawn('coffee', [script].concat(args), {env: env}))
+  if options?
+    env = childEnv(options)
+  
+  if options.watch?
+    args.push('-w')
+  
+  return redirect(spawn('coffee', [script].concat(args), {env: env}))
 
 runSqlScript = (options, script, onSuccess) ->
-	handler = new ExitHandler(options, onSuccess)
-	
-	sqlProc = mysql(options, ['-e', 'source ' + script])
-	
-	sqlProc.on('exit', handler.onExit)
+  handler = new ExitHandler(options, onSuccess)
+  
+  sqlProc = mysql(options, ['-e', 'source ' + script])
+  
+  sqlProc.on('exit', handler.onExit)
 
 createCakeshowDB = (options, onSuccess = ->) ->
-	db.connect(options.database, options.user, options.password, options.verbose?)
-	
-	if( options.replace? )
-		console.log('Overwriting previous DB')
-		db.cakeshowDB.drop().success( ->
-			db.cakeshowDB.sync()
-				.success(onSuccess)
-				.error( (error) ->
-					console.log('Error creating DB: ' + error)
-				)
-		).error( (error) ->
-			console.log('Error removing old DB: ' + error)
-		)
-	else
-		db.cakeshowDB.sync()
-			.success(onSuccess)
-			.error( (error) ->
-				console.log('Error creating DB: ' + error)
-			)
+  db.connect(options.database, options.user, options.password, options.verbose?)
+  
+  if( options.replace? )
+    console.log('Overwriting previous DB')
+    db.cakeshowDB.drop().success( ->
+      db.cakeshowDB.sync()
+        .success(onSuccess)
+        .error( (error) ->
+          console.log('Error creating DB: ' + error)
+        )
+    ).error( (error) ->
+      console.log('Error removing old DB: ' + error)
+    )
+  else
+    db.cakeshowDB.sync()
+      .success(onSuccess)
+      .error( (error) ->
+        console.log('Error creating DB: ' + error)
+      )
 
 migrateData = (options, onSuccess) ->
-	console.log('Migrating data')
-	
-	upgrader.upgrade(db, ->
-		console.log('Done')
-	)
-	
+  console.log('Migrating data')
+  
+  upgrader.upgrade(db, ->
+    console.log('Done')
+  )
+  
 task 'olddb', 'Create old database from backup', (options) ->
-	runSqlScript(options, 'database/create_old_dbs.sql')
+  runSqlScript(options, 'database/create_old_dbs.sql')
 
 task 'create', 'Create cakeshow database', (options) ->
-	createCakeshowDB(options)
+  createCakeshowDB(options)
 
 task 'migrate', 'Migrate data into the new Cakeshow DB', (options) ->
-	createCakeshowDB(options, migrateData)
+  createCakeshowDB(options, migrateData)
 
 task 'serve', 'Serve Cakeshow', (options) ->
-	createCakeshowDB(options, ->
-		coffee('cakeshow.coffee', [], options)
-	)
+  createCakeshowDB(options, ->
+    coffee('cakeshow.coffee', [], options)
+  )

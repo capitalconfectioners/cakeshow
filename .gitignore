@@ -1,2 +1,3 @@
 node_modules
 database/create_old_dbs.sql
+set_app_env.sh

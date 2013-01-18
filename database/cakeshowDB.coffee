@@ -4,8 +4,8 @@ Joinalize = require('../lib/joinalize')
 cakeshowTypes = require('../shared/data_types')
 
 class CakeshowDB
-  connect: (username='root', password='', logging=false) =>
-    this.cakeshowDB = new Sequelize('cakeshow', username, password,
+  connect: (database='cakeshow', username='root', password='', logging=false) =>
+    this.cakeshowDB = new Sequelize(database, username, password,
       logging: logging
     )
     

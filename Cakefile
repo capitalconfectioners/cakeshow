@@ -4,6 +4,7 @@ upgrader = require './database/upgrade_db'
 
 option '-r', '--replace', 'replace existing Cakeshow database'
 option '-m', '--mysql [PATH]', 'specify MySQL install directory'
+option '-d', '--database [DATABASE]', 'specify MySQL database name'
 option '-u', '--user [USER]', 'specify MySQL username'
 option '-p', '--password [PASSWORD]', 'specify MySQL password'
 option '-v', '--verbose', 'print verbose output'
@@ -39,7 +40,10 @@ mysql = (options, args = []) ->
 		command = 'mysql'
 	
 	arguments = []
-	
+
+  if options.database?
+    arguments = arguments.concat(['-D', options.database])
+  
 	if options.user?
 		arguments = arguments.concat(['-u', options.user])
 	
@@ -70,7 +74,7 @@ runSqlScript = (options, script, onSuccess) ->
 	sqlProc.on('exit', handler.onExit)
 
 createCakeshowDB = (options, onSuccess = ->) ->
-	db.connect(options.user, options.password, options.verbose?)
+	db.connect(options.database, options.user, options.password, options.verbose?)
 	
 	if( options.replace? )
 		console.log('Overwriting previous DB')

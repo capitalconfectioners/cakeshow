@@ -12,34 +12,34 @@ option '-c', '--compile', 'compile coffeescript before running'
 option '-w', '--watch', 'launch Coffeescript compiler in watch mode'
 
 class ExitHandler
-	constructor: (options, onSuccess) ->
-		this.onSuccess = onSuccess
-	
-	onExit: (status) => 
-		process.exit(1) if status != 0
-		if this.onSuccess? and typeof this.onSuccess is 'function'
-			this.onSuccess(this.options) 
+  constructor: (options, onSuccess) ->
+    this.onSuccess = onSuccess
+  
+  onExit: (status) => 
+    process.exit(1) if status != 0
+    if this.onSuccess? and typeof this.onSuccess is 'function'
+      this.onSuccess(this.options) 
 
 childEnv = (options) ->
-	env = process.env
-	
-	if options.mysql? and process.platform == 'darwin'
-		env['DYLD_LIBRARY_PATH'] = options.mysql + "/lib:" + process.env['DYLD_LIBRARY_PATH']
-	
-	return env
-	
+  env = process.env
+  
+  if options.mysql? and process.platform == 'darwin'
+    env['DYLD_LIBRARY_PATH'] = options.mysql + "/lib:" + process.env['DYLD_LIBRARY_PATH']
+  
+  return env
+  
 redirect = (proc) ->
-	proc.stderr.pipe(process.stderr)
-	proc.stdout.pipe(process.stdout)
-	return proc
+  proc.stderr.pipe(process.stderr)
+  proc.stdout.pipe(process.stdout)
+  return proc
 
 mysql = (options, args = []) ->
-	if options.mysql?
-		command = options.mysql + '/bin/mysql'
-	else
-		command = 'mysql'
-	
-	arguments = []
+  if options.mysql?
+    command = options.mysql + '/bin/mysql'
+  else
+    command = 'mysql'
+  
+  arguments = []
 
   if options.database?
     arguments = arguments.concat(['-D', options.database])

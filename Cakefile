@@ -1,6 +1,6 @@
 {spawn} = require 'child_process'
 db = require './database/cakeshowDB'
-upgrader = require './database/upgrade_db'
+Upgrader = require './database/upgrade_db'
 
 option '-r', '--replace', 'replace existing Cakeshow database'
 option '-m', '--mysql [PATH]', 'specify MySQL install directory'
@@ -96,6 +96,8 @@ createCakeshowDB = (options, onSuccess = ->) ->
 
 migrateData = (options, onSuccess) ->
   console.log('Migrating data')
+
+  upgrader = new Upgrader(options.user, options.password);
   
   upgrader.upgrade(db, ->
     console.log('Done')

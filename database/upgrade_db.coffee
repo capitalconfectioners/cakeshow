@@ -33,7 +33,11 @@ class Upgrader
     "10": "2010"
     "12": "2012"
     "13": "2013"
-  
+
+  constructor: (username='root', password='') ->
+    this.username = username
+    this.password = password
+
   upgrade : (cakeshowDB, onSuccess= ->) =>
     this.cakeshowDB = cakeshowDB
     
@@ -52,8 +56,8 @@ class Upgrader
   upgradeRegistrants : (onSuccess= ->) =>
     this.registrantsDB = new mysql.createClient(
       hostname: "localhost"
-      user: "root"
-      password: ""
+      user: this.username
+      password: this.password
       database: "capitalc_registrants"
     )
     
@@ -93,8 +97,8 @@ class Upgrader
     dbName = "capitalc_cakeshow" + number
     this[dbName] = new mysql.createClient(
       hostname: "localhost"
-      user: "root"
-      password: ""
+      user: this.username
+      password: this.password
       database: dbName
     )
     
@@ -235,4 +239,4 @@ class SignupUpgrader
     
     return newRow
 
-module.exports = new Upgrader()
+module.exports = Upgrader

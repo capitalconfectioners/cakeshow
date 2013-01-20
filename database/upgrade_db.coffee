@@ -32,6 +32,7 @@ class Upgrader
     "09": "2009"
     "10": "2010"
     "12": "2012"
+    "13": "2013"
   
   upgrade : (cakeshowDB, onSuccess= ->) =>
     this.cakeshowDB = cakeshowDB

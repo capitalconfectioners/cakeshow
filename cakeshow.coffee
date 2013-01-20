@@ -7,7 +7,7 @@ routes = require('./routes/server_routes')
 cakeshowDB = require('./database/cakeshowDB')
 
 clientPackage = stitch.createPackage(
-	paths: [ __dirname + '/client', __dirname + '/shared' ]
+  paths: [ __dirname + '/client', __dirname + '/shared' ]
 )
 
 app = module.exports = express.createServer();

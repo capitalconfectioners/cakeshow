@@ -34,6 +34,22 @@ exports.entryNames =
     special5: 'Cookies Tasting'
     child: 'Child'
     junior: 'Junior'
+  '2013': 
+    showcase: 'Showcakes'
+    style1: 'Novelty Single'
+    style2: 'Sculpted'
+    style3: 'Novelty Tiered'
+    style4: 'Wedding Tiered'
+    style5: 'Buttercream Single'
+    style6: 'Special Techniques'
+    style7: 'Confections'
+    special1: 'Angel Food Tasting'
+    special2: 'Mini-Bottle Tasting'
+    special3: 'Moon Pies Tasting'
+    special4: 'Cookies Tasting'
+    special5: 'Candies Tasting'
+    child: 'Child'
+    junior: 'Junior'
 
 exports.divisions = [
   'adultint'

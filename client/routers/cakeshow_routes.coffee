@@ -83,7 +83,10 @@ class exports.CakeshowRoutes extends Backbone.Router
       collection: app.registrantSignups
     )
     this.navView.render()
-  
+
+  printView: ->
+    this.currentView.print?()
+
   queueData: (link, data) ->
     this.dataQueue = 
       link: link

@@ -208,6 +208,48 @@ exports.RegistrantSignupListView = class RegistrantSignupListView extends PagedL
     
     return title
 
+  print: ->
+    console.log("print signup list")
+    printDialog = new PrintView(
+      el: $('#page-modal')[0]
+      model: this.collection
+    ).render()
+
+printTemplate = '''
+  <div class="alert alert-error hide">
+    <strong>Error</strong> creating the forms
+  </div>
+  <strong>Please wait while the forms are generated...</strong>
+  <div class="progress progress-striped active">
+    <div class="bar" style="width: 100%;"></div>
+  </div>
+  '''
+
+exports.PrintView = class PrintView extends Backbone.View
+  render: ->
+    console.log('rendering')
+    this.$el.find('.modal-title').text('Printing')
+    this.$el.find('.modal-body').html(printTemplate)
+    this.$el.find('.modal-cancel').text('Cancel')
+    this.$el.find('.alert').addClass('hide')
+    this.$el.modal(show: true)
+
+    this.model.printUrl(this.downloadReady, this.downloadError)
+
+    return this
+
+  downloadReady: (url) =>
+    console.log('download ready', url)
+    this.downloadFile(url)
+    this.$el.modal('hide')
+
+  downloadError: (err) =>
+    console.log('printing error', err)
+    this.$el.find('.alert').removeClass('hide')
+
+  downloadFile: (url) ->
+    window.location = url
+
 exports.EditRegistrantView = class EditRegistrantView extends Backbone.View
   render: =>
     this.$el.html(editRegistrantTemplate.render(this.model.toJSON()))
@@ -278,6 +320,7 @@ exports.SignupNav = class SignupNav extends Backbone.View
   
   events:
     'click .navbar a.add': 'add'
+    'click .navbar a.print': 'print'
   
   render: =>
     $('input#search').typeahead(
@@ -302,4 +345,7 @@ exports.SignupNav = class SignupNav extends Backbone.View
   
   add: =>
     app.router.navigate(app.registrantSignups.baseUrl + '/add', trigger: true)
+
+  print: =>
+    app.router.printView()
   

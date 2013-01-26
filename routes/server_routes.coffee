@@ -8,7 +8,8 @@ exports.register = (app, cakeshowDB) ->
   
   app.get('/registrants', addLinksTo(middleware.allRegistrants), registrants)
   
-  app.get('/shows/:year/signups', addLinksTo(middleware.signups), signups)  
+  app.get('/shows/:year/signups', addLinksTo(middleware.signups), signups)
+  app.get('/shows/:year/signups/print', printSignups)
   app.get('/signups', addLinksTo(middleware.signups), signups)
   
   app.get('/signups/:signupID', middleware.singleSignup, singleSignup)
@@ -127,6 +128,15 @@ putSignup = (request, response, next) ->
   .error( (error) ->
     next(new Error("Could not save signup #{request.signup.id} with values #{request.body}: " + error))
   )
+
+printSignups = (request, response, next) ->
+  # this should really return a 303, but jQuery treats that as an
+  # error, which is inconvenient, so just return 200
+  setTimeout(->
+    response.header('Content-Type', 'text/plain')
+    response.send('/NOOK_Tablet_Developer_Quick_Start_Guide.pdf', 200)
+    #response.send('/bootstrap.zip', 200)
+  , 2000)
 
 entries = (request, response, next) ->
   request.jsonResults = []

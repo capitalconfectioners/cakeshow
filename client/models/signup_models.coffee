@@ -105,4 +105,12 @@ exports.RegistrantSignupList = class RegistrantSignupList extends PagedCollectio
         if error?
           error(textStatus, errorThrown)
     )
+
+  printUrl: (success, error) ->
+    $.get(this.url + '/print')
+      .done((data) ->
+        success(data)
+      ).fail((data) ->
+        error?(data)
+      )
     

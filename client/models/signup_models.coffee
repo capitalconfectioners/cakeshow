@@ -66,6 +66,14 @@ exports.RegistrantSignup = class RegistrantSignup extends Backbone.Model
   
   validate: =>
     return null
+
+  printUrl: (success, error) ->
+    $.get(this.url() + '/print')
+      .done((data) ->
+        success(data)
+      ).fail((data) ->
+        error?(data)
+      )
   
 exports.RegistrantSignupList = class RegistrantSignupList extends PagedCollection
   model: RegistrantSignup

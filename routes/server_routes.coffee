@@ -13,6 +13,7 @@ exports.register = (app, cakeshowDB) ->
   app.get('/signups', addLinksTo(middleware.signups), signups)
   
   app.get('/signups/:signupID', middleware.singleSignup, singleSignup)
+  app.get('/signups/:signupID/print', printSingleSignup)
   
   app.put('/shows/:year/signups/:signupId', middleware.singleSignup, putSignup)
   app.put('/signups/:signupID', middleware.singleSignup, putSignup)
@@ -108,10 +109,20 @@ signupToJSON = (signup) ->
     registrant: sanitizeRegistrant(signup.Registrant)
   }
 
+runPDFGenerator = (data, callback) ->
+  setTimeout(->
+    callback('/NOOK_Tablet_Developer_Quick_Start_Guide.pdf')
+  , 2000)
+
 singleSignup = (request, response, next) ->
   request.jsonResults = signupToJSON(request.signup)
   
   next()
+
+printSingleSignup = (request, response, next) ->
+  runPDFGenerator({}, (url) ->
+    response.send(url, 200)
+  )
 
 signups = (request, response, next) ->
   request.jsonResults = []
@@ -130,13 +141,9 @@ putSignup = (request, response, next) ->
   )
 
 printSignups = (request, response, next) ->
-  # this should really return a 303, but jQuery treats that as an
-  # error, which is inconvenient, so just return 200
-  setTimeout(->
-    response.header('Content-Type', 'text/plain')
-    response.send('/NOOK_Tablet_Developer_Quick_Start_Guide.pdf', 200)
-    #response.send('/bootstrap.zip', 200)
-  , 2000)
+  runPDFGenerator({}, (url) ->
+    response.send(url, 200)
+  )
 
 entries = (request, response, next) ->
   request.jsonResults = []

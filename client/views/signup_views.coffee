@@ -179,6 +179,12 @@ exports.RegistrantSignupView = class RegistrantSignupView extends Backbone.View
   
   title: =>
     return this.model.registrant.fullName()
+
+  print: ->
+    printDialog = new PrintView(
+      el: $('#page-modal')[0]
+      model: this.model
+    ).render()
   
 exports.RegistrantSignupListView = class RegistrantSignupListView extends PagedListView
   el: '#content'
@@ -209,7 +215,6 @@ exports.RegistrantSignupListView = class RegistrantSignupListView extends PagedL
     return title
 
   print: ->
-    console.log("print signup list")
     printDialog = new PrintView(
       el: $('#page-modal')[0]
       model: this.collection

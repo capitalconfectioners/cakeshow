@@ -26,12 +26,9 @@ exports.EntryView = class EntryView extends Backbone.View
     'click input.didBring': 'didBringClicked'
     'click input.styleChange': 'categoryChangeClicked'
     'change select.category': 'categoryChanged'
-    'keydown input.entryNumber': 'entryNumberKeyPressed'
-    'change input.entryNumber': 'syncEntryNumber'
   
   initialize: =>
     this.categories = this.model.getCategories()
-    this.badEntryNumber = false
   
   render: =>
     renderParams = this.model.toJSON()
@@ -61,43 +58,6 @@ exports.EntryView = class EntryView extends Backbone.View
     
     this.model.save()
   
-  clearEntryNumberTimer: =>
-    if this.entryNumTimer?
-      window.clearTimeout(this.entryNumTimer)
-    this.entryNumTimer = null
-    this.$el.find('.sync-icon').addClass('hide')
-      
-  restartEntryNumberTimer: =>
-    this.clearEntryNumberTimer()
-    this.entryNumTimer = window.setTimeout(this.syncEntryNumber, 5000)
-    this.$el.find('.sync-icon').removeClass('hide')
-  
-  syncEntryNumber: =>  
-    numInput = this.$el.find('input.entryNumber')[0]
-    if numInput.value != ''
-      entryNumber = parseInt(numInput.value, 10)
-      if isNaN(entryNumber)
-        this.badEntryNumber = true
-        #this.$el.parents('.entries').prepend(alertTemplate.render(message: 'Entry number must be a number.'))
-        this.$('.error-msg').removeClass('hide')
-        this.$('fieldset.entryNumber').addClass('error')
-      else
-        if this.badEntryNumber
-          #this.$el.parents('.entries').find('.alert').alert('close')
-          this.$('.error-msg').addClass('hide')
-          this.$('fieldset.entryNumber').removeClass('error')
-        this.badEntryNumber = false
-        this.model.set('entryNumber', entryNumber)
-        
-        this.model.set('didBring', true)
-        this.$el.find('input.didBring')[0].checked = true
-        
-        this.model.save()
-    this.clearEntryNumberTimer()
-  
-  entryNumberKeyPressed: =>
-    this.restartEntryNumberTimer()
-
 exports.EntryListView = class EntryListView extends Backbone.View
   className: 'entry-list'
   

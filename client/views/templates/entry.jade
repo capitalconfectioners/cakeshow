@@ -1,3 +1,5 @@
+td.entry_cell
+  span.entryNumber #{id}
 td.entry-cell 
   select.category
     for category in categories
@@ -6,9 +8,4 @@ td.entry-cell
   input.didBring(type="checkbox", checked=didBring)
 td.entry-cell
   input.styleChange(type="checkbox", checked=styleChange)
-td.entry_cell
-  fieldset.entryNumber.control-group
-    input.entryNumber.span1(type="text", value=entryNumber)
-    | &nbsp;
-    i.sync-icon.icon-time.hide
-    span.error-msg.help-inline.hide Must be a number!
+

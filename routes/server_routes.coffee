@@ -1,5 +1,7 @@
 url = require('url')
 Sequelize = require('sequelize')
+async = require('async')
+fs = require('fs')
 
 exports.register = (app, cakeshowDB) ->
   middleware = new exports.DatabaseMiddleware(cakeshowDB)
@@ -9,11 +11,11 @@ exports.register = (app, cakeshowDB) ->
   app.get('/registrants', addLinksTo(middleware.allRegistrants), registrants)
   
   app.get('/shows/:year/signups', addLinksTo(middleware.signups), signups)
-  app.get('/shows/:year/signups/print', printSignups)
+  app.get('/shows/:year/signups/print', middleware.allEntries, printSignups)
   app.get('/signups', addLinksTo(middleware.signups), signups)
   
   app.get('/signups/:signupID', middleware.singleSignup, singleSignup)
-  app.get('/signups/:signupID/print', printSingleSignup)
+  app.get('/signups/:signupID/print', middleware.signupWithEntries, printSingleSignup)
   
   app.put('/shows/:year/signups/:signupId', middleware.singleSignup, putSignup)
   app.put('/signups/:signupID', middleware.singleSignup, putSignup)
@@ -104,15 +106,32 @@ registrants = (request, response, next) ->
   next()
 
 signupToJSON = (signup) ->
-  return {
+  result = {
     signup: signup.Signup.values
     registrant: sanitizeRegistrant(signup.Registrant)
   }
 
+  if signup.Entries?
+    result.entries = []
+    for entry in signup.Entries
+      result.entries.push( entry.values )
+
+  return result
+
+signupsToJSON = (signups) ->
+  result = []
+  for signup in signups
+    result.push(signupToJSON(signup))
+  return result
+
 runPDFGenerator = (data, callback) ->
-  setTimeout(->
-    callback('/NOOK_Tablet_Developer_Quick_Start_Guide.pdf')
-  , 2000)
+  json = JSON.stringify(data)
+  fs.writeFile('public/all_entries.json', json, (err) ->
+    if err
+      callback(err)
+    else
+      callback(null, '/all_entries.json')
+  )
 
 singleSignup = (request, response, next) ->
   request.jsonResults = signupToJSON(request.signup)
@@ -120,15 +139,14 @@ singleSignup = (request, response, next) ->
   next()
 
 printSingleSignup = (request, response, next) ->
-  runPDFGenerator({}, (url) ->
+  runPDFGenerator([signupToJSON(request.signup)], (err, url) ->
+    if err
+      next(new Error(err))
     response.send(url, 200)
   )
 
 signups = (request, response, next) ->
-  request.jsonResults = []
-  for signup in request.signups
-    request.jsonResults.push(signupToJSON(signup))
-  
+  request.jsonResults = signupsToJSON(request.signups)
   next()
 
 putSignup = (request, response, next) ->
@@ -141,7 +159,9 @@ putSignup = (request, response, next) ->
   )
 
 printSignups = (request, response, next) ->
-  runPDFGenerator({}, (url) ->
+  runPDFGenerator(signupsToJSON(request.signups), (err, url) ->
+    if err
+      next(new Error(err))
     response.send(url, 200)
   )
 
@@ -226,6 +246,24 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     .success( (signup) ->
       request.signup = signup[0]
       next()
+    )
+    .error( (error) ->
+      next(new Error("Could not load signup #{id}: " + error))
+    )
+
+  signupWithEntries: (request, response, next) =>
+    id = parseInt(request.param('signupID'), 10)
+    this.cakeshowDB.Signup.joinTo( this.cakeshowDB.Registrant, where: id )
+    .success( (signup) =>
+      request.signup = signup[0]
+      this.cakeshowDB.Entry.findAll( where: SignupID: request.signup.id )
+      .success( (entries) ->
+        request.signup.Entries = entries
+        next()
+      )
+      .error( (err) ->
+        next(new Error("Could not load entries for signup #{request.signup.id}: " + err))
+      )
     )
     .error( (error) ->
       next(new Error("Could not load signup #{id}: " + error))
@@ -320,7 +358,41 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     .error( (error) ->
       next(new Error("Could not load entries for signup #{id}: " + error))
     )
-  
+
+  allEntries: (request, response, next) =>
+    requestedYear = request.param('year')
+    
+    if requestedYear?
+      filter = 
+        year: requestedYear
+    else
+      filter = {}
+    
+    this.cakeshowDB.Signup.joinTo( this.cakeshowDB.Registrant, 
+      where: filter
+      order: 'lastname ASC, firstname ASC'
+    )
+    .success( (signups) =>
+      async.map(signups, (signup, done) =>
+        this.cakeshowDB.Entry.findAll( where: SignupID: signup.id )
+        .success( (entries) ->
+          signup.Entries = entries
+          done(null, signup)
+        )
+        .error( (err) ->
+          done(err)
+        )
+      , (err, signups) ->
+        if err
+          return next(new Error('Could not load entries: ' + err))
+        request.signups = signups
+        next()
+      )
+    )
+    .error( (error) ->
+      next(new Error('Could not load signups: ' + error))
+    )
+
   entry: (request, response, next) =>
     id = parseInt(request.param('id'), 10)
     this.cakeshowDB.Entry.find(id)

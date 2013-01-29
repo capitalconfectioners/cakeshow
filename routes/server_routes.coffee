@@ -256,7 +256,8 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     this.cakeshowDB.Signup.joinTo( this.cakeshowDB.Registrant, where: id )
     .success( (signup) =>
       request.signup = signup[0]
-      this.cakeshowDB.Entry.findAll( where: SignupID: request.signup.id )
+      console.log(request.signup.Signup.id)
+      this.cakeshowDB.Entry.findAll( where: SignupID: request.signup.Signup.id )
       .success( (entries) ->
         request.signup.Entries = entries
         next()
@@ -374,7 +375,7 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     )
     .success( (signups) =>
       async.map(signups, (signup, done) =>
-        this.cakeshowDB.Entry.findAll( where: SignupID: signup.id )
+        this.cakeshowDB.Entry.findAll( where: SignupID: signup.Signup.id )
         .success( (entries) ->
           signup.Entries = entries
           done(null, signup)

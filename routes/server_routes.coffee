@@ -3,6 +3,8 @@ Sequelize = require('sequelize')
 async = require('async')
 fs = require('fs')
 
+data_types = require('../shared/data_types')
+
 exports.register = (app, cakeshowDB) ->
   middleware = new exports.DatabaseMiddleware(cakeshowDB)
   
@@ -124,8 +126,25 @@ signupsToJSON = (signups) ->
     result.push(signupToJSON(signup))
   return result
 
+mapSignupTypes = (signup) ->
+  year = signup.Signup.year
+
+  signup.Signup.class = data_types.divisionNames[signup.Signup.class]
+
+  if signup.Entries?
+    for entry in signup.Entries
+      entry.category = data_types.entryNames[year][entry.category]
+
+  return signup
+
+mapAllSignupTypes = (signups) ->
+  for signup in signups
+    mapSignupTypes(signup)
+
+  return signups
+
 runPDFGenerator = (data, callback) ->
-  json = JSON.stringify(data)
+  json = JSON.stringify(data, null, 2)
   fs.writeFile('public/all_entries.json', json, (err) ->
     if err
       callback(err)
@@ -139,7 +158,7 @@ singleSignup = (request, response, next) ->
   next()
 
 printSingleSignup = (request, response, next) ->
-  runPDFGenerator([signupToJSON(request.signup)], (err, url) ->
+  runPDFGenerator([signupToJSON(mapSignupTypes(request.signup))], (err, url) ->
     if err
       next(new Error(err))
     response.send(url, 200)
@@ -159,7 +178,7 @@ putSignup = (request, response, next) ->
   )
 
 printSignups = (request, response, next) ->
-  runPDFGenerator(signupsToJSON(request.signups), (err, url) ->
+  runPDFGenerator(signupsToJSON(mapAllSignupTypes(request.signups)), (err, url) ->
     if err
       next(new Error(err))
     response.send(url, 200)

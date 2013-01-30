@@ -5,6 +5,9 @@ RegistrantModels = require('./registrant_models')
 cakeshowTypes = require('../data_types')
 
 exports.Entry = class Entry extends Backbone.Model
+  defaults:
+    category: 'showcase'
+  
   urlRoot: '/entries'
   
   getCategories: =>

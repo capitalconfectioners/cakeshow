@@ -470,7 +470,7 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     
     entry.save()
     .success( ->
-      request.signup.Signup.addEntrie(entry)
+      request.signup.Signup.addEntry(entry)
       .success( ->
         response.json(entry.values)
       )

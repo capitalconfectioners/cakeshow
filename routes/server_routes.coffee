@@ -2,9 +2,12 @@ url = require('url')
 Sequelize = require('sequelize')
 async = require('async')
 fs = require('fs')
+path = require('path')
 child_process = require('child_process')
 
 data_types = require('../shared/data_types')
+
+report_dir = 'public'
 
 exports.register = (app, cakeshowDB) ->
   middleware = new exports.DatabaseMiddleware(cakeshowDB)
@@ -144,17 +147,46 @@ mapAllSignupTypes = (signups) ->
 
   return signups
 
-runPDFGenerator = (data, callback) ->
+reportFilenames = ->
+  timestamp = '' + new Date().getTime()
+  root_dir = path.normalize(path.join(__dirname, '..'))
+  base_dir = path.join(root_dir, report_dir)
+  base_file = 'entries_' + timestamp
+
+  return [
+    path.join(root_dir, 'form_generator', 'form_generator.py')
+    path.join(base_dir, base_file + '.json')
+    path.join(base_dir, base_file + '.pdf')
+    base_file + '.pdf'
+  ]
+
+runPDFGenerator = (entry_data, callback) ->
+  year = entry_data[0].signup.year
+
+  [script, entries, report, url] = reportFilenames()
+
+  divisionals = (value for key, value of data_types.entryNames[year] when key.indexOf('style') == 0)
+  tastings = (value for key, value of data_types.entryNames[year] when key.indexOf('special') == 0)
+
+  data =
+    metadata:
+      divisionals: divisionals
+      tastings: tastings
+    entries: entry_data
+
   json = JSON.stringify(data, null, 2)
-  fs.writeFile('public/all_entries.json', json, (err) ->
+
+  fs.writeFile(entries, json, (err) ->
     if err
       callback(err)
     else
-      child_process.exec('python form_generator/form_generator.py public/all_entries.json public/all_entries.pdf', (err, stdout, stderr) ->
+      child_process.exec("python #{script} #{entries} #{report}", (err, stdout, stderr) ->
         if err
           callback(err)
         else
-          callback(null, '/all_entries.pdf')
+          console.log(stdout)
+          console.log(stderr)
+          callback(null, '/' + url)
       )
   )
 

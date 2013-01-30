@@ -166,7 +166,7 @@ singleSignup = (request, response, next) ->
 printSingleSignup = (request, response, next) ->
   runPDFGenerator([signupToJSON(mapSignupTypes(request.signup))], (err, url) ->
     if err
-      next(new Error(err))
+      return next(new Error(err))
     response.send(url, 200)
   )
 
@@ -180,7 +180,7 @@ putSignup = (request, response, next) ->
     response.json(request.signup.Signup.values)
   )
   .error( (error) ->
-    next(new Error("Could not save signup #{request.signup.id} with values #{request.body}: " + error))
+    return next(new Error("Could not save signup #{request.signup.id} with values #{request.body}: " + error))
   )
 
 printSignups = (request, response, next) ->
@@ -203,7 +203,7 @@ putEntry = (request, response, next) ->
     response.json(request.entry.values)
   )
   .error( (error) ->
-    next(new Error("Could not save entry #{request.entry.id} with values #{request.body}: " + error))
+    return next(new Error("Could not save entry #{request.entry.id} with values #{request.body}: " + error))
   )
 
 exports.DatabaseMiddleware = class DatabaseMiddleware
@@ -223,7 +223,7 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
       next()
     )
     .error( (error) ->
-      next(new Error("Could not select show list: " + error))
+      return next(new Error("Could not select show list: " + error))
     )
   
   attachPagination: (request, count) ->
@@ -258,11 +258,11 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
         next()
       )
       .error( (error) ->
-        next(new Error('Could not load registrants: ' + error))
+        return next(new Error('Could not load registrants: ' + error))
       )
     )
     .error( (error) ->
-      next(new Error('Could not count registrants: ' + error))
+      return next(new Error('Could not count registrants: ' + error))
     )
   
   singleSignup: (request, response, next) =>
@@ -273,7 +273,7 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
       next()
     )
     .error( (error) ->
-      next(new Error("Could not load signup #{id}: " + error))
+      return next(new Error("Could not load signup #{id}: " + error))
     )
 
   signupWithEntries: (request, response, next) =>
@@ -288,11 +288,11 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
         next()
       )
       .error( (err) ->
-        next(new Error("Could not load entries for signup #{request.signup.id}: " + err))
+        return next(new Error("Could not load entries for signup #{request.signup.id}: " + err))
       )
     )
     .error( (error) ->
-      next(new Error("Could not load signup #{id}: " + error))
+      return next(new Error("Could not load signup #{id}: " + error))
     )
   
   signups: (request, response, next) =>
@@ -335,11 +335,11 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
         next()
       )
       .error( (error) ->
-        next(new Error('Could not load signups: ' + error))
+        return next(new Error('Could not load signups: ' + error))
       )
     )
     .error( (error) ->
-      next(new Error('Could not count signups: ' + error))
+      return next(new Error('Could not count signups: ' + error))
     )
   
   postSignup: (request, response, next) =>
@@ -347,7 +347,7 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     
     if registrantSignup.signup.year? and request.param('year')? and 
     registrantSignup.signup.year != request.param('year')
-      next(new Error('Years do not match'))
+      return next(new Error('Years do not match'))
     
     registrant = this.cakeshowDB.Registrant.build(registrantSignup.registrant)
     signup = this.cakeshowDB.Signup.build(registrantSignup.signup)
@@ -364,11 +364,11 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
         response.json(signupToJSON( Registrant: registrant, Signup: signup ))
       )
       .error( (error) ->
-        next(new Error('Could not link signup to registrant: ' + error))
+        return next(new Error('Could not link signup to registrant: ' + error))
       )
     )
     .error( (error) ->
-      next(new Error('Could not create registrant and signup: ' + error))
+      return next(new Error('Could not create registrant and signup: ' + error))
     ) 
   
   entriesForSignup: (request, response, next) =>
@@ -382,7 +382,7 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
       next()
     )
     .error( (error) ->
-      next(new Error("Could not load entries for signup #{id}: " + error))
+      return next(new Error("Could not load entries for signup #{id}: " + error))
     )
 
   allEntries: (request, response, next) =>
@@ -416,7 +416,7 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
       )
     )
     .error( (error) ->
-      next(new Error('Could not load signups: ' + error))
+      return next(new Error('Could not load signups: ' + error))
     )
 
   entry: (request, response, next) =>
@@ -427,7 +427,7 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
       next()
     )
     .error( (error) ->
-      next(new Error("Could not find entry with id #{id}: " + error))
+      return next(new Error("Could not find entry with id #{id}: " + error))
     )
   
   postEntry: (request, response, next) =>
@@ -443,10 +443,10 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
         response.json(entry.values)
       )
       .error( (error) ->
-        next(new Error("Could not add entry to signup: " + error))
+        return next(new Error("Could not add entry to signup: " + error))
       )
     )
     .error( (error) ->
-      next(new Error("Could not create new entry: " + error))
+      return next(new Error("Could not create new entry: " + error))
     )
     

@@ -195,7 +195,6 @@ def generate_registration_and_release_form(canvas, signup, registrant, divisiona
 	canvas.drawString(inch, 8.10 * inch, registrant.get('email'))
 	canvas.drawString(inch, 7.90 * inch, registrant.get('phone'))
 	
-	
 	# Build up list of entry numbers by entry type
 	entries = {}
 	for entry in contestant.get('entries'):

@@ -2,6 +2,7 @@ url = require('url')
 Sequelize = require('sequelize')
 async = require('async')
 fs = require('fs')
+child_process = require('child_process')
 
 data_types = require('../shared/data_types')
 
@@ -149,7 +150,12 @@ runPDFGenerator = (data, callback) ->
     if err
       callback(err)
     else
-      callback(null, '/all_entries.json')
+      child_process.exec('python form_generator/form_generator.py public/all_entries.json public/all_entries.pdf', (err, stdout, stderr) ->
+        if err
+          callback(err)
+        else
+          callback(null, '/all_entries.pdf')
+      )
   )
 
 singleSignup = (request, response, next) ->
@@ -180,7 +186,7 @@ putSignup = (request, response, next) ->
 printSignups = (request, response, next) ->
   runPDFGenerator(signupsToJSON(mapAllSignupTypes(request.signups)), (err, url) ->
     if err
-      next(new Error(err))
+      return next(new Error(err))
     response.send(url, 200)
   )
 

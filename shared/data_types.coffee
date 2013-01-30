@@ -30,7 +30,7 @@ exports.entryNames =
     special1: 'Birthday Tasting'
     special2: 'Cupcakes Tasting'
     special3: 'Renaissance Tasting'
-    special4: 'Unknown'
+    special4: 'Renaissance Tasting'
     special5: 'Cookies Tasting'
     child: 'Child'
     junior: 'Junior'

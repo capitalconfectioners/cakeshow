@@ -21,34 +21,31 @@ def header(canvas, signup, entry):
 	canvas.drawString(inch, 9.75 * inch, "Cake & Sugar Art Show & Competition")
 	canvas.drawString(inch, 9.50 * inch, "Capital Confectioners, Austin, TX")
 	
-	canvas.drawString(inch, 9.25 * inch, get_show_start_date(year) + " & " + get_show_end_date(year))
-	
-	# Print entry number, division & category
-	canvas.drawString(6.5 * inch, 10 * inch, "Entry #" + str(entry.get('id')))
-	if (entry.get('category') == 'Showcakes'):
-		canvas.drawString(6.5 * inch, 9.75 * inch, entry.get('category'))
-	elif ((entry.get('category').find("Tasting") >= 0) or (entry.get('category').find("tasting") >= 0)):
-		canvas.drawString(6.5 * inch, 9.75 * inch, entry.get('category'))
-	else:
-		canvas.drawString(6.5 * inch, 9.75 * inch, signup.get('class'))
-		canvas.drawString(6.5 * inch, 9.50 * inch, entry.get('category'))
-
-def get_show_start_date(year):
 	# Calculate date of show; Monday = 0
 	last_day = calendar.weekday(int(year), 2, 28)
 	saturday = 28 - last_day - 2
-	return "February " + str(saturday)
-	
-def get_show_end_date(year):
-	# Calculate date of show; Monday = 0
-	last_day = calendar.weekday(int(year), 2, 28)
+	saturday = "February " + str(saturday)
 	sunday = 28 - last_day - 1
 	# If the 28th is on a Saturday and not a leap year
 	if (last_day == 5) and (not calendar.isleap(year)):
 		sunday = "March 1"
 	else:
 		sunday = str(sunday)
-	return sunday
+	
+	canvas.drawString(inch, 9.25 * inch, saturday + " & " + sunday + ", " + str(year))
+	
+	# Print entry number, division & category
+	canvas.drawString(6.5 * inch, 10 * inch, "Entry #" + str(entry.get('id')))
+	if (entry.get('category') == 'Showcakes'):
+		canvas.drawString(6.5 * inch, 9.75 * inch, entry.get('category'))
+	else:
+		# Class doesn't apply to the tasting category
+		category = entry.get('category')
+		if ((category.find("Tasting") >= 0) or (category.find("tasting") >= 0)):
+			canvas.drawString(6.5 * inch, 9.75 * inch, entry.get('category'))
+		else:
+			canvas.drawString(6.5 * inch, 9.75 * inch, signup.get('class'))
+			canvas.drawString(6.5 * inch, 9.50 * inch, entry.get('category'))
 
 def judging_divisional_body(canvas):
 	criteria = ["Precision", "Originality", "Creativity", "Skill", "Color", "Design", "Difficulty", "Number of Techniques", "Overall Eye Appeal"]
@@ -172,52 +169,10 @@ def generate_entry_form(canvas, signup, entry, registrant):
 	canvas.setFont("Helvetica", 10)
 	canvas.drawString(6.5 * inch, 0.90 *inch, str(registrant.get('firstname')))
 	canvas.drawString(6.5 * inch, 0.75 *inch, str(registrant.get('lastname')))
-	
-def generate_registration_and_release_form(canvas, signup, registrant):
-	year = signup.get('year')
-	sunday = get_show_end_date(year)
-	if (sunday.find("March") < 0):
-		sunday = "February " + sunday
-
-	canvas.setFont("Helvetica-Bold", 20)
-	canvas.drawString(inch, 10.00 * inch, year + " Competition Registration and Release Form")
-	canvas.setFont("Helvetica-Bold", 14)
-	canvas.drawString(inch, 9.50 * inch, registrant.get('lastname') + ", " + registrant.get('firstname'))
-	canvas.setFont("Helvetica", 14)
-	canvas.drawString(inch, 9.25 * inch, registrant.get('address'))
-	canvas.drawString(inch, 9.00 * inch, registrant.get('city') + ", " + registrant.get('state') + " " + registrant.get('zipcode'))
-	canvas.drawString(inch, 8.75 * inch, registrant.get('email'))
-	canvas.drawString(inch, 8.50 * inch, registrant.get('phone'))
-	
-	# Build up list of entry numbers by entry type
-#	entries = 
-#	for entry in contestant.get('entries'):
-
-	canvas.setFont("Helvetica", 10)
-	canvas.drawString(0.5 * inch, 3.10 * inch, "Release: By signing below, I understand that my entry(ies) may be photographed and published for the promotion of")
-	canvas.drawString(0.5 * inch, 2.95 * inch, "Capital Confectioners, the Cake and Sugar Arts Show and general interest. I hereby agree to abide by the rules and ")
-	canvas.drawString(0.5 * inch, 2.80 * inch, "regulations of the show. I understand that the Capital Confectioners Cake Club, Make It Sweet or any sponsors assume")
-	canvas.drawString(0.5 * inch, 2.65 * inch, "no responsibility for loss, theft, or damage to displays or personal items at the Show. I agree to indemnify and hold")
-	canvas.drawString(0.5 * inch, 2.50 * inch, "harmless the Capital Confectioners Cake Club, Make It Sweet, and all sponsors from and against all claims, demands,")
-	canvas.drawString(0.5 * inch, 2.35 * inch, "costs, loss, damage, expense, attorney's fees and liabilities growing out of, or arising from, caused or occasioned by")
-	canvas.drawString(0.5 * inch, 2.20 * inch, "my activities in the Capital Confectioners Cake and Sugar Art Show.")
-
-	canvas.setFont("Helvetica-Bold", 10)
-	canvas.drawString(0.5 * inch, 1.90 * inch, "I understand that I cannot remove my entry before 5 pm on Sunday, " + sunday + " and that entries left after 7 pm")
-	canvas.drawString(0.5 * inch, 1.75 * inch, "become the property of Capital Confectioners.")
-	
-	canvas.drawString(0.5 * inch, 1.45 * inch, "I understand that any entries into the tasting competition become the property of Capital Confectioners and that")
-	canvas.drawString(0.5 * inch, 1.3 * inch, "platters/plates or the remainder of the entry after judging will not be returned.")
-	
-	canvas.drawString(0.5 * inch, inch, "Signature:")
-	canvas.line(1.4 * inch, inch, 5.65 * inch, inch)
-	canvas.drawString(5.75 * inch, inch, "Date:")
-	canvas.line(6.25 * inch, inch, 8 * inch, inch)
-			
 
 if __name__ == "__main__":
 	if (len(sys.argv) != 3): 
-		print "ERROR: Must provide two parameters: JSON_FILE OUTPUT_FILE"
+		print "ERROR: Must provide two parameters: JSON_FILE OUTPUT_DIR"
 		sys.exit(2)
 	json_file = str(sys.argv[1])
 	output_file = str(sys.argv[2])
@@ -230,11 +185,7 @@ if __name__ == "__main__":
 		sys.exit(2)
 	
 	canvas = canvas.Canvas(output_file, pagesize=letter)
-	for contestant in data['entries']:
-		# Print R&R form
-		generate_registration_and_release_form(canvas, contestant.get('signup'), contestant.get('registrant'))
-		canvas.showPage()
-		
+	for contestant in data:
 		# Put all of the contestant's entry forms together
 		for entry in contestant.get('entries'):
 			# Do tasting entries need this?

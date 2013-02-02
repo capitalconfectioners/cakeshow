@@ -44,8 +44,11 @@ def get_show_end_date(year):
 	last_day = calendar.weekday(int(year), 2, 28)
 	sunday = 28 - last_day - 1
 	# If the 28th is on a Saturday and not a leap year
-	if (last_day == 5) and (not calendar.isleap(year)):
-		sunday = "March 1"
+	if (last_day == 5):
+		if (calendar.isleap(year)):
+			sunday = 29
+		else:
+			sunday = "March 1"
 	else:
 		sunday = str(sunday)
 	return sunday

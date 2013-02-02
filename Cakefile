@@ -80,7 +80,7 @@ createCakeshowDB = (options, onSuccess = ->) ->
     console.log('Overwriting previous DB')
     db.cakeshowDB.drop().success( ->
       db.cakeshowDB.sync()
-        .success(onSuccess)
+        .success(-> onSuccess(options))
         .error( (error) ->
           console.log('Error creating DB: ' + error)
         )
@@ -89,7 +89,7 @@ createCakeshowDB = (options, onSuccess = ->) ->
     )
   else
     db.cakeshowDB.sync()
-      .success(onSuccess)
+      .success(-> onSuccess(options))
       .error( (error) ->
         console.log('Error creating DB: ' + error)
       )

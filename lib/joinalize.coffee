@@ -4,31 +4,40 @@ unambiguousAttributes = (model) ->
     result.push([model.quoted(column), model.qualified(column)])
   return result
 
-joinAttributes = (left, right) ->
-  attributes = unambiguousAttributes(left).concat(unambiguousAttributes(right))
+joinAttributes = (tables) ->
+  attributes = []
+
+  for table in tables
+    attributes = attributes.concat(unambiguousAttributes(table))
+
   return attributes
 
+allTables = (source, targets) ->
+  tableNames = [source.tableName]
+  for table in targets
+    tableNames.push(table.tableName)
+
+  return tableNames
+
 class JoinedResultFactory
-  constructor: (source,target) ->
-    this.source = source
-    this.target = target
+  constructor: (source,targets) ->
+    this.tables = [source].concat(targets)
   
   build: (values, options) =>
-    sourceValues = {}
-    targetValues = {}
+    individualValues = {}
+
+    for table in this.tables
+      individualValues[table.tableName] = {}
+
     for key, value of values
       [table,column] = key.split('.')
-      
-      if table == this.source.tableName
-        sourceValues[column] = value
-      else if table == this.target.tableName
-        targetValues[column] = value
-      else
-        throw new Error("Could not find joined result with table name '#{table}' for result '#{key}' : '#{value}'")
+
+      individualValues[table][column] = value
     
     result = {}
-    result[this.source.name] = this.source.build(sourceValues,options)
-    result[this.target.name] = this.target.build(targetValues,options)
+
+    for table in this.tables
+      result[table.name] = table.build(individualValues[table.tableName])
     
     return result
 
@@ -45,18 +54,36 @@ joinalize = (factory) ->
   factory.quoted = (column) ->
     return "`#{this.tableName}`.`#{column}`"
   
-  factory._buildJoinOptions = (Target, options = {}) ->
-    options.attributes = (options.attributes ? []).concat(joinAttributes(this, Target))
-    
-    association = assc for name,assc of this.associations when assc.target.tableName == Target.tableName
-    
-    if not association?
-      throw new Error("Could not find association mapping #{this.name} to #{Target.name}")
-    
+  factory._buildJoinOptions = (targets, options = {}) ->
+    tables = [this].concat(targets)
+
+    options.attributes = (options.attributes ? []).concat(joinAttributes(tables))
+
+    associations = []
+
+    for target in targets
+      for table in tables
+        association = null
+
+        for name, assc of table.associations
+          if assc.target.tableName == target.tableName
+            association = assc
+            break
+
+        if association?
+          break
+
+      if not association?
+        throw new Error("Could not find association mapping #{target.name} to any of #{tables}");
+
+      associations.push(association)
+
     if typeof options.where != 'string' and not Array.isArray(options.where)
       newWhere = {}
-      
-      newWhere[this.qualified(association.identifier)] = {join: Target.qualified('id')}
+
+      for association in associations
+        newWhere[association.source.qualified(association.identifier)] =
+          join: association.target.qualified('id')
       
       if typeof options.where == 'object' and not options.where.hasOwnProperty('length')
         for attr, val of options.where
@@ -66,24 +93,31 @@ joinalize = (factory) ->
       
       options.where = newWhere
     else if typeof options.where == 'string'
-      options.where = "(#{options.where}) AND (#{this.quoted(association.identifier)} = #{Target.quoted('id')})"
-      
+      joinClauses = []
+
+      for association in associations
+        joinClauses.append("#{association.source.quoted(association.identifier)} = #{association.target.quoted('id')}")
+
+      options.where = "(#{options.where}) AND (#{joinClauses.join(' AND ')})"
+
     return options
-  
+
   factory.joinTo = (Target, options = {}) ->
-    options = this._buildJoinOptions(Target, options)
-    
-    return this.QueryInterface.select(new JoinedResultFactory(this,Target), [this.tableName,Target.tableName], options)
+    targets = [].concat(Target)
+    options = this._buildJoinOptions(targets, options)
+
+    return this.QueryInterface.select(new JoinedResultFactory(this,targets), allTables(this, targets), options)
   
   factory.countJoined = (Target, options = {}) ->
     options.attributes = [['count(*)', 'count']]
-    
-    options = this._buildJoinOptions(Target, options)
+
+    targets = [].concat(Target)
+    options = this._buildJoinOptions(targets, options)
     
     factory = build: (values, options) ->
       return parseInt(values.count,10)
     
-    return this.QueryInterface.select(factory, [this.tableName,Target.tableName], options)
+    return this.QueryInterface.select(factory, allTables(this, targets), options)
       
 
 exports.register = (sequelize) ->

@@ -62,11 +62,6 @@ class CakeshowDB
         default: false
       entryNumber: Sequelize.INTEGER
     )
-
-    this.Report = this.cakeshowDB.define('Report',
-      name: Sequelize.STRING
-      report: Sequelize.TEXT
-    )
     
     this.Registrant.hasMany(this.Signup, as: 'Signups')
     this.Signup.belongsTo(this.Registrant, as: 'Registrant')

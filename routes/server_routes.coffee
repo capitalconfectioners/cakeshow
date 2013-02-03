@@ -32,10 +32,6 @@ exports.register = (app, cakeshowDB) ->
   app.get('/signups/:signupID/entries', middleware.entriesForSignup, entries)
   app.put('/signups/:signupID/entries/:id', middleware.entry, putEntry)
   app.post('/signups/:signupID/entries', middleware.singleSignup, middleware.postEntry)
-
-  app.get('/reports', middleware.allReports, reports)
-  app.post('/reports', middleware.postReport, postReport)
-  app.delete('/reports/:reportID', middleware.deleteReport, deleteReport)
   
   app.get('*', jsonResponse)
   app.get('*', htmlResponse)
@@ -102,20 +98,6 @@ toc = (request, response, next) ->
     toc.Shows[show] = '/shows/' + show + '/signups'
   
   response.json(toc)
-
-reports = (request, response, next) ->
-  request.jsonResults = []
-
-  for report in request.reports
-    request.jsonResults.push({id: report.id, name: report.name})
-
-  next()
-
-postReport = (request, response, next) ->
-  response.json(request.report.values)
-
-deleteReport = (request, response, next) ->
-  response.json(request.report.values)  
 
 sanitizeRegistrant = (registrant) ->
   rawRegistrant = {}
@@ -275,43 +257,7 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     .error( (error) ->
       return next(new Error("Could not select show list: " + error))
     )
-
-  allReports: (request, response, next) =>
-    this.cakeshowDB.Report.findAll().success( (reports) ->
-      request.reports = reports
-      next()
-    )
-
-  postReport: (request, response, next) =>
-    console.log(request.body)
-    report = this.cakeshowDB.Report.build(request.body)
-    
-    report.save()
-      .success( (created) ->
-        request.report = created
-        next()
-      )
-      .error( (error) ->
-        next(new Error(error))
-      )
-
-  deleteReport: (request, response, next) =>
-    id = parseInt(request.param('reportID'), 10)
-    this.cakeshowDB.Report.find(id)
-      .success( (report) ->
-        report.destroy()
-        .success( ->
-          request.report = report
-          next()
-        )
-        .error( (error) ->
-          next(new Error(error))
-        )
-      )
-      .error( (error) ->
-        next(new Error(error))
-      )
-
+  
   attachPagination: (request, count) ->
     result = {}
     

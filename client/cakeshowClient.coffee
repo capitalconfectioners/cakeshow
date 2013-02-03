@@ -23,6 +23,14 @@ exports.Cakeshow = class Cakeshow
     
     this.registrantSignups = new signupModels.RegistrantSignupList()
     this.registrantSignupsView = new signupViews.RegistrantSignupListView(collection: this.registrantSignups)
+
+    $(document).on('click', 'a', (event) =>
+      target = $(event.currentTarget).attr('href')
+
+      if target?
+        this.router.navigate(target, trigger: true)
+        return false
+    )
     
     this.toc = new tocModels.TOC()
     this.tocView = new tocViews.TOCView(

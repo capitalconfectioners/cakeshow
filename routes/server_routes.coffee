@@ -18,8 +18,9 @@ exports.register = (app, cakeshowDB) ->
   
   app.get('/shows/:year/signups', addLinksTo(middleware.signups), signups)
   app.get('/shows/:year/signups/print', middleware.allEntries, printSignups)
+  app.get('/shows/:year/signups/all', middleware.entryTable, allSignups)
+
   app.get('/signups', addLinksTo(middleware.signups), signups)
-  
   app.get('/signups/:signupID', middleware.singleSignup, singleSignup)
   app.get('/signups/:signupID/print', middleware.signupWithEntries, printSingleSignup)
   
@@ -221,6 +222,18 @@ printSignups = (request, response, next) ->
       return next(new Error(err))
     response.send(url, 200)
   )
+
+allSignups = (request, response, next) ->
+  request.jsonResults = []
+
+  for entry in request.entries
+    request.jsonResults.push(
+      entry: entry.Entry.values
+      signup: entry.Signup.values
+      registrant: sanitizeRegistrant(entry.Registrant)
+    )
+
+  next()
 
 entries = (request, response, next) ->
   request.jsonResults = []
@@ -450,6 +463,27 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     .error( (error) ->
       return next(new Error('Could not load signups: ' + error))
     )
+
+  entryTable: (request, response, next) =>
+    requestedYear = request.param('year')
+    
+    if requestedYear?
+      filter = 
+        year: requestedYear
+    else
+      filter = {}
+    
+    this.cakeshowDB.Entry.joinTo( [this.cakeshowDB.Signup,
+                                   this.cakeshowDB.Registrant],
+      where: filter
+    )
+    .success( (entries) ->
+      request.entries = entries
+      next()
+    )
+    .error( (error) ->
+      next(new Error(error))
+    )    
 
   entry: (request, response, next) =>
     id = parseInt(request.param('id'), 10)

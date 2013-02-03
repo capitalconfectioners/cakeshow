@@ -23,7 +23,13 @@ ul#registrant-signups li {
   footer {
     display: none;
   }
-  #toc {
+  .toc {
     display: none;
+  }
+  #page-modal {
+    display: none;
+  }
+  thead {
+    display: table-header-group;
   }
 }

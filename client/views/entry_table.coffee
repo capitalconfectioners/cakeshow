@@ -23,3 +23,6 @@ exports.EntryTableView = class EntryTableView extends Backbone.View
   add: (entry) =>
     view = new EntryRowView(model: entry)
     this.$el.find('tbody').append(view.render().el)
+
+  title: =>
+    return "Cakeshow #{this.collection.year} Entries"

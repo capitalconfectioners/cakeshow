@@ -1,6 +1,9 @@
 signupModels = require('models/signup_models')
 signupViews = require('views/signup_views')
 
+entryTableModels = require('models/entry_table')
+entryTableViews = require('views/entry_table')
+
 {setTitle} = require('views/site_views')
 
 class exports.CakeshowRoutes extends Backbone.Router
@@ -11,6 +14,7 @@ class exports.CakeshowRoutes extends Backbone.Router
     'shows/:year/signups': 'signups'
     'shows/:year/signups?:querystring': 'signups'
     'shows/:year/signups/add': 'addSignup'
+    'shows/:year/signups/all': 'allSignups'
     
     'signups/:id': 'singleSignup'
     'signups/add': 'addSignup'
@@ -47,7 +51,20 @@ class exports.CakeshowRoutes extends Backbone.Router
     app.registrantSignups.setYear(year)
     app.registrantSignups.setQueryString(querystring)
     this.fetchData(app.registrantSignups)
-  
+
+  allSignups: (year) ->
+    this.currentModel = new entryTableModels.EntryTable(
+      year: year
+    )
+    this.currentView = new entryTableViews.EntryTableView(
+      el: '#content'
+      collection: this.currentModel
+    )
+
+    this.setSearchToSignups()
+
+    this.fetchData(this.currentModel)
+
   singleSignup: (id) ->
     console.log('single signup: ' + id)
     this.currentModel = new signupModels.RegistrantSignup(id: id)
@@ -96,6 +113,8 @@ class exports.CakeshowRoutes extends Backbone.Router
     if this.dataQueue?
       if model.fillData?
         model.fillData(this.dataQueue.link, this.dataQueue.data)
+      else if model.reset?
+        model.reset(this.dataQueue.data, parse: true)
       else
         model.set(model.parse(this.dataQueue.data))
       this.dataQueue = null

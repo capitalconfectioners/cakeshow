@@ -16,3 +16,14 @@ ul#registrant-signups li {
   font-size: large;
   font-weight: bold;
 }
+@media print {
+  .navbar {
+    display: none;
+  }
+  footer {
+    display: none;
+  }
+  #toc {
+    display: none;
+  }
+}

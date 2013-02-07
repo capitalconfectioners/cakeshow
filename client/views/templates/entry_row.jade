@@ -1,4 +1,5 @@
 td #{entry.id}
-td #{registrant.firstname} #{registrant.lastname}
+td 
+  a(href="/signups/#{signup.id}") #{registrant.firstname} #{registrant.lastname}
 td #{signup.class}
 td #{entry.category}

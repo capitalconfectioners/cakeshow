@@ -284,6 +284,7 @@ exports.SignupNav = class SignupNav extends Backbone.View
   el: 'body'
   
   events:
+    'click .navbar a.all': 'all'
     'click .navbar a.add': 'add'
     'click .navbar a.print': 'print'
   
@@ -313,4 +314,6 @@ exports.SignupNav = class SignupNav extends Backbone.View
 
   print: =>
     app.router.printView()
-  
+
+  all: =>
+    app.router.navigate(app.registrantSignups.baseUrl + '/all', trigger: true)

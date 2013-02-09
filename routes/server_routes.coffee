@@ -164,7 +164,7 @@ reportFilenames = ->
 runPDFGenerator = (entry_data, callback) ->
   year = entry_data[0].signup.year
 
-  [script, entries, report, url] = reportFilenames()
+  [script, entries, report, generatedUrl] = reportFilenames()
 
   divisionals = (value for key, value of data_types.entryNames[year] when key.indexOf('style') == 0)
   tastings = (value for key, value of data_types.entryNames[year] when key.indexOf('special') == 0)
@@ -187,7 +187,7 @@ runPDFGenerator = (entry_data, callback) ->
         else
           console.log(stdout)
           console.log(stderr)
-          callback(null, '/' + url)
+          callback(null, '/' + generatedUrl)
       )
   )
 

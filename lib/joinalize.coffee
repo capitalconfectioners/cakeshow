@@ -96,7 +96,7 @@ joinalize = (factory) ->
       joinClauses = []
 
       for association in associations
-        joinClauses.append("#{association.source.quoted(association.identifier)} = #{association.target.quoted('id')}")
+        joinClauses.push("#{association.source.quoted(association.identifier)} = #{association.target.quoted('id')}")
 
       options.where = "(#{options.where}) AND (#{joinClauses.join(' AND ')})"
 

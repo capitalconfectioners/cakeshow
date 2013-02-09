@@ -7,6 +7,8 @@ def generate_judging_form(canvas, signup, entry):
 	header(canvas, signup, entry)
 	if (entry.get('category') == 'Showcakes'):
 		judging_showcake_body(canvas)
+	elif ((entry.get('category').find("Tasting") >= 0) or (entry.get('category').find("tasting") >= 0)):
+		judging_tasting_body(canvas)
 	else:
 		judging_divisional_body(canvas)
 	
@@ -55,7 +57,6 @@ def get_show_end_date(year):
 
 def judging_divisional_body(canvas):
 	criteria = ["Precision", "Originality", "Creativity", "Skill", "Color", "Design", "Difficulty", "Number of Techniques", "Overall Eye Appeal"]
-#	canvas.drawString(4.5 * inch, 8.75 * inch, "Divisional Competition")
 	
 	# Table header
 	canvas.drawString(3.30 * inch, 8.375 * inch, "    Needs")
@@ -134,6 +135,49 @@ def judging_showcake_body(canvas):
 		offset -= 0.5
 		canvas.line(1 * inch, offset * inch, 7.5 * inch, offset * inch)
 
+def judging_tasting_body(canvas):
+	criteria = ["Flavor", "Crumb", "Texture", "Density", "Appearance", "Theme"]
+	maximum_points = [40, 10, 10, 10, 15, 15]
+	
+	# Table header
+	canvas.drawString(5.85 * inch, 8.375 * inch, "Maximum")
+	canvas.drawString(5.85 * inch, 8.125 * inch, "  Points")
+	canvas.drawString(6.85 * inch, 8.375 * inch, "  Points")
+	canvas.drawString(6.85 * inch, 8.125 * inch, "Awarded")
+	
+	# Display column of criteria
+	offset = 7.75
+	index = 0
+	for criterium in criteria:
+		canvas.drawString(1.125 * inch, offset * inch, criterium)
+		canvas.drawString(6.125 * inch, offset * inch, str(maximum_points[index]))
+		offset -= 0.375
+		index += 1
+	canvas.drawString(6.125 * inch, offset * inch, "Total:")
+	
+	# Build up rows
+	rows = []
+	offset = 8.00
+	for criterium in criteria:
+		rows.append(offset * inch)
+		offset -= 0.375
+	rows.append(offset * inch)
+	
+	# Draw grid
+	canvas.grid([inch, 5.75*inch, 6.75*inch, 7.75*inch], rows)
+	canvas.grid([6.75*inch, 7.75*inch], [offset * inch, (offset - 0.375) * inch])
+	offset -= 0.375
+	
+	# Display comments section
+	offset -= 0.5
+	canvas.drawString(inch, offset * inch, "Comments: ")
+	canvas.line(2.25 * inch, offset * inch, 7.5 * inch, offset * inch)
+	
+	while (offset > 1.5):
+		offset -= 0.5
+		canvas.line(1 * inch, offset * inch, 7.5 * inch, offset * inch)
+
+
 def generate_entry_form(canvas, signup, entry, registrant):
 	line_count = 4
 	header(canvas, signup, entry)
@@ -175,6 +219,12 @@ def generate_entry_form(canvas, signup, entry, registrant):
 	canvas.setFont("Helvetica", 10)
 	canvas.drawString(6.5 * inch, 0.90 *inch, str(registrant.get('firstname')))
 	canvas.drawString(6.5 * inch, 0.75 *inch, str(registrant.get('lastname')))
+	if (entry.get('category') == 'Showcakes'):
+		canvas.drawString(6.5 * inch, 0.60 *inch, "Showcakes")
+	elif ((entry.get('category').find("Tasting") >= 0) or (entry.get('category').find("tasting") >= 0)):
+		canvas.drawString(6.5 * inch, 0.60 *inch, "Tasting")
+	else:
+		canvas.drawString(6.5 * inch, 0.60 *inch, str(signup.get('class')))
 	
 def generate_registration_and_release_form(canvas, signup, registrant, divisionals, tastings):
 	year = signup.get('year')

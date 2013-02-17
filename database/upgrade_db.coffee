@@ -28,10 +28,6 @@ signupColumnMap =
 
 class Upgrader
   cakeshowDBs : 
-    "1": "2011"
-    "09": "2009"
-    "10": "2010"
-    "12": "2012"
     "13": "2013"
 
   constructor: (username='root', password='') ->
@@ -58,7 +54,7 @@ class Upgrader
       hostname: "localhost"
       user: this.username
       password: this.password
-      database: "capitalc_registrants"
+      database: "cakecuba_import13"
     )
     
     this.registrantsDB.query(
@@ -99,7 +95,7 @@ class Upgrader
       hostname: "localhost"
       user: this.username
       password: this.password
-      database: dbName
+      database: "cakecuba_import13"
     )
     
     signupUpgrader = new SignupUpgrader(this, this.cakeshowDBs[number])

@@ -1,3 +1,12 @@
+# Note: this does not create entries for Child or Juniors, but it
+# should create one entry.
+#
+# Also note that, on bluehost, I created a single DB to store the
+# ported data from the old website, so the DB name generation logic
+# has been messed with, but the overall logic has not. Most
+# dangerously, this means that it's possible to accidentally duplicate
+# entries across years, if you simply add to the cakeshowDBs map
+
 mysql = require("mysql")
 Sequelize = require('sequelize')
 

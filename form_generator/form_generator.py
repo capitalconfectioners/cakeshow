@@ -33,7 +33,10 @@ def header(canvas, signup, entry):
 		canvas.drawString(6.5 * inch, 9.75 * inch, entry.get('category'))
 	else:
 		canvas.drawString(6.5 * inch, 9.75 * inch, signup.get('class'))
-		canvas.drawString(6.5 * inch, 9.50 * inch, entry.get('category'))
+		className = signup.get('class')
+		if (className):
+			if ((className.find('Child') < 0) and (className.find('Junior') < 0)):
+				canvas.drawString(6.5 * inch, 9.50 * inch, entry.get('category'))
 
 def get_show_start_date(year):
 	# Calculate date of show; Monday = 0
@@ -356,15 +359,15 @@ if __name__ == "__main__":
 	
 	canvas = canvas.Canvas(output_file, pagesize=letter)
 	for contestant in data['entries']:
+		# Put all of the contestant's entry forms together
+		for entry in contestant.get('entries'):
+			generate_entry_form(canvas, contestant.get('signup'), entry, contestant.get('registrant'))
+			canvas.showPage()
+	for contestant in data['entries']:
 		# Print R&R form
 		generate_registration_and_release_form(canvas, contestant.get('signup'), contestant.get('registrant'), data['metadata']['divisionals'], data['metadata']['tastings'])
 		canvas.showPage()
 		
-		# Put all of the contestant's entry forms together
-		for entry in contestant.get('entries'):
-			# Do tasting entries need this?
-			generate_entry_form(canvas, contestant.get('signup'), entry, contestant.get('registrant'))
-			canvas.showPage()
 		# Put all of the contestant's judging sheets together
 		for entry in contestant.get('entries'):
 			generate_judging_form(canvas, contestant.get('signup'), entry)

@@ -268,6 +268,9 @@ def generate_registration_and_release_form(canvas, signup, registrant, divisiona
 	division = "Divisional Competition: "
 	if (signup.get('class')):
 		division += signup['class']
+		if ((signup['class'] == 'Child') or (signup['class'] == 'Junior')):
+			for entry in contestant.get('entries'):
+				division += " : " +  str(entry['id'])
 	canvas.drawString(inch, 7.55 * inch, division)
 	canvas.setFont("Helvetica", 10)
 	offset = 7.35

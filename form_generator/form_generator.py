@@ -374,6 +374,9 @@ if __name__ == "__main__":
 		
 		# Put all of the contestant's judging sheets together
 		for entry in contestant.get('entries'):
-			generate_judging_form(canvas, contestant.get('signup'), entry)
-			canvas.showPage()
+			signup = contestant.get('signup')
+			if (signup.get('class')):
+				if ((signup['class'] != 'Child') and (signup['class'] != 'Junior')):
+					generate_judging_form(canvas, contestant.get('signup'), entry)
+					canvas.showPage()
 	canvas.save()

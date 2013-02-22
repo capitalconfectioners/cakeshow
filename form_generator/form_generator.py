@@ -246,10 +246,14 @@ def generate_registration_and_release_form(canvas, signup, registrant, divisiona
 	canvas.setFont("Helvetica-Bold", 14)
 	canvas.drawString(inch, 8.70 * inch, registrant.get('lastname') + ", " + registrant.get('firstname'))
 	canvas.setFont("Helvetica", 14)
-	canvas.drawString(inch, 8.50 * inch, registrant.get('address'))
-	canvas.drawString(inch, 8.30 * inch, registrant.get('city') + ", " + registrant.get('state') + " " + registrant.get('zipcode'))
-	canvas.drawString(inch, 8.10 * inch, registrant.get('email'))
-	canvas.drawString(inch, 7.90 * inch, registrant.get('phone'))
+	if (registrant.get('address')):
+		canvas.drawString(inch, 8.50 * inch, registrant.get('address'))
+	if ((registrant.get('city')) and (registrant.get('state')) and (registrant.get('zipcode'))):
+		canvas.drawString(inch, 8.30 * inch, registrant.get('city') + ", " + registrant.get('state') + " " + registrant.get('zipcode'))
+	if (registrant.get('email')):
+		canvas.drawString(inch, 8.10 * inch, registrant.get('email'))
+	if (registrant.get('phone')):
+		canvas.drawString(inch, 7.90 * inch, registrant.get('phone'))
 	
 	# Build up list of entry numbers by entry type
 	entries = {}

@@ -3,3 +3,7 @@ td
   a(href="/signups/#{signup.id}") #{registrant.firstname} #{registrant.lastname}
 td #{signup.class}
 td #{entry.category}
+td.entry-brought 
+  if entry.didBring == 1
+    | X
+    

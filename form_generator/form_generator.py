@@ -33,7 +33,10 @@ def header(canvas, signup, entry):
 		canvas.drawString(6.5 * inch, 9.75 * inch, entry.get('category'))
 	else:
 		canvas.drawString(6.5 * inch, 9.75 * inch, signup.get('class'))
-		canvas.drawString(6.5 * inch, 9.50 * inch, entry.get('category'))
+		className = signup.get('class')
+		if (className):
+			if ((className.find('Child') < 0) and (className.find('Junior') < 0)):
+				canvas.drawString(6.5 * inch, 9.50 * inch, entry.get('category'))
 
 def get_show_start_date(year):
 	# Calculate date of show; Monday = 0
@@ -243,10 +246,14 @@ def generate_registration_and_release_form(canvas, signup, registrant, divisiona
 	canvas.setFont("Helvetica-Bold", 14)
 	canvas.drawString(inch, 8.70 * inch, registrant.get('lastname') + ", " + registrant.get('firstname'))
 	canvas.setFont("Helvetica", 14)
-	canvas.drawString(inch, 8.50 * inch, registrant.get('address'))
-	canvas.drawString(inch, 8.30 * inch, registrant.get('city') + ", " + registrant.get('state') + " " + registrant.get('zipcode'))
-	canvas.drawString(inch, 8.10 * inch, registrant.get('email'))
-	canvas.drawString(inch, 7.90 * inch, registrant.get('phone'))
+	if (registrant.get('address')):
+		canvas.drawString(inch, 8.50 * inch, registrant.get('address'))
+	if ((registrant.get('city')) and (registrant.get('state')) and (registrant.get('zipcode'))):
+		canvas.drawString(inch, 8.30 * inch, registrant.get('city') + ", " + registrant.get('state') + " " + registrant.get('zipcode'))
+	if (registrant.get('email')):
+		canvas.drawString(inch, 8.10 * inch, registrant.get('email'))
+	if (registrant.get('phone')):
+		canvas.drawString(inch, 7.90 * inch, registrant.get('phone'))
 	
 	# Build up list of entry numbers by entry type
 	entries = {}
@@ -261,6 +268,9 @@ def generate_registration_and_release_form(canvas, signup, registrant, divisiona
 	division = "Divisional Competition: "
 	if (signup.get('class')):
 		division += signup['class']
+		if ((signup['class'] == 'Child') or (signup['class'] == 'Junior')):
+			for entry in contestant.get('entries'):
+				division += " : " +  str(entry['id'])
 	canvas.drawString(inch, 7.55 * inch, division)
 	canvas.setFont("Helvetica", 10)
 	offset = 7.35
@@ -356,17 +366,20 @@ if __name__ == "__main__":
 	
 	canvas = canvas.Canvas(output_file, pagesize=letter)
 	for contestant in data['entries']:
+		# Put all of the contestant's entry forms together
+		for entry in contestant.get('entries'):
+			generate_entry_form(canvas, contestant.get('signup'), entry, contestant.get('registrant'))
+			canvas.showPage()
+	for contestant in data['entries']:
 		# Print R&R form
 		generate_registration_and_release_form(canvas, contestant.get('signup'), contestant.get('registrant'), data['metadata']['divisionals'], data['metadata']['tastings'])
 		canvas.showPage()
 		
-		# Put all of the contestant's entry forms together
-		for entry in contestant.get('entries'):
-			# Do tasting entries need this?
-			generate_entry_form(canvas, contestant.get('signup'), entry, contestant.get('registrant'))
-			canvas.showPage()
 		# Put all of the contestant's judging sheets together
 		for entry in contestant.get('entries'):
-			generate_judging_form(canvas, contestant.get('signup'), entry)
-			canvas.showPage()
+			signup = contestant.get('signup')
+			if (signup.get('class')):
+				if ((signup['class'] != 'Child') and (signup['class'] != 'Junior')):
+					generate_judging_form(canvas, contestant.get('signup'), entry)
+					canvas.showPage()
 	canvas.save()

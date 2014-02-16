@@ -37,7 +37,7 @@ signupColumnMap =
 
 class Upgrader
   cakeshowDBs : 
-    "13": "2013"
+    "14": "2014"
 
   constructor: (username='root', password='') ->
     this.username = username
@@ -45,30 +45,44 @@ class Upgrader
 
   upgrade : (cakeshowDB, onSuccess= ->) =>
     this.cakeshowDB = cakeshowDB
-    
-    this.upgradeRegistrants( =>
-      showsToUpgrade = Object.keys(this.cakeshowDBs).length
-      completed = 0
-      for showNumber of this.cakeshowDBs
-        this.upgradeCakeshow(showNumber, ->
-          completed++
-          console.log("Completed upgrading #{completed} years")
-          if completed == showsToUpgrade
-            onSuccess()
-        )
+
+    this.cakeshowDB.cakeshowDB.query(
+      'SELECT id from Registrants',
+      undefined,
+      raw: true
     )
-  
-  upgradeRegistrants : (onSuccess= ->) =>
+      .success((data) =>
+        existing = []
+        for row in data
+          existing.push(row.id)
+        this.upgradeRegistrants(existing, =>
+          showsToUpgrade = Object.keys(this.cakeshowDBs).length
+          completed = 0
+          for showNumber of this.cakeshowDBs
+            this.upgradeCakeshow(showNumber, ->
+              completed++
+              console.log("Completed upgrading #{completed} years")
+              if completed == showsToUpgrade
+                onSuccess()
+            )
+        )
+      )
+
+  upgradeRegistrants : (existing, onSuccess= ->) =>
     this.registrantsDB = new mysql.createClient(
       hostname: "localhost"
       user: this.username
       password: this.password
-      database: "cakecuba_import13"
+      database: "cakecuba_import14"
     )
-    
+
+    registrantQuery = 'SELECT * FROM registrants'
+    if existing.length > 0
+      registrantQuery += " WHERE id NOT IN (#{existing.join(',')})"
+    registrantQuery += ';'
+
     this.registrantsDB.query(
-      'SELECT *' +
-      'FROM registrants;',
+      registrantQuery,
       (error,rows,columns) =>
         if error
           exit("Error: " + error)
@@ -104,7 +118,7 @@ class Upgrader
       hostname: "localhost"
       user: this.username
       password: this.password
-      database: "cakecuba_import13"
+      database: "cakecuba_import14"
     )
     
     signupUpgrader = new SignupUpgrader(this, this.cakeshowDBs[number])

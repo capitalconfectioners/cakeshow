@@ -33,9 +33,6 @@ td.entry-brought {
   #page-modal {
     display: none;
   }
-  .content-column {
-    width: 100%;
-  }
   thead {
     display: table-header-group;
   }

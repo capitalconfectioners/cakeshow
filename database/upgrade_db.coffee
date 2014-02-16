@@ -226,7 +226,17 @@ class SignupUpgrader
           )
           entryChain.add(entry.save())
           entries.push(entry)
-    
+
+    if signup.class == 'child' or signup.class == 'junior'
+      entry = this.cakeshowDB.Entry.build(
+        year: this.year
+        category: signup.class
+        didBring: false
+        styleChange: false
+      )
+      entryChain.add(entry.save())
+      entries.push(entry)
+
     return entries
   
   mapSignup: (row, year) =>

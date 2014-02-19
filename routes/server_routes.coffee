@@ -1,5 +1,6 @@
 url = require('url')
 Sequelize = require('sequelize')
+Sequelize.Utils = require('sequelize/lib/utils')
 async = require('async')
 fs = require('fs')
 path = require('path')
@@ -432,12 +433,21 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
 
   allEntries: (request, response, next) =>
     requestedYear = request.param('year')
+    requestedAfter = request.param('after')
     
     if requestedYear?
       filter = 
         year: requestedYear
     else
       filter = {}
+
+    if requestedAfter?
+      if filter.year?
+        filter = "Signups.year = #{Sequelize.Utils.escape(requestedYear)}"
+      else
+        filter = ''
+  
+      filter += " AND Signups.createdAt > #{Sequelize.Utils.escape(requestedAfter)}"
     
     this.cakeshowDB.Signup.joinTo( this.cakeshowDB.Registrant, 
       where: filter

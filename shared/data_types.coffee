@@ -60,7 +60,7 @@ exports.entryNames =
     style6: 'Special Techniques'
     style7: 'Confections'
     special1: 'Pie/Tart/Pastry Tasting'
-    special2: 'Cake Tasting'
+    special2: 'Twisted Cake Tasting'
     special3: 'Canned Item Tasting'
     special4: 'Cookies Tasting'
     special5: 'Candies Tasting'

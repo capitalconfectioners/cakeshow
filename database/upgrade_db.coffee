@@ -75,7 +75,7 @@ class Upgrader
       hostname: "localhost"
       user: this.username
       password: this.password
-      database: "cakecuba_import14"
+      database: "cakecuba_import15"
     )
 
     registrantQuery = 'SELECT * FROM registrants'
@@ -120,7 +120,7 @@ class Upgrader
       hostname: "localhost"
       user: this.username
       password: this.password
-      database: "cakecuba_import14"
+      database: "cakecuba_import15"
     )
 
     signupUpgrader = new SignupUpgrader(this, this.cakeshowDBs[number])

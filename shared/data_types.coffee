@@ -18,7 +18,7 @@ exports.entryTypes = [
   ]
 
 exports.entryNames =
-  '2012': 
+  '2012':
     showcase: 'Showcakes'
     style1: 'Novelty Single'
     style2: 'Sculpted'
@@ -34,7 +34,7 @@ exports.entryNames =
     special5: 'Cookies Tasting'
     child: 'Child'
     junior: 'Junior'
-  '2013': 
+  '2013':
     showcase: 'Showcakes'
     style1: 'Novelty Single'
     style2: 'Sculpted'
@@ -50,7 +50,7 @@ exports.entryNames =
     special5: 'Candies Tasting'
     child: 'Child'
     junior: 'Junior'
-  '2014': 
+  '2014':
     showcase: 'Showcakes'
     style1: 'Novelty Single'
     style2: 'Sculpted'
@@ -66,6 +66,24 @@ exports.entryNames =
     special5: 'Candies Tasting'
     child: 'Child'
     junior: 'Junior'
+  '2015':
+    showcase: 'Showcakes'
+    style1: 'Novelty Single'
+    style2: 'Sculpted'
+    style3: 'Novelty Tiered'
+    style4: 'Wedding Tiered'
+    style5: 'Buttercream Single'
+    style6: 'Special Techniques'
+    style7: 'Confections'
+    style8: 'Dessert Table'
+    style9: 'Fairy Tale Gingerbread House'
+    special1: 'Little Miss Muffin'
+    special2: 'Pat a Cake, Pat a Cake'
+    special3: 'Blackbirds Baked in a Pie'
+    special4: 'The Gingerbread Man'
+    special5: 'Candy Man'
+    child: 'Child'
+    junior: 'Junior'
 
 exports.divisions = [
   'adultint'
@@ -78,8 +96,8 @@ exports.divisions = [
   'teen'
   'masters'
   ]
-  
-exports.divisionNames = 
+
+exports.divisionNames =
   'adultint': 'Adult Intermediate'
   'culstudent': 'Culinary Student'
   'adultbeg': 'Adult Beginner'
@@ -89,4 +107,3 @@ exports.divisionNames =
   'child': 'Child'
   'teen': 'Teen'
   'masters': 'Masters'
-  

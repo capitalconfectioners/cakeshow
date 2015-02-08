@@ -28,6 +28,10 @@ app.configure( ->
   app.use(express.methodOverride())
   app.use(express.compiler(src: __dirname + '/public', enable: ['less']))
   app.use(express.static(__dirname + '/public'))
+  app.use((request, response, next) ->
+    response.header('Cache-Control', 'no-cache')
+    next()
+  )
   app.use(app.router)
 )
 

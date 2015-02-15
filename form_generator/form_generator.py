@@ -40,8 +40,8 @@ def header(canvas, signup, entry):
 	elif ((entry.get('category').find("Tasting") >= 0) or (entry.get('category').find("tasting") >= 0)):
 		canvas.drawString(6.5 * inch, 9.75 * inch, entry.get('category'))
 	else:
-		canvas.drawString(6.5 * inch, 9.75 * inch, signup.get('class'))
-		className = signup.get('class')
+		className = signup.get('class', '')
+		canvas.drawString(6.5 * inch, 9.75 * inch, className)
 		if (className):
 			if ((className.find('Child') < 0) and (className.find('Junior') < 0)):
 				canvas.drawString(6.5 * inch, 9.50 * inch, entry.get('category'))

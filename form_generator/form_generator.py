@@ -11,17 +11,21 @@ SHOW_DATES = {
 }
 
 
-def generate_judging_form(canvas, signup, entry):
-	header(canvas, signup, entry)
+def _is_tasting(metadata, entry):
+        return entry['category'] in metadata['tastings']
+
+
+def generate_judging_form(canvas, signup, entry, metadata):
+	header(canvas, signup, entry, metadata)
 	if (entry.get('category') == 'Showcakes'):
 		judging_showcake_body(canvas)
-	elif ((entry.get('category').find("Tasting") >= 0) or (entry.get('category').find("tasting") >= 0)):
+	elif _is_tasting(metadata, entry):
 		judging_tasting_body(canvas)
 	else:
 		judging_divisional_body(canvas)
 
 
-def header(canvas, signup, entry):
+def header(canvas, signup, entry, metadata):
 	year = int(signup.get('year'))
 
 	# Prints Show info
@@ -37,7 +41,7 @@ def header(canvas, signup, entry):
 	canvas.drawString(6.5 * inch, 10 * inch, "Entry #" + str(entry.get('id')))
 	if (entry.get('category') == 'Showcakes'):
 		canvas.drawString(6.5 * inch, 9.75 * inch, entry.get('category'))
-	elif ((entry.get('category').find("Tasting") >= 0) or (entry.get('category').find("tasting") >= 0)):
+	elif _is_tasting(metadata, entry):
 		canvas.drawString(6.5 * inch, 9.75 * inch, entry.get('category'))
 	else:
 		className = signup.get('class', '')
@@ -177,16 +181,16 @@ def judging_tasting_body(canvas):
 		canvas.line(1 * inch, offset * inch, 7.5 * inch, offset * inch)
 
 
-def generate_entry_form(canvas, signup, entry, registrant):
+def generate_entry_form(canvas, signup, entry, registrant, metadata):
 	line_count = 4
-	header(canvas, signup, entry)
+	header(canvas, signup, entry, metadata)
 
 	canvas.drawString(inch, 8.0 * inch, "Entry Title:")
 	canvas.line(2.25 * inch, 8.0 * inch, 7.5 * inch, 8.0 * inch)
 
 	# Leave blank for tasting recipe
 	category = entry.get('category')
-	if ((category.find("Tasting") >= 0) or (category.find("tasting") >= 0)):
+	if _is_tasting(metadata, entry):
 		canvas.drawString(inch, 7.5 * inch, "Recipe:")
 	else:
 		canvas.drawString(inch, 7.5 * inch, "Description:")
@@ -220,7 +224,7 @@ def generate_entry_form(canvas, signup, entry, registrant):
 	canvas.drawString(6.5 * inch, 0.75 *inch, str(registrant.get('lastname')))
 	if (entry.get('category') == 'Showcakes'):
 		canvas.drawString(6.5 * inch, 0.60 *inch, "Showcakes")
-	elif ((entry.get('category').find("Tasting") >= 0) or (entry.get('category').find("tasting") >= 0)):
+	elif _is_tasting(metadata, entry):
 		canvas.drawString(6.5 * inch, 0.60 *inch, "Tasting")
 	else:
 		canvas.drawString(6.5 * inch, 0.60 *inch, str(signup.get('class')))
@@ -364,7 +368,7 @@ if __name__ == "__main__":
 	for contestant in data['entries']:
 		# Put all of the contestant's entry forms together
 		for entry in contestant.get('entries'):
-			generate_entry_form(canvas, contestant.get('signup'), entry, contestant.get('registrant'))
+			generate_entry_form(canvas, contestant.get('signup'), entry, contestant.get('registrant'), data['metadata'])
 			canvas.showPage()
 	for contestant in data['entries']:
 		# Print R&R form
@@ -375,6 +379,6 @@ if __name__ == "__main__":
 		for entry in contestant.get('entries'):
 			signup = contestant.get('signup')
                         if ((signup.get('class') != 'Child') and (signup.get('class') != 'Junior')):
-                                generate_judging_form(canvas, contestant.get('signup'), entry)
+                                generate_judging_form(canvas, contestant.get('signup'), entry, data['metadata'])
                                 canvas.showPage()
 	canvas.save()

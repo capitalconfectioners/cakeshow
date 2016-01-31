@@ -16,9 +16,9 @@ database = process.env['CAKESHOW_DB'] ? 'cakeshow'
 username = process.env['CAKESHOW_USER'] ? 'root'
 password = process.env['CAKESHOW_PASSWORD'] ? ''
 
-if process.env['JAWSDB_URL']:
+if process.env['JAWSDB_URL']
   cakeshowDB.connect(process.env['JAWSDB_URL'])
-else:
+else
   cakeshowDB.connect(database, username, password)
 
 # Configuration

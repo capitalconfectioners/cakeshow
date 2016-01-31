@@ -16,7 +16,10 @@ database = process.env['CAKESHOW_DB'] ? 'cakeshow'
 username = process.env['CAKESHOW_USER'] ? 'root'
 password = process.env['CAKESHOW_PASSWORD'] ? ''
 
-cakeshowDB.connect(database, username, password)
+if process.env['JAWSDB_URL']:
+  cakeshowDB.connect(process.env['JAWSDB_URL'])
+else:
+  cakeshowDB.connect(database, username, password)
 
 # Configuration
 
@@ -49,7 +52,7 @@ app.get('/cakeshow.js', clientPackage.createServer())
 
 routes.register(app, cakeshowDB)
 
-port = (process.env.PORT || 3000) 
+port = (process.env.PORT || 3000)
 # host = 'localhost'
 
 #app.listen(port, host)

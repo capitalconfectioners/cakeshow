@@ -12,14 +12,26 @@ clientPackage = stitch.createPackage(
 
 app = module.exports = express.createServer();
 
-database = process.env['CAKESHOW_DB'] ? 'cakeshow'
-username = process.env['CAKESHOW_USER'] ? 'root'
-password = process.env['CAKESHOW_PASSWORD'] ? ''
-
 if process.env['JAWSDB_URL']
-  cakeshowDB.connect(process.env['JAWSDB_URL'])
+  parsedURI = process.env['JAWSDB_URL'].match(/mysql:\/\/(\w+):(\w+)@(\w+):(\d+)\/(\w+)/)
+  console.log(parsedURI)
+  username = parsedURI[1]
+  password = parsedURI[2]
+  host = parsedURI[3]
+  port = parseInt(parsedURI[4])
+  database = parsedURI[5]
 else
-  cakeshowDB.connect(database, username, password)
+  database = process.env['CAKESHOW_DB'] ? 'cakeshow'
+  username = process.env['CAKESHOW_USER'] ? 'root'
+  password = process.env['CAKESHOW_PASSWORD'] ? ''
+
+  host = 'localhost'
+  port = 3306
+
+cakeshowDB.connect(database, username, password,
+  host: host
+  port: port
+)
 
 # Configuration
 

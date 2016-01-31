@@ -14,7 +14,6 @@ app = module.exports = express.createServer();
 
 if process.env['JAWSDB_URL']
   parsedURI = process.env['JAWSDB_URL'].match(/mysql:\/\/(\w+):(\w+)@([^:]+):(\d+)\/(\w+)/)
-  console.log(parsedURI)
   username = parsedURI[1]
   password = parsedURI[2]
   host = parsedURI[3]

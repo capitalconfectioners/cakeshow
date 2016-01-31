@@ -49,8 +49,8 @@ app.get('/cakeshow.js', clientPackage.createServer())
 
 routes.register(app, cakeshowDB)
 
-port = 3000
-host = 'localhost'
+port = (process.env.PORT || 3000) 
+# host = 'localhost'
 
 app.listen(port, host)
 console.log("Express server listening on port %d in %s mode", port, app.settings.env)

@@ -4,11 +4,14 @@ Joinalize = require('../lib/joinalize')
 cakeshowTypes = require('../shared/data_types')
 
 class CakeshowDB
-  connect: (database='cakeshow', username='root', password='', logging=false) =>
-    this.cakeshowDB = new Sequelize(database, username, password,
-      logging: logging
-    )
-    
+  connect: (database='cakeshow', username='root', password='', options={}) =>
+    dbOptions =
+      logging: options.verbose
+      host: options.host
+      port: options.port
+
+    this.cakeshowDB = new Sequelize(database, username, password, options)
+
     this.Registrant = this.cakeshowDB.define('Registrant',
       firstname: Sequelize.STRING
       lastname: Sequelize.STRING
@@ -21,54 +24,54 @@ class CakeshowDB
       dateregistered: Sequelize.DATE
       password: Sequelize.STRING
     )
-    
+
     this.Signup = this.cakeshowDB.define('Signup',
       year: Sequelize.STRING
-      registrationTime: 
+      registrationTime:
         type: Sequelize.STRING
         validate: {isIn: ['early','late','student','child']}
       'class':
         type: Sequelize.STRING
         validate: {isIn: cakeshowTypes.divisions}
       childage: Sequelize.INTEGER
-      paid: 
+      paid:
         type: Sequelize.BOOLEAN
         default: false
       totalfee: Sequelize.INTEGER
-      signupshowcase: 
+      signupshowcase:
         type: Sequelize.BOOLEAN
         default: false
-      hotelinfo: 
+      hotelinfo:
         type: Sequelize.BOOLEAN
         default: false
-      electricity: 
+      electricity:
         type: Sequelize.BOOLEAN
         default: false
       paymentmethod:
         type: Sequelize.STRING
         validate: {isIn: ['instore','mail','paypal']}
     )
-    
+
     this.Entry = this.cakeshowDB.define('Entry',
       year: Sequelize.STRING
       category:
         type: Sequelize.STRING
         validate: {isIn: cakeshowTypes.entryTypes}
-      didBring: 
+      didBring:
         type: Sequelize.BOOLEAN
         default: false
-      styleChange: 
+      styleChange:
         type: Sequelize.BOOLEAN
         default: false
       entryNumber: Sequelize.INTEGER
     )
-    
+
     this.Registrant.hasMany(this.Signup, as: 'Signups')
     this.Signup.belongsTo(this.Registrant, as: 'Registrant')
-    
+
     this.Signup.hasMany(this.Entry, as: 'Entries')
     this.Entry.belongsTo(this.Signup, as: 'Signup')
-    
+
     Joinalize.register(this.cakeshowDB)
     this.cakeshowDB.sync()
 

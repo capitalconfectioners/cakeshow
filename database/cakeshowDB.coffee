@@ -22,7 +22,7 @@ class CakeshowDB
       host: host
       port: port
 
-    this.cakeshowDB = new Sequelize(database, username, password, options)
+    this.cakeshowDB = new Sequelize(database, username, password, dbOptions)
 
     this.Registrant = this.cakeshowDB.define('Registrant',
       firstname: Sequelize.STRING

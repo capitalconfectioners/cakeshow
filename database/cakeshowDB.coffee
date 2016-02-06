@@ -3,12 +3,24 @@ Joinalize = require('../lib/joinalize')
 
 cakeshowTypes = require('../shared/data_types')
 
+
+parseURL = (url) ->
+  parsedURI = url.match(/mysql:\/\/(\w+):(\w+)@([^:]+):(\d+)\/(\w+)/)
+  return {
+    username: parsedURI[1]
+    password: parsedURI[2]
+    host: parsedURI[3]
+    port: parseInt(parsedURI[4])
+    database: parsedURI[5]
+  }
+
 class CakeshowDB
-  connect: (database='cakeshow', username='root', password='', options={}) =>
+  connect: (url, options={}) =>
+    {database, username, password, host, port} = parseURL(url)
     dbOptions =
       logging: options.verbose
-      host: options.host
-      port: options.port
+      host: host
+      port: port
 
     this.cakeshowDB = new Sequelize(database, username, password, options)
 

@@ -5,6 +5,10 @@ Upgrader = require './database/upgrade_db'
 option '-r', '--replace', 'replace existing Cakeshow database'
 option '-m', '--mysql [PATH]', 'specify MySQL install directory'
 option '-d', '--database [DATABASE_URL]', 'specify MySQL database URL'
+option '-u', '--username [OLD_DB_USERNAME]', 'specify SQL username for old DB'
+option '-p', '--password [OLD_DB_PASSWORD]', 'specify SQL password for old DB'
+option '-h', '--host [OLD_DB_HOST]', 'specify SQL host for old DB'
+option '-n', '--name [OLD_DB_DBNAME]', 'specify SQL database for old DB'
 option '-v', '--verbose', 'print verbose output'
 option '-c', '--compile', 'compile coffeescript before running'
 option '-w', '--watch', 'launch Coffeescript compiler in watch mode'
@@ -95,7 +99,8 @@ createCakeshowDB = (options, onSuccess = ->) ->
 migrateData = (options, onSuccess) ->
   console.log('Migrating data')
 
-  upgrader = new Upgrader(options.user, options.password);
+  upgrader = new Upgrader(
+    options.user, options.password, options.host, options.name)
 
   upgrader.upgrade(db, ->
     console.log('Done')

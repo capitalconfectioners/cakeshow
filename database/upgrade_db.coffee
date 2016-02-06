@@ -41,9 +41,11 @@ class Upgrader
   cakeshowDBs :
     "15": "2015"
 
-  constructor: (username='root', password='') ->
-    this.username = username
-    this.password = password
+  constructor: (username='root', password='', hostname='localhost', database='cakecuba_import15') ->
+    this.upgradeDB = database
+    this.upgradeUsername = username
+    this.upgradePassword = password
+    this.upgradeHostname = hostname
 
   upgrade : (cakeshowDB, onSuccess= ->) =>
     this.cakeshowDB = cakeshowDB
@@ -72,10 +74,10 @@ class Upgrader
 
   upgradeRegistrants : (existing, onSuccess= ->) =>
     this.registrantsDB = new mysql.createClient(
-      hostname: "localhost"
-      user: this.username
-      password: this.password
-      database: "cakecuba_import15"
+      hostname: this.upgradeHostname
+      user: this.upgradeUsername
+      password: this.upgradePassword
+      database: this.upgradeDB
     )
 
     registrantQuery = 'SELECT * FROM registrants'
@@ -117,10 +119,10 @@ class Upgrader
     year = this.cakeshowDBs[number]
     dbName = "capitalc_cakeshow" + number
     this[dbName] = new mysql.createClient(
-      hostname: "localhost"
-      user: this.username
-      password: this.password
-      database: "cakecuba_import15"
+      hostname: this.upgradeHostname
+      user: this.upgradeUsername
+      password: this.upgradePassword
+      database: this.upgradeDB
     )
 
     signupUpgrader = new SignupUpgrader(this, this.cakeshowDBs[number])

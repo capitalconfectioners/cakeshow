@@ -232,7 +232,7 @@ def generate_entry_form(canvas, signup, entry, registrant, metadata):
         canvas.drawString(6.5 * inch, 0.60 * inch, str(signup.get('class')))
 
 
-def generate_registration_and_release_form(canvas, signup, registrant, divisionals, tastings):
+def generate_registration_and_release_form(canvas, signup, registrant, divisionals, tastings, showcases):
     year = int(signup.get('year'))
     sunday = get_show_end_date(year)
     if (sunday.find("March") < 0):
@@ -325,11 +325,21 @@ def generate_registration_and_release_form(canvas, signup, registrant, divisiona
     canvas.drawString(inch, offset * inch, "Showcake Competition: ")
     canvas.setFont("Helvetica", 10)
     offset -= 0.2
-    canvas.drawString(1.1 * inch, offset * inch, "Showcakes")
-    if (entries.get('Showcakes')):
-        canvas.drawString(3.1 * inch, offset * inch, entries['Showcakes'])
+    for showcase in showcases:
+        canvas.drawString(1.1 * inch, offset * inch, showcase)
+        if (entries.get(showcase)):
+            canvas.drawString(3.1 * inch, offset * inch, entries[showcase])
+
+    # Build up rows
+    rows = []
+    offset = table_offset - 0.05
+    for showcase in showcases:
+        rows.append(offset * inch)
+        offset -= 0.2
+    rows.append(offset * inch)
+
     # Draw grid
-    canvas.grid([inch, 3 * inch, 7.75 * inch], [table_offset * inch, (table_offset - 0.2) * inch])
+    canvas.grid([inch, 3 * inch, 7.75 * inch], rows)
 
     canvas.setFont("Helvetica", 10)
     canvas.drawString(0.5 * inch, 3.10 * inch, "Release: By signing below, I understand that my entry(ies) may be photographed and published for the promotion of")
@@ -375,7 +385,7 @@ if __name__ == "__main__":
             canvas.showPage()
     for contestant in data['entries']:
         # Print R&R form
-        generate_registration_and_release_form(canvas, contestant.get('signup'), contestant.get('registrant'), data['metadata']['divisionals'], data['metadata']['tastings'])
+        generate_registration_and_release_form(canvas, contestant.get('signup'), contestant.get('registrant'), data['metadata']['divisionals'], data['metadata']['tastings'], data['metadata']['showcases'])
         canvas.showPage()
 
         # Put all of the contestant's judging sheets together

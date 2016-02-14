@@ -12,11 +12,11 @@ report_dir = 'public'
 
 exports.register = (app, cakeshowDB) ->
   middleware = new exports.DatabaseMiddleware(cakeshowDB)
-  
+
   app.get('/toc', middleware.shows, toc)
-  
+
   app.get('/registrants', addLinksTo(middleware.allRegistrants), registrants)
-  
+
   app.get('/shows/:year/signups', addLinksTo(middleware.signups), signups)
   app.get('/shows/:year/signups/print', middleware.allEntries, printSignups)
   app.get('/shows/:year/signups/all', middleware.entryTable, allSignups)
@@ -24,17 +24,17 @@ exports.register = (app, cakeshowDB) ->
   app.get('/signups', addLinksTo(middleware.signups), signups)
   app.get('/signups/:signupID', middleware.singleSignup, singleSignup)
   app.get('/signups/:signupID/print', middleware.signupWithEntries, printSingleSignup)
-  
+
   app.put('/shows/:year/signups/:signupId', middleware.singleSignup, putSignup)
   app.put('/signups/:signupID', middleware.singleSignup, putSignup)
-  
+
   app.post('/shows/:year/signups', middleware.postSignup)
   app.post('/signups', middleware.postSignup)
-  
+
   app.get('/signups/:signupID/entries', middleware.entriesForSignup, entries)
   app.put('/signups/:signupID/entries/:id', middleware.entry, putEntry)
   app.post('/signups/:signupID/entries', middleware.singleSignup, middleware.postEntry)
-  
+
   app.get('*', jsonResponse)
   app.get('*', htmlResponse)
 
@@ -45,7 +45,7 @@ jsonResponse = (request, response, next) ->
     next()
 
 htmlResponse = (request, response, next) ->
-  response.render('index', 
+  response.render('index',
     title: 'Cakeshow'
     initialState: JSON.stringify(
       route: request.url
@@ -57,56 +57,56 @@ htmlResponse = (request, response, next) ->
 addLinks = (request, response, next) ->
   if request.next_page?
     nextUrl = url.parse(request.originalUrl, true)
-    
+
     if nextUrl.query?
       nextUrl.query.page = request.next_page
     else
       nextUrl.query = {page: request.next_page}
     delete nextUrl.search
-    
+
     link = "<#{url.format(nextUrl)}>; rel=\"next\""
-  
+
   if request.prev_page?
     prevUrl = url.parse(request.originalUrl, true)
-    
+
     if prevUrl.query?
       prevUrl.query.page = request.prev_page
     else
       prevUrl.query = {page: request.prev_page}
-    
+
     delete prevUrl.search
-    
+
     if link?
       link += ", "
     else
       link = ""
-    
+
     link += "<#{url.format(prevUrl)}>; rel=\"prev\""
-  
+
   if link?
     response.header('Link', link)
-  
+
   next()
 
 addLinksTo = (route) ->
   return [route, addLinks]
 
 toc = (request, response, next) ->
-  toc = 
+  toc =
     Registrants: '/registrants'
     Shows: {}
-  
+
   for show in request.shows
     toc.Shows[show] = '/shows/' + show + '/signups'
-  
+
   response.json(toc)
 
 sanitizeRegistrant = (registrant) ->
   rawRegistrant = {}
   rawRegistrant[key] = value for key, value of registrant.values when key != 'password'
-  return rawRegistrant  
+  return rawRegistrant
 
-registrants = (request, response, next) -> 
+registrants = (request, response, next) ->
   request.jsonResults = []
   for registrant in request.registrants
     request.jsonResults.push(sanitizeRegistrant(registrant))
@@ -169,11 +169,13 @@ runPDFGenerator = (entry_data, callback) ->
 
   divisionals = (value for key, value of data_types.entryNames[year] when key.indexOf('style') == 0)
   tastings = (value for key, value of data_types.entryNames[year] when key.indexOf('special') == 0)
+  showcases = (value for key, value of data_types.entryNames[year] when key.indexOf('showcase') == 0)
 
   data =
     metadata:
       divisionals: divisionals
       tastings: tastings
+      showcases: showcases
     entries: entry_data
 
   json = JSON.stringify(data, null, 2)
@@ -194,7 +196,7 @@ runPDFGenerator = (entry_data, callback) ->
 
 singleSignup = (request, response, next) ->
   request.jsonResults = signupToJSON(request.signup)
-  
+
   next()
 
 printSingleSignup = (request, response, next) ->
@@ -240,7 +242,7 @@ entries = (request, response, next) ->
   request.jsonResults = []
   for entry in request.entries
     request.jsonResults.push( entry.values )
-  
+
   response.json(request.jsonResults)
 
 putEntry = (request, response, next) ->
@@ -255,13 +257,13 @@ putEntry = (request, response, next) ->
 exports.DatabaseMiddleware = class DatabaseMiddleware
   constructor: (cakeshowDB) ->
     this.cakeshowDB = cakeshowDB
-  
+
   shows: (request, response, next) =>
-    distinct = 
+    distinct =
       build: (values) ->
         return values.year
-      
-    this.cakeshowDB.cakeshowDB.getQueryInterface().select(distinct, this.cakeshowDB.Signup.tableName, 
+
+    this.cakeshowDB.cakeshowDB.getQueryInterface().select(distinct, this.cakeshowDB.Signup.tableName,
       attributes: [['distinct year', 'year']]
     )
     .success( (years) ->
@@ -271,30 +273,30 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     .error( (error) ->
       return next(new Error("Could not select show list: " + error))
     )
-  
+
   attachPagination: (request, count) ->
     result = {}
-    
+
     result.page = parseInt(request.param('page','1'), 10)
     result.limit = parseInt(request.param('page_size','25'), 10)
-    
+
     result.offset = (result.page-1)*result.limit
-    
+
     request.total_results = count
-      
-    if result.page > 1 
+
+    if result.page > 1
       request.prev_page = result.page-1
-    
+
     if result.offset + result.limit < count
       request.next_page = result.page+1
-    
+
     return result
-  
+
   allRegistrants: (request, response, next) =>
-    
+
     this.cakeshowDB.Registrant.count().success( (count) =>
       {page, limit, offset} = this.attachPagination(request, count)
-      
+
       this.cakeshowDB.Registrant.findAll(
         offset:offset
         limit:limit
@@ -310,7 +312,7 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     .error( (error) ->
       return next(new Error('Could not count registrants: ' + error))
     )
-  
+
   singleSignup: (request, response, next) =>
     id = parseInt(request.param('signupID'), 10)
     this.cakeshowDB.Signup.joinTo( this.cakeshowDB.Registrant, where: id )
@@ -340,37 +342,37 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     .error( (error) ->
       return next(new Error("Could not load signup #{id}: " + error))
     )
-  
+
   signups: (request, response, next) =>
     requestedYear = request.param('year')
-    
+
     if requestedYear?
-      filter = 
+      filter =
         year: requestedYear
     else
       filter = {}
-    
+
     search = request.param('search')
     if search?
       filters = []
-      
+
       if filter.year?
         yearFilter = this.cakeshowDB.Signup.quoted('year') + " = '#{filter.year}'"
         filters.push(yearFilter)
-      
+
       firstnameFilter = this.cakeshowDB.Registrant.quoted('firstname') + " LIKE '%#{search}%'"
       lastnameFilter = this.cakeshowDB.Registrant.quoted('lastname') + " LIKE '%#{search}%'"
-      
+
       nameFilter = [firstnameFilter, lastnameFilter].join(" OR ")
       filters.push('(' + nameFilter + ')')
-      
+
       filter = filters.join(" AND ")
-    
+
     this.cakeshowDB.Signup.countJoined( this.cakeshowDB.Registrant, where: filter )
     .success( (count) =>
       {page, limit, offset} = this.attachPagination(request, count)
-      
-      this.cakeshowDB.Signup.joinTo( this.cakeshowDB.Registrant, 
+
+      this.cakeshowDB.Signup.joinTo( this.cakeshowDB.Registrant,
         where: filter
         offset:offset
         limit:limit
@@ -387,19 +389,19 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     .error( (error) ->
       return next(new Error('Could not count signups: ' + error))
     )
-  
+
   postSignup: (request, response, next) =>
     registrantSignup = request.body
-    
-    if registrantSignup.signup.year? and request.param('year')? and 
+
+    if registrantSignup.signup.year? and request.param('year')? and
     registrantSignup.signup.year != request.param('year')
       return next(new Error('Years do not match'))
-    
+
     registrant = this.cakeshowDB.Registrant.build(registrantSignup.registrant)
     signup = this.cakeshowDB.Signup.build(registrantSignup.signup)
-    
+
     chain = new Sequelize.Utils.QueryChainer()
-    
+
     chain.add(registrant.save())
     chain.add(signup.save())
     chain.run()
@@ -415,8 +417,8 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     )
     .error( (error) ->
       return next(new Error('Could not create registrant and signup: ' + error))
-    ) 
-  
+    )
+
   entriesForSignup: (request, response, next) =>
     signupID = request.param('signupID')
     this.cakeshowDB.Entry.findAll( where: SignupID: signupID )
@@ -434,9 +436,9 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
   allEntries: (request, response, next) =>
     requestedYear = request.param('year')
     requestedAfter = request.param('after')
-    
+
     if requestedYear?
-      filter = 
+      filter =
         year: requestedYear
     else
       filter = {}
@@ -446,10 +448,10 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
         filter = "Signups.year = #{Sequelize.Utils.escape(requestedYear)}"
       else
         filter = ''
-  
+
       filter += " AND Signups.createdAt > #{Sequelize.Utils.escape(requestedAfter)}"
-    
-    this.cakeshowDB.Signup.joinTo( this.cakeshowDB.Registrant, 
+
+    this.cakeshowDB.Signup.joinTo( this.cakeshowDB.Registrant,
       where: filter
       order: 'lastname ASC, firstname ASC'
     )
@@ -476,13 +478,13 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
 
   entryTable: (request, response, next) =>
     requestedYear = request.param('year')
-    
+
     if requestedYear?
-      filter = 
+      filter =
         year: requestedYear
     else
       filter = {}
-    
+
     this.cakeshowDB.Entry.joinTo( [this.cakeshowDB.Signup,
                                    this.cakeshowDB.Registrant],
       where: filter
@@ -493,7 +495,7 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     )
     .error( (error) ->
       next(new Error(error))
-    )    
+    )
 
   entry: (request, response, next) =>
     id = parseInt(request.param('id'), 10)
@@ -505,13 +507,13 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     .error( (error) ->
       return next(new Error("Could not find entry with id #{id}: " + error))
     )
-  
+
   postEntry: (request, response, next) =>
     entryAttributes = request.body
     entryAttributes.year = request.signup.Signup.year
-    
+
     entry = this.cakeshowDB.Entry.build(entryAttributes)
-    
+
     entry.save()
     .success( ->
       request.signup.Signup.addEntry(entry)
@@ -525,4 +527,3 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     .error( (error) ->
       return next(new Error("Could not create new entry: " + error))
     )
-    

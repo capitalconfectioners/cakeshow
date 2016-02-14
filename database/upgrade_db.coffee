@@ -1,6 +1,3 @@
-# Note: this does not create entries for Child or Juniors, but it
-# should create one entry.
-#
 # Also note that, on bluehost, I created a single DB to store the
 # ported data from the old website, so the DB name generation logic
 # has been messed with, but the overall logic has not. Most
@@ -16,6 +13,9 @@ exit = (message) ->
 
 styleMap =
   showcasecakes: "showcase"
+  showcasecakes2: "showcase2"
+  showcasecakes3: "showcase3"
+  showcasecakes4: "showcase4"
   style1: "style1"
   style2: "style2"
   style3: "style3"
@@ -39,7 +39,7 @@ signupColumnMap =
 
 class Upgrader
   cakeshowDBs :
-    "15": "2015"
+    "16": "2016"
 
   constructor: (username='root', password='', hostname='localhost', database='cakecuba_import15') ->
     this.upgradeDB = database

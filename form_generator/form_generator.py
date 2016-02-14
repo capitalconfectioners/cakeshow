@@ -7,7 +7,8 @@ from reportlab.lib.units import inch
 
 SHOW_DATES = {
         2014: ("February 22", "23"),
-        2015: ("February 21", "22")
+        2015: ("February 21", "22"),
+        2016: ("February 27", "28")
 }
 
 
@@ -17,7 +18,7 @@ def _is_tasting(metadata, entry):
 
 def generate_judging_form(canvas, signup, entry, metadata):
 	header(canvas, signup, entry, metadata)
-	if (entry.get('category') == 'Showcakes'):
+	if (entry.get('category').startswith('Showcakes')):
 		judging_showcake_body(canvas)
 	elif _is_tasting(metadata, entry):
 		judging_tasting_body(canvas)
@@ -39,7 +40,7 @@ def header(canvas, signup, entry, metadata):
 
 	# Print entry number, division & category
 	canvas.drawString(6.5 * inch, 10 * inch, "Entry #" + str(entry.get('id')))
-	if (entry.get('category') == 'Showcakes'):
+	if (entry.get('category').startswith('Showcakes')):
 		canvas.drawString(6.5 * inch, 9.75 * inch, entry.get('category'))
 	elif _is_tasting(metadata, entry):
 		canvas.drawString(6.5 * inch, 9.75 * inch, entry.get('category'))
@@ -222,7 +223,7 @@ def generate_entry_form(canvas, signup, entry, registrant, metadata):
 	canvas.setFont("Helvetica", 10)
 	canvas.drawString(6.5 * inch, 0.90 *inch, str(registrant.get('firstname')))
 	canvas.drawString(6.5 * inch, 0.75 *inch, str(registrant.get('lastname')))
-	if (entry.get('category') == 'Showcakes'):
+	if (entry.get('category').startswith('Showcakes')):
 		canvas.drawString(6.5 * inch, 0.60 *inch, "Showcakes")
 	elif _is_tasting(metadata, entry):
 		canvas.drawString(6.5 * inch, 0.60 *inch, "Tasting")

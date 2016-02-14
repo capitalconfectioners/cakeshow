@@ -340,7 +340,7 @@ def generate_registration_and_release_form(canvas, signup, registrant, divisiona
     rows.append(offset * inch)
 
     # Draw grid
-    canvas.grid([inch, 3 * inch, 8.25 * inch], rows)
+    canvas.grid([inch, 3 * inch, 7.75 * inch], rows)
 
     canvas.setFont("Helvetica", 10)
     canvas.drawString(0.5 * inch, 3.10 * inch, "Release: By signing below, I understand that my entry(ies) may be photographed and published for the promotion of")

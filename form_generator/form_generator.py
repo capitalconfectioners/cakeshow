@@ -239,24 +239,24 @@ def generate_registration_and_release_form(canvas, signup, registrant, divisiona
         sunday = "February " + sunday
 
     canvas.setFont("Helvetica-Bold", 20)
-    canvas.drawString(inch, 10 * inch, str(year) + " Competition Registration and Release Form")
+    canvas.drawString(inch, 10.50 * inch, str(year) + " Competition Registration and Release Form")
     canvas.setFont("Helvetica-Bold", 18)
-    canvas.drawString(2.75 * inch, 9.50 * inch, "That Takes the Cake! " + str(year))
+    canvas.drawString(2.75 * inch, 10.00 * inch, "That Takes the Cake! " + str(year))
     canvas.setFont("Helvetica", 14)
-    canvas.drawString(2.65 * inch, 9.25 * inch, "Cake & Sugar Art Show & Competition")
-    canvas.drawString(2.90 * inch, 9.00 * inch, "Capital Confectioners, Austin, TX")
+    canvas.drawString(2.65 * inch, 9.75 * inch, "Cake & Sugar Art Show & Competition")
+    canvas.drawString(2.90 * inch, 9.50 * inch, "Capital Confectioners, Austin, TX")
 
     canvas.setFont("Helvetica-Bold", 14)
-    canvas.drawString(inch, 8.70 * inch, registrant.get('lastname') + ", " + registrant.get('firstname'))
+    canvas.drawString(inch, 9.20 * inch, registrant.get('lastname') + ", " + registrant.get('firstname'))
     canvas.setFont("Helvetica", 14)
     if (registrant.get('address')):
-        canvas.drawString(inch, 8.50 * inch, registrant.get('address'))
+        canvas.drawString(inch, 9.00 * inch, registrant.get('address'))
     if ((registrant.get('city')) and (registrant.get('state')) and (registrant.get('zipcode'))):
-        canvas.drawString(inch, 8.30 * inch, registrant.get('city') + ", " + registrant.get('state') + " " + registrant.get('zipcode'))
+        canvas.drawString(inch, 8.80 * inch, registrant.get('city') + ", " + registrant.get('state') + " " + registrant.get('zipcode'))
     if (registrant.get('email')):
-        canvas.drawString(inch, 8.10 * inch, registrant.get('email'))
+        canvas.drawString(inch, 8.60 * inch, registrant.get('email'))
     if (registrant.get('phone')):
-        canvas.drawString(inch, 7.90 * inch, registrant.get('phone'))
+        canvas.drawString(inch, 8.40 * inch, registrant.get('phone'))
 
     # Build up list of entry numbers by entry type
     entries = {}
@@ -274,9 +274,9 @@ def generate_registration_and_release_form(canvas, signup, registrant, divisiona
         if ((signup['class'] == 'Child') or (signup['class'] == 'Junior')):
             for entry in contestant.get('entries'):
                 division += " : " + str(entry['id'])
-    canvas.drawString(inch, 7.55 * inch, division)
+    canvas.drawString(inch, 8.05 * inch, division)
     canvas.setFont("Helvetica", 10)
-    offset = 7.35
+    offset = 7.85
     for division in divisionals:
         canvas.drawString(1.1 * inch, offset * inch, division)
         if (entries.get(division)):
@@ -285,7 +285,7 @@ def generate_registration_and_release_form(canvas, signup, registrant, divisiona
 
     # Build up rows
     rows = []
-    offset = 7.5
+    offset = 8.0
     for division in divisionals:
         rows.append(offset * inch)
         offset -= 0.2
@@ -320,7 +320,7 @@ def generate_registration_and_release_form(canvas, signup, registrant, divisiona
 
     # Print Showcakes table
     offset -= 0.4
-    table_offset = offset - 0.05
+    table_offset = offset
     canvas.setFont("Helvetica-Bold", 10)
     canvas.drawString(inch, offset * inch, "Showcake Competition: ")
     canvas.setFont("Helvetica", 10)
@@ -340,7 +340,7 @@ def generate_registration_and_release_form(canvas, signup, registrant, divisiona
     rows.append(offset * inch)
 
     # Draw grid
-    canvas.grid([inch, 3 * inch, 7.75 * inch], rows)
+    canvas.grid([inch, 3 * inch, 8.25 * inch], rows)
 
     canvas.setFont("Helvetica", 10)
     canvas.drawString(0.5 * inch, 3.10 * inch, "Release: By signing below, I understand that my entry(ies) may be photographed and published for the promotion of")

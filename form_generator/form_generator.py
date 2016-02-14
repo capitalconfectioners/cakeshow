@@ -40,18 +40,18 @@ def header(canvas, signup, entry, metadata):
 
     # Print entry number, division & category
     canvas.setFont("Helvetica-Bold", 20)
-    canvas.drawRightString(8.0 * inch, 10 * inch, "Entry #" + str(entry.get('id')))
+    canvas.drawRightString(7.75 * inch, 10 * inch, "Entry #" + str(entry.get('id')))
     canvas.setFont("Helvetica", 12)
     if (entry.get('category').startswith('Showcakes')):
-        canvas.drawRightString(8.0 * inch, 9.75 * inch, entry.get('category'))
+        canvas.drawRightString(7.75 * inch, 9.75 * inch, entry.get('category'))
     elif _is_tasting(metadata, entry):
-        canvas.drawRightString(8.0 * inch, 9.75 * inch, entry.get('category'))
+        canvas.drawRightString(7.75 * inch, 9.75 * inch, entry.get('category'))
     else:
         className = signup.get('class', '')
-        canvas.drawRightString(8.0 * inch, 9.75 * inch, className)
+        canvas.drawRightString(7.75 * inch, 9.75 * inch, className)
         if (className):
             if ((className.find('Child') < 0) and (className.find('Junior') < 0)):
-                canvas.drawRightString(8.0 * inch, 9.50 * inch, entry.get('category'))
+                canvas.drawRightString(7.75 * inch, 9.50 * inch, entry.get('category'))
     canvas.setFont("Helvetica", 14)
 
 

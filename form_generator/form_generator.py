@@ -43,15 +43,15 @@ def header(canvas, signup, entry, metadata):
     canvas.drawString(6.5 * inch, 10 * inch, "Entry #" + str(entry.get('id')))
     canvas.setFont("Helvetica", 12)
     if (entry.get('category').startswith('Showcakes')):
-        canvas.drawString(6.5 * inch, 9.75 * inch, entry.get('category'))
+        canvas.drawRightString(6.5 * inch, 9.75 * inch, entry.get('category'))
     elif _is_tasting(metadata, entry):
-        canvas.drawString(6.5 * inch, 9.75 * inch, entry.get('category'))
+        canvas.drawRightString(6.5 * inch, 9.75 * inch, entry.get('category'))
     else:
         className = signup.get('class', '')
-        canvas.drawString(6.5 * inch, 9.75 * inch, className)
+        canvas.drawRightString(6.5 * inch, 9.75 * inch, className)
         if (className):
             if ((className.find('Child') < 0) and (className.find('Junior') < 0)):
-                canvas.drawString(6.5 * inch, 9.50 * inch, entry.get('category'))
+                canvas.drawRightString(6.5 * inch, 9.50 * inch, entry.get('category'))
     canvas.setFont("Helvetica", 14)
 
 

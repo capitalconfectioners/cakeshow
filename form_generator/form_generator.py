@@ -39,7 +39,9 @@ def header(canvas, signup, entry, metadata):
     canvas.drawString(inch, 9.25 * inch, get_show_start_date(year) + " & " + get_show_end_date(year))
 
     # Print entry number, division & category
+    canvas.setFont("Helvetica-Bold", 20)
     canvas.drawString(6.5 * inch, 10 * inch, "Entry #" + str(entry.get('id')))
+    canvas.setFont("Helvetica", 12)
     if (entry.get('category').startswith('Showcakes')):
         canvas.drawString(6.5 * inch, 9.75 * inch, entry.get('category'))
     elif _is_tasting(metadata, entry):
@@ -50,6 +52,7 @@ def header(canvas, signup, entry, metadata):
         if (className):
             if ((className.find('Child') < 0) and (className.find('Junior') < 0)):
                 canvas.drawString(6.5 * inch, 9.50 * inch, entry.get('category'))
+    canvas.setFont("Helvetica", 14)
 
 
 def get_show_start_date(year):

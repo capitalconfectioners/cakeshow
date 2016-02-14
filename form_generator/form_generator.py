@@ -51,6 +51,7 @@ def header(canvas, signup, entry, metadata):
             if ((className.find('Child') < 0) and (className.find('Junior') < 0)):
                 canvas.drawString(6.5 * inch, 9.50 * inch, entry.get('category'))
 
+
 def get_show_start_date(year):
     return SHOW_DATES[year][0]
 
@@ -84,7 +85,7 @@ def judging_divisional_body(canvas):
     rows.append(offset * inch)
 
     # Draw grid
-    canvas.grid([inch, 3.25*inch, 4.50*inch, 5.50*inch, 6.50*inch, 7.75*inch], rows)
+    canvas.grid([inch, 3.25 * inch, 4.50 * inch, 5.50 * inch, 6.50 * inch, 7.75 * inch], rows)
 
     # Display comments section
     offset -= 0.5
@@ -125,8 +126,8 @@ def judging_showcake_body(canvas):
     rows.append(offset * inch)
 
     # Draw grid
-    canvas.grid([inch, 5.75*inch, 6.75*inch, 7.75*inch], rows)
-    canvas.grid([6.75*inch, 7.75*inch], [offset * inch, (offset - 0.375) * inch])
+    canvas.grid([inch, 5.75 * inch, 6.75 * inch, 7.75 * inch], rows)
+    canvas.grid([6.75 * inch, 7.75 * inch], [offset * inch, (offset - 0.375) * inch])
     offset -= 0.375
 
     # Display comments section
@@ -137,6 +138,7 @@ def judging_showcake_body(canvas):
     while (offset > 1.5):
         offset -= 0.5
         canvas.line(1 * inch, offset * inch, 7.5 * inch, offset * inch)
+
 
 def judging_tasting_body(canvas):
     criteria = ["Flavor", "Crumb", "Texture", "Density", "Appearance", "Theme"]
@@ -167,8 +169,8 @@ def judging_tasting_body(canvas):
     rows.append(offset * inch)
 
     # Draw grid
-    canvas.grid([inch, 5.75*inch, 6.75*inch, 7.75*inch], rows)
-    canvas.grid([6.75*inch, 7.75*inch], [offset * inch, (offset - 0.375) * inch])
+    canvas.grid([inch, 5.75 * inch, 6.75 * inch, 7.75 * inch], rows)
+    canvas.grid([6.75 * inch, 7.75 * inch], [offset * inch, (offset - 0.375) * inch])
     offset -= 0.375
 
     # Display comments section
@@ -220,14 +222,15 @@ def generate_entry_form(canvas, signup, entry, registrant, metadata):
 
     # print name on last label
     canvas.setFont("Helvetica", 10)
-    canvas.drawString(6.5 * inch, 0.90 *inch, str(registrant.get('firstname')))
-    canvas.drawString(6.5 * inch, 0.75 *inch, str(registrant.get('lastname')))
+    canvas.drawString(6.5 * inch, 0.90 * inch, str(registrant.get('firstname')))
+    canvas.drawString(6.5 * inch, 0.75 * inch, str(registrant.get('lastname')))
     if (entry.get('category').startswith('Showcakes')):
-        canvas.drawString(6.5 * inch, 0.60 *inch, "Showcakes")
+        canvas.drawString(6.5 * inch, 0.60 * inch, "Showcakes")
     elif _is_tasting(metadata, entry):
-        canvas.drawString(6.5 * inch, 0.60 *inch, "Tasting")
+        canvas.drawString(6.5 * inch, 0.60 * inch, "Tasting")
     else:
-        canvas.drawString(6.5 * inch, 0.60 *inch, str(signup.get('class')))
+        canvas.drawString(6.5 * inch, 0.60 * inch, str(signup.get('class')))
+
 
 def generate_registration_and_release_form(canvas, signup, registrant, divisionals, tastings):
     year = int(signup.get('year'))
@@ -270,14 +273,14 @@ def generate_registration_and_release_form(canvas, signup, registrant, divisiona
         division += signup['class']
         if ((signup['class'] == 'Child') or (signup['class'] == 'Junior')):
             for entry in contestant.get('entries'):
-                division += " : " +  str(entry['id'])
+                division += " : " + str(entry['id'])
     canvas.drawString(inch, 7.55 * inch, division)
     canvas.setFont("Helvetica", 10)
     offset = 7.35
     for division in divisionals:
-        canvas.drawString(1.1*inch, offset * inch, division)
+        canvas.drawString(1.1 * inch, offset * inch, division)
         if (entries.get(division)):
-            canvas.drawString(3.1*inch, offset * inch, entries[division])
+            canvas.drawString(3.1 * inch, offset * inch, entries[division])
         offset -= 0.2
 
     # Build up rows
@@ -289,7 +292,7 @@ def generate_registration_and_release_form(canvas, signup, registrant, divisiona
     rows.append(offset * inch)
 
     # Draw grid
-    canvas.grid([inch, 3*inch, 7.75*inch], rows)
+    canvas.grid([inch, 3 * inch, 7.75 * inch], rows)
 
     # Print tastings table
     offset -= 0.4
@@ -299,9 +302,9 @@ def generate_registration_and_release_form(canvas, signup, registrant, divisiona
     canvas.setFont("Helvetica", 10)
     offset -= 0.2
     for tasting in tastings:
-        canvas.drawString(1.1*inch, offset * inch, tasting)
+        canvas.drawString(1.1 * inch, offset * inch, tasting)
         if (entries.get(tasting)):
-            canvas.drawString(3.1*inch, offset * inch, entries[tasting])
+            canvas.drawString(3.1 * inch, offset * inch, entries[tasting])
         offset -= 0.2
 
     # Build up rows
@@ -313,7 +316,7 @@ def generate_registration_and_release_form(canvas, signup, registrant, divisiona
     rows.append(offset * inch)
 
     # Draw grid
-    canvas.grid([inch, 3*inch, 7.75*inch], rows)
+    canvas.grid([inch, 3 * inch, 7.75 * inch], rows)
 
     # Print Showcakes table
     offset -= 0.4
@@ -322,11 +325,11 @@ def generate_registration_and_release_form(canvas, signup, registrant, divisiona
     canvas.drawString(inch, offset * inch, "Showcake Competition: ")
     canvas.setFont("Helvetica", 10)
     offset -= 0.2
-    canvas.drawString(1.1*inch, offset * inch, "Showcakes")
+    canvas.drawString(1.1 * inch, offset * inch, "Showcakes")
     if (entries.get('Showcakes')):
-        canvas.drawString(3.1*inch, offset * inch, entries['Showcakes'])
+        canvas.drawString(3.1 * inch, offset * inch, entries['Showcakes'])
     # Draw grid
-    canvas.grid([inch, 3*inch, 7.75*inch], [table_offset * inch, (table_offset - 0.2) * inch])
+    canvas.grid([inch, 3 * inch, 7.75 * inch], [table_offset * inch, (table_offset - 0.2) * inch])
 
     canvas.setFont("Helvetica", 10)
     canvas.drawString(0.5 * inch, 3.10 * inch, "Release: By signing below, I understand that my entry(ies) may be photographed and published for the promotion of")

@@ -329,6 +329,7 @@ def generate_registration_and_release_form(canvas, signup, registrant, divisiona
         canvas.drawString(1.1 * inch, offset * inch, showcase)
         if (entries.get(showcase)):
             canvas.drawString(3.1 * inch, offset * inch, entries[showcase])
+        offset -= 0.2
 
     # Build up rows
     rows = []

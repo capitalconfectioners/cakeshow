@@ -76,6 +76,13 @@ class CakeshowDB
         type: Sequelize.BOOLEAN
         default: false
       entryNumber: Sequelize.INTEGER
+      divisionPlace: Sequelize.INTEGER
+      bestInDivision:
+        type: Sequelize.BOOLEAN
+        default: false
+      bestInShow:
+        type: Sequelize.BOOLEAN
+        default: false
     )
 
     this.Registrant.hasMany(this.Signup, as: 'Signups')

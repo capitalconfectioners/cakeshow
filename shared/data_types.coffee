@@ -97,7 +97,7 @@ exports.entryNames =
     style6: 'Special Techniques'
     style7: 'Confections'
     style8: 'Dessert Table'
-    style9: 'Fairy Tale Gingerbread House'
+    style9: 'Cookies'
     special1: 'Pate a Choux'
     special2: 'Swiss Roll'
     special3: 'Museum inspired Desserts'

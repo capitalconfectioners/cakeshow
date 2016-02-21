@@ -41,23 +41,23 @@ mysql = (options, args = []) ->
   else
     command = 'mysql'
 
-  arguments = []
+  args = []
 
   if options.database?
-    arguments = arguments.concat(['-D', options.database])
+    args = args.concat(['-D', options.database])
 
   if options.user?
-    arguments = arguments.concat(['-u', options.user])
+    args = args.concat(['-u', options.user])
 
   if options.password?
-    arguments = arguments.concat(['-p', options.password])
+    args = args.concat(['-p', options.password])
 
   if options.verbose?
-    arguments.push('--verbose')
+    args.push('--verbose')
 
   env = childEnv(options)
 
-  return redirect(spawn(command, arguments.concat(args)), { env: env })
+  return redirect(spawn(command, args.concat(args)), { env: env })
 
 coffee = (script, args, options) ->
   if options?

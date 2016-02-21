@@ -1,5 +1,8 @@
 exports.entryTypes = [
   'showcase'
+  'showcase2'
+  'showcase3'
+  'showcase4'
   'style1'
   'style2'
   'style3'

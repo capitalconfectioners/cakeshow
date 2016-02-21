@@ -25,6 +25,8 @@ exports.register = (app, cakeshowDB) ->
   app.get('/signups/:signupID', middleware.singleSignup, singleSignup)
   app.get('/signups/:signupID/print', middleware.signupWithEntries, printSingleSignup)
 
+  app.get('/entries/:entryID', middleware.entryWithSignup, getEntry)
+
   app.put('/shows/:year/signups/:signupId', middleware.singleSignup, putSignup)
   app.put('/signups/:signupID', middleware.singleSignup, putSignup)
 
@@ -252,6 +254,13 @@ putEntry = (request, response, next) ->
   )
   .error( (error) ->
     return next(new Error("Could not save entry #{request.entry.id} with values #{request.body}: " + error))
+  )
+
+getEntry = (request, response, next) ->
+  response.json(
+    entry: request.entry.Entry.values
+    signup: request.entry.Signup.values
+    registrant: sanitizeRegistrant(request.entry.Registrant)
   )
 
 exports.DatabaseMiddleware = class DatabaseMiddleware
@@ -506,6 +515,21 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     )
     .error( (error) ->
       return next(new Error("Could not find entry with id #{id}: " + error))
+    )
+
+  entryWithSignup: (request, response, next) =>
+    id = parseInt(request.param('entryID'), 10)
+    this.cakeshowDB.Entry.joinTo( [this.cakeshowDB.Signup,
+                                   this.cakeshowDB.Registrant],
+      where:
+        id: id
+    )
+    .success( (entry) ->
+      request.entry = entry[0]
+      next()
+    )
+    .error( (error) ->
+      next(new Error(error))
     )
 
   postEntry: (request, response, next) =>

@@ -29,3 +29,10 @@ exports.Winner = class Winner extends Backbone.Model
 
   idChanged: =>
     this.set('saving', true)
+    $.post(
+      "/shows/#{this.get('year')}/signups/winners/#{this.get('division')}/#{this.get('category')}/#{this.get('place')}",
+      {id: this.get('id')},
+      (data) =>
+        this.set('saving', false)
+      'json'
+    )

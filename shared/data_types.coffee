@@ -140,3 +140,11 @@ exports.isTasting = (category) ->
 
 exports.isShowcase = (category) ->
   return category.startsWith('showcase')
+
+exports.divisionName = (division) ->
+  if division of exports.divisionNames
+    exports.divisionNames[division]
+  else if division == 'tasting'
+    'Tasting'
+  else if division == 'showcase'
+    'Showcase'

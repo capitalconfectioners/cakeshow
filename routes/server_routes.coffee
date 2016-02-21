@@ -21,6 +21,7 @@ exports.register = (app, cakeshowDB) ->
   app.get('/shows/:year/signups/print', middleware.allEntries, printSignups)
   app.get('/shows/:year/signups/all', middleware.entryTable, allSignups)
   app.get('/shows/:year/signups/winners', middleware.winners, getWinners)
+  app.post('/shows/:year/signups/winners/:division/:category/:place', middleware.postWinner, postWinner)
 
   app.get('/signups', addLinksTo(middleware.signups), signups)
   app.get('/signups/:signupID', middleware.singleSignup, singleSignup)
@@ -278,6 +279,11 @@ getWinners = (request, response, next) ->
 
   request.jsonResults = winners
   next()
+
+postWinner = (request, response, next) ->
+  response.json(
+    ok: true
+  )
 
 exports.DatabaseMiddleware = class DatabaseMiddleware
   constructor: (cakeshowDB) ->
@@ -579,4 +585,24 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
       next()
     ).error( (error) ->
       return next(new Error('Could not fetch winners: ' + error))
+    )
+
+  postWinner: (request, response, next) =>
+    console.log 'updating winner', request.body
+    newID = parseInt(request.body.id)
+    this.cakeshowDB.Entry.find(newID)
+    .success( (entry) =>
+      console.log 'updating', entry
+      entry.updateAttributes(
+        divisionPlace: request.param('place')
+      )
+      .success( ->
+        next()
+      )
+      .error( (error) ->
+        return next(new Error('Could not update winner: ' + error))
+      )
+    )
+    .error( (error) ->
+      return next(new Error('Could not fetch entry: ' + error))
     )

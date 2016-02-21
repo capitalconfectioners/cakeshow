@@ -38,7 +38,7 @@ exports.DivisionWinners = class DivisionWinners extends Backbone.View
           category: category
       )
 
-      this.$el.append(divisionView.render().el)
+      this.$el.append(categoryView.render().el)
 
 exports.CategoryWinners = class CategoryWinners extends Backbone.View
   tagName: 'table'

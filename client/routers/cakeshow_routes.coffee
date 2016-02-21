@@ -16,7 +16,7 @@ class exports.CakeshowRoutes extends Backbone.Router
     'shows/:year/signups?:querystring': 'signups'
     'shows/:year/signups/add': 'addSignup'
     'shows/:year/signups/all': 'allSignups'
-    'shows/:year/winners': 'showWinners'
+    'shows/:year/signups/winners': 'showWinners'
 
     'signups/:id': 'singleSignup'
     'signups/add': 'addSignup'

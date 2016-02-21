@@ -21,15 +21,15 @@ cakeshowTypes = require('../data_types')
 exports.EntryView = class EntryView extends Backbone.View
   tagName: 'tr'
   className: 'entry'
-  
+
   events:
     'click input.didBring': 'didBringClicked'
     'click input.styleChange': 'categoryChangeClicked'
     'change select.category': 'categoryChanged'
-  
+
   initialize: =>
     this.categories = this.model.getCategories()
-  
+
   render: =>
     renderParams = this.model.toJSON()
     renderParams.categories = this.categories
@@ -37,50 +37,50 @@ exports.EntryView = class EntryView extends Backbone.View
     selectedIndex = _.indexOf(this.categories, this.model.categoryName())
     this.$el.find('select.category')[0].selectedIndex = selectedIndex
     return this
-  
+
   didBringClicked: =>
     this.model.set('didBring', this.$el.find('.didBring')[0].checked)
     this.model.save()
-  
+
   categoryChangeClicked: =>
     this.model.set('styleChange', this.$el.find('.styleChange')[0].checked)
     this.model.save()
-  
+
   categoryChanged: =>
     selected = this.$el.find('select.category')[0].selectedIndex
     this.model.setCategoryName(this.categories[selected])
-    
+
     this.model.set('styleChange', true)
     this.$el.find('input.styleChange')[0].checked = true
-    
+
     this.model.set('didBring', true)
     this.$el.find('input.didBring')[0].checked = true
-    
+
     this.model.save()
-  
+
 exports.EntryListView = class EntryListView extends Backbone.View
   className: 'entry-list'
-  
+
   events:
     'click .add-entry': 'createEntry'
-  
+
   initialize: ->
     this.collection.bind('reset', this.render)
     this.collection.bind('add', this.add)
     this.collection.view = this
-  
+
   add: (entry) =>
     view = new EntryView(model: entry)
     this.$el.find('table').append(view.render().el)
-    
+
   render: =>
     this.$el.html(entryListTemplate.render())
     this.add(entry) for entry in this.collection.models
-    
+
     this.$('.alert').alert()
-    
+
     return this
-  
+
   createEntry: =>
     this.collection.create(
       didBring: true
@@ -89,33 +89,33 @@ exports.EntryListView = class EntryListView extends Backbone.View
 
 exports.SignupView = class SignupView extends Backbone.View
   className: 'signup'
-  
+
   events:
     'change select.division': 'divisionChanged'
-    
+
   initialize: =>
     this.divisions = this.model.getDivisions()
-  
+
   render: =>
     renderParams = this.model.toJSON()
     renderParams.divisions = this.divisions
-    
+
     this.$el.html(signupTemplate.render(renderParams))
-    
+
     selectedIndex = _.indexOf(this.divisions, this.model.divisionName())
     this.$el.find('select.division')[0].selectedIndex = selectedIndex
-    
+
     collapse = this.$el.find('.collapse').collapse(
       toggle: false
     ).on('show', this.loadEntries)
     return this
-  
+
   loadEntries: =>
     unless this.entriesView?
       this.entriesView = new EntryListView(collection: this.model.getEntries())
       this.entriesView.collection.fetch()
       this.$el.find('.entries').html(this.entriesView.render().el)
-  
+
   divisionChanged: =>
     selected = this.$el.find('select.division')[0].selectedIndex
     this.model.setDivisionName(this.divisions[selected])
@@ -123,20 +123,20 @@ exports.SignupView = class SignupView extends Backbone.View
 
 exports.RegistrantSignupView = class RegistrantSignupView extends Backbone.View
   className: 'registrantSignup'
-    
+
   initialize: =>
     this.model.bind('change', this.render)
-  
+
   render: =>
     this.$el.html(registrantSignupTemplate.render())
     signupView = new SignupView(tagName: 'div', model: this.model.signup)
     registrantView = new RegistrantViews.RegistrantView(tagName: 'div', model: this.model.registrant)
-    
+
     this.$el.find('.signup').append(signupView.render().el)
     this.$el.find('.registrant').append(registrantView.render().el)
-    
+
     return this
-  
+
   title: =>
     return this.model.registrant.fullName()
 
@@ -145,33 +145,33 @@ exports.RegistrantSignupView = class RegistrantSignupView extends Backbone.View
       el: $('#page-modal')[0]
       model: this.model
     ).render()
-  
+
 exports.RegistrantSignupListView = class RegistrantSignupListView extends PagedListView
   el: '#content'
-  
+
   initialize: =>
     this.registerPagination('registrant-signups')
     this.collection.bind('reset', this.render)
     this.collection.bind('add', this.add)
     this.collection.view = this
-  
+
   add: (registrantSignup) =>
     view = new RegistrantSignupView( {tagName: 'li', model: registrantSignup} )
     this.$el.find('#registrant-signups').append(view.render().el)
-    
+
   render: =>
     this.$el.html(registrantSignupListTemplate.render())
-    
+
     this.add(registrantSignup) for registrantSignup in this.collection.models
-    
+
     super()
     return this
-  
+
   title: =>
     title = 'Signups'
     if this.collection.year?
       title += ' ' + this.collection.year
-    
+
     return title
 
   print: ->
@@ -218,43 +218,43 @@ exports.PrintView = class PrintView extends Backbone.View
 exports.EditRegistrantView = class EditRegistrantView extends Backbone.View
   render: =>
     this.$el.html(editRegistrantTemplate.render(this.model.toJSON()))
-    
+
     Backbone.ModelBinding.bind(this)
-    
+
     return this
 
 exports.EditSignupView = class EditSignupView extends Backbone.View
   render: =>
     renderParams = this.model.toJSON()
     renderParams.divisions = cakeshowTypes.divisionNames
-    
+
     console.log(renderParams.divisions)
-    
+
     this.$el.html(editSignupTemplate.render(renderParams))
-    
+
     Backbone.ModelBinding.bind(this)
-    
+
     return this
 
 exports.AddSignupView = class AddSignupView extends Backbone.View
   el: '#content'
-  
+
   events:
     'click button.save': 'save'
     'click button.cancel': 'cancel'
-  
+
   title: =>
     return 'Add Registrant'
-  
-  render: =>  
+
+  render: =>
     this.$el.html(addSignupTemplate.render())
-    
+
     if not this.editRegistrant?
       this.editRegistrant = new EditRegistrantView(
         el: '.edit-registrant'
         model: this.model.registrant
       )
-    
+
     if not this.editSignup?
       this.editSignup = new EditSignupView(
         el: '.edit-signup'
@@ -262,7 +262,7 @@ exports.AddSignupView = class AddSignupView extends Backbone.View
       )
     this.editRegistrant.render()
     this.editSignup.render()
-  
+
   save: =>
     console.log(this.model)
     this.model.signup.unset('class_text', silent: true)
@@ -275,19 +275,20 @@ exports.AddSignupView = class AddSignupView extends Backbone.View
         console.log('error saving signup: ')
         console.log(response)
     )
-  
+
   cancel: =>
     window.history.back()
-    
+
 exports.SignupNav = class SignupNav extends Backbone.View
   searchType: 'signups'
   el: 'body'
-  
+
   events:
     'click .navbar a.all': 'all'
     'click .navbar a.add': 'add'
     'click .navbar a.print': 'print'
-  
+    'click .navbar a.winners': 'winners'
+
   render: =>
     $('input#search').typeahead(
       minLength: 2
@@ -295,20 +296,20 @@ exports.SignupNav = class SignupNav extends Backbone.View
       onselect: this.searchSelected
       property: 'value'
     )
-    
+
     return this
-    
+
   searchSuggestions: (typeahead, query) =>
     this.collection.search(query, (results) ->
       for result in results
         result.value = result.registrant.firstname + " " + result.registrant.lastname
-      
+
       typeahead.process(results)
     )
-  
+
   searchSelected: (item) =>
     app.router.navigate('/signups/' + item.signup.id, trigger: true)
-  
+
   add: =>
     app.router.navigate(app.registrantSignups.baseUrl + '/add', trigger: true)
 
@@ -317,3 +318,6 @@ exports.SignupNav = class SignupNav extends Backbone.View
 
   all: =>
     app.router.navigate(app.registrantSignups.baseUrl + '/all', trigger: true)
+
+  winners: =>
+    app.router.navigate(app.registrantSignups.baseUrl + '/winners', trigger: true)

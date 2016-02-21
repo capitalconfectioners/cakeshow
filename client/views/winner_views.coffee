@@ -40,6 +40,8 @@ exports.DivisionWinners = class DivisionWinners extends Backbone.View
 
       this.$el.append(categoryView.render().el)
 
+    return this
+
 exports.CategoryWinners = class CategoryWinners extends Backbone.View
   tagName: 'table'
   className: 'category-winners'

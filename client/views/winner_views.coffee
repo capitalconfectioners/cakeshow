@@ -13,6 +13,7 @@ exports.AllWinners = class AllWinners extends Backbone.View
     return this.model.year + ' Winners'
 
   render: =>
+    console.log 'rendering winners into ', this.el
     for division in cakeshowTypes.divisions
       divisionView = new DivisionWinners(
         model:

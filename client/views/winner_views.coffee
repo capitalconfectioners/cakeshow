@@ -6,14 +6,12 @@ categoryWinnersTemplate = require('./templates/category_winners')
 winnerTemplate = require('./templates/winner')
 
 exports.AllWinners = class AllWinners extends Backbone.View
-  tagName: 'div'
-  className: 'all-winners'
-
   title: =>
     return this.model.year + ' Winners'
 
   render: =>
     console.log 'rendering winners into ', this.el
+    this.$el.html('<div class="all-winners"></div>')
     for division in cakeshowTypes.divisions
       divisionView = new DivisionWinners(
         model:
@@ -29,6 +27,7 @@ exports.DivisionWinners = class DivisionWinners extends Backbone.View
   tagName: 'div'
   className: 'division-winners'
   render: =>
+    console.log 'rendering division winners into', this.el
     showEntries = cakeshowTypes.entryNames[this.model.year]
 
     for category in cakeshowTypes.entryTypes when category in showEntries and category != 'child' and category != 'junior'
@@ -45,6 +44,7 @@ exports.CategoryWinners = class CategoryWinners extends Backbone.View
   tagName: 'table'
   className: 'category-winners'
   render: =>
+    console.log 'rendering category winners into', this.el
     this.$el.html(categoryWinnersTemplate.render(this.model.toJSON()))
     for place in [3, 2, 1]
       winnerView = new CategoryWinner(
@@ -60,6 +60,7 @@ exports.CategoryWinners = class CategoryWinners extends Backbone.View
 exports.CategoryWinner = class CategoryWinner extends Backbone.View
   tagName: 'tr'
   render: =>
+    console.log 'rendering category winner into', this.el
     this.$el.html(winnerTemplate.render(this.model.toJSON()))
     return this
 

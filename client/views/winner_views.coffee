@@ -10,9 +10,8 @@ exports.AllWinners = class AllWinners extends Backbone.View
     return this.model.year + ' Winners'
 
   render: =>
-    console.log 'rendering winners into ', this.el
     this.$el.html('<div class="all-winners"></div>')
-    for division in cakeshowTypes.divisions
+    for division in cakeshowTypes.divisions when division != 'junior' and division != 'child'
       divisionView = new DivisionWinners(
         model:
           year: this.model.year
@@ -23,14 +22,16 @@ exports.AllWinners = class AllWinners extends Backbone.View
 
     return this
 
+isDivisional = (category, showEntries) ->
+  return category of showEntries and category != 'child' and category != 'junior' and not category.startsWith('showcase') and not category.startsWith('special')
+
 exports.DivisionWinners = class DivisionWinners extends Backbone.View
   tagName: 'div'
   className: 'division-winners'
   render: =>
-    console.log 'rendering division winners into', this.el
     showEntries = cakeshowTypes.entryNames[this.model.year]
 
-    for category in cakeshowTypes.entryTypes when category of showEntries and category != 'child' and category != 'junior'
+    for category in cakeshowTypes.entryTypes when isDivisional(category, showEntries)
       categoryView = new CategoryWinners(
         model:
           year: this.model.year
@@ -43,11 +44,12 @@ exports.DivisionWinners = class DivisionWinners extends Backbone.View
     return this
 
 exports.CategoryWinners = class CategoryWinners extends Backbone.View
-  tagName: 'table'
-  className: 'category-winners'
   render: =>
-    console.log 'rendering category winners into', this.el
-    this.$el.html(categoryWinnersTemplate.render(this.model))
+    this.$el.html(categoryWinnersTemplate.render(
+      divisionName: cakeshowTypes.divisionNames[this.model.division]
+      categoryName: cakeshowTypes.entryNames[this.model.year][this.model.category]
+      , this.model
+    ))
     for place in [3, 2, 1]
       winnerView = new CategoryWinner(
         model:
@@ -56,13 +58,12 @@ exports.CategoryWinners = class CategoryWinners extends Backbone.View
           category: this.model.category
           place: place
       )
-      this.$el.append(winnerView.render().el)
+      this.$el.find('tbody').append(winnerView.render().el)
     return this
 
 exports.CategoryWinner = class CategoryWinner extends Backbone.View
   tagName: 'tr'
   render: =>
-    console.log 'rendering category winner into', this.el
     this.$el.html(winnerTemplate.render(this.model))
     return this
 

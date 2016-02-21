@@ -30,7 +30,7 @@ exports.DivisionWinners = class DivisionWinners extends Backbone.View
     console.log 'rendering division winners into', this.el
     showEntries = cakeshowTypes.entryNames[this.model.year]
 
-    for category in cakeshowTypes.entryTypes when category in showEntries and category != 'child' and category != 'junior'
+    for category in cakeshowTypes.entryTypes when category in cakeshowTypes.showEntries and category != 'child' and category != 'junior'
       categoryView = new CategoryWinners(
         model:
           year: this.model.year

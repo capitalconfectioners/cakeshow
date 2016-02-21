@@ -107,6 +107,7 @@ class exports.CakeshowRoutes extends Backbone.Router
     )
 
     this.fetchData(this.currentModel)
+    this.currentView.render()
 
   setSearchToSignups: () ->
     if this.navView?.type == 'signups'

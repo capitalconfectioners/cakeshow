@@ -48,7 +48,7 @@ exports.CategoryWinners = class CategoryWinners extends Backbone.View
           division: this.model.division
           category: this.model.category
           place: place
-
+      )
       this.$el.append(winnerView.render().el)
     return this
 

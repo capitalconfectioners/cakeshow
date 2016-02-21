@@ -8,6 +8,10 @@ winnerTemplate = require('./templates/winner')
 exports.AllWinners = class AllWinners extends Backbone.View
   tagName: 'div'
   className: 'all-winners'
+
+  title: =>
+    return this.model.year + ' Winners'
+
   render: =>
     for division in cakeshowTypes.divisions
       divisionView = new DivisionWinners(

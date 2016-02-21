@@ -30,7 +30,7 @@ exports.AllWinners = class AllWinners extends Backbone.View
         year: this.model.get('year')
         division: 'tasting'
         categories: (c for c in cakeshowTypes.entryTypes when cakeshowTypes.isTasting(c))
-        winners: {}
+        winners: this.model.get('tasting') ? {}
     )
     this.$el.append(tastingDivisionView.render().el)
 
@@ -39,7 +39,7 @@ exports.AllWinners = class AllWinners extends Backbone.View
         year: this.model.get('year')
         division: 'showcase'
         categories: (c for c in cakeshowTypes.entryTypes when cakeshowTypes.isShowcase(c))
-        winners: {}
+        winners: this.model.get('showcase') ? {}
     )
     this.$el.append(showcaseDivisionView.render().el)
     return this

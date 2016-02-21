@@ -269,10 +269,18 @@ getWinners = (request, response, next) ->
   winners = {}
 
   for winner in request.winners
-    winners[winner.Signup.class] ?= {}
-    winners[winner.Signup.class][winner.Entry.category] ?= {}
+    category = winner.Entry.category
+    division = if data_types.isDivisional(category, request.param('year'))
+      winner.Signup.class
+    else if data_types.isTasting(category)
+      'tasting'
+    else if data_types.isShowcase(category)
+      'showcase'
 
-    winners[winner.Signup.class][winner.Entry.category][winner.Entry.divisionPlace] =
+    winners[division] ?= {}
+    winners[division][category] ?= {}
+
+    winners[division][category][winner.Entry.divisionPlace] =
       entry: winner.Entry.values
       signup: winner.Signup.values
       registrant: sanitizeRegistrant(winner.Registrant)

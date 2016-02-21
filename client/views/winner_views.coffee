@@ -16,22 +16,33 @@ exports.AllWinners = class AllWinners extends Backbone.View
         model:
           year: this.model.year
           division: division
+          categories: (c for c in cakeshowTypes.entryTypes when cakeshowTypes.isDivisional(c, this.model.year))
       )
 
       this.$el.append(divisionView.render().el)
 
-    return this
+    tastingDivisionView = new DivisionWinners(
+      model:
+        year: this.model.year
+        division: 'Tasting'
+        categories: (c for c in cakeshowTypes.entryTypes when cakeshowTypes.isTasting(c))
+    )
+    this.$el.append(tastingDivisionView.render().el)
 
-isDivisional = (category, showEntries) ->
-  return category of showEntries and category != 'child' and category != 'junior' and not category.startsWith('showcase') and not category.startsWith('special')
+    showcaseDivisionView = new DivisionWinners(
+      model:
+        year: this.model.year
+        division: 'Showcase'
+        categories: (c for c in cakeshowTypes.entryTypes when cakeshowTypes.isShowcase(c))
+    )
+    this.$el.append(showcaseDivisionView.render().el)
+    return this
 
 exports.DivisionWinners = class DivisionWinners extends Backbone.View
   tagName: 'div'
   className: 'division-winners'
   render: =>
-    showEntries = cakeshowTypes.entryNames[this.model.year]
-
-    for category in cakeshowTypes.entryTypes when isDivisional(category, showEntries)
+    for category in this.model.categories
       categoryView = new CategoryWinners(
         model:
           year: this.model.year
@@ -45,11 +56,11 @@ exports.DivisionWinners = class DivisionWinners extends Backbone.View
 
 exports.CategoryWinners = class CategoryWinners extends Backbone.View
   render: =>
-    this.$el.html(categoryWinnersTemplate.render(
+    this.$el.html(categoryWinnersTemplate.render(_.extend(
       divisionName: cakeshowTypes.divisionNames[this.model.division]
       categoryName: cakeshowTypes.entryNames[this.model.year][this.model.category]
       , this.model
-    ))
+    )))
     for place in [3, 2, 1]
       winnerView = new CategoryWinner(
         model:

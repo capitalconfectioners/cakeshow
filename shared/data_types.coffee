@@ -131,3 +131,12 @@ exports.divisionNames =
   'child': 'Child'
   'teen': 'Teen'
   'masters': 'Masters'
+
+exports.isDivisional = (category, year) ->
+  return category of exports.entryNames[year] and category != 'child' and category != 'junior' and not category.startsWith('showcase') and not category.startsWith('special')
+
+exports.isTasting = (category) ->
+  return category.startsWith('special')
+
+exports.isShowcase = (category) ->
+  return category.startsWith('showcase')

@@ -1,10 +1,20 @@
+exports.Winners = class Winners extends Backbone.Model
+  url: =>
+    "/shows/#{this.get('year')}/signups/winners"
+
+  parse: (data) =>
+    return _.extend(
+      year: this.get('year')
+      , data
+    )
+
 exports.Winner = class Winner extends Backbone.Model
   urlRoot: '/entries'
 
   initialize: =>
     this.bind('change:id', this.idChanged)
 
-  toJSON: =>
+  toView: =>
     id: this.get('id')
     place: this.get('place')
     year: this.get('year')

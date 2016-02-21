@@ -6,34 +6,40 @@ categoryWinnersTemplate = require('./templates/category_winners')
 winnerTemplate = require('./templates/winner')
 
 exports.AllWinners = class AllWinners extends Backbone.View
+  initialize: =>
+    this.model.bind('change', this.render)
+
   title: =>
-    return this.model.year + ' Winners'
+    return this.model.get('year') + ' Winners'
 
   render: =>
     this.$el.html('<div class="all-winners"></div>')
     for division in cakeshowTypes.divisions when division != 'junior' and division != 'child'
       divisionView = new DivisionWinners(
         model:
-          year: this.model.year
+          year: this.model.get('year')
           division: division
-          categories: (c for c in cakeshowTypes.entryTypes when cakeshowTypes.isDivisional(c, this.model.year))
+          categories: (c for c in cakeshowTypes.entryTypes when cakeshowTypes.isDivisional(c, this.model.get('year')))
+          winners: this.model.get(division) ? {}
       )
 
       this.$el.append(divisionView.render().el)
 
     tastingDivisionView = new DivisionWinners(
       model:
-        year: this.model.year
+        year: this.model.get('year')
         division: 'Tasting'
         categories: (c for c in cakeshowTypes.entryTypes when cakeshowTypes.isTasting(c))
+        winners: {}
     )
     this.$el.append(tastingDivisionView.render().el)
 
     showcaseDivisionView = new DivisionWinners(
       model:
-        year: this.model.year
+        year: this.model.get('year')
         division: 'Showcase'
         categories: (c for c in cakeshowTypes.entryTypes when cakeshowTypes.isShowcase(c))
+        winners: {}
     )
     this.$el.append(showcaseDivisionView.render().el)
     return this
@@ -48,6 +54,7 @@ exports.DivisionWinners = class DivisionWinners extends Backbone.View
           year: this.model.year
           division: this.model.division
           category: category
+          winners: this.model.winners[category] ? {}
       )
 
       this.$el.append(categoryView.render().el)
@@ -62,11 +69,16 @@ exports.CategoryWinners = class CategoryWinners extends Backbone.View
       , this.model
     )))
     for place in [3, 2, 1]
+      existingWinner = this.model.winners[place] ? {}
       winner = new winnerModels.Winner(
+        id: existingWinner.entry?.id
         year: this.model.year
         division: this.model.division
         category: this.model.category
         place: place
+        entry: existingWinner.entry
+        signup: existingWinner.signup
+        registrant: existingWinner.registrant
       )
       winnerView = new Winner(model: winner)
 
@@ -83,11 +95,9 @@ exports.Winner = class Winner extends Backbone.View
     this.model.bind('change', this.render)
 
   render: =>
-    console.log 'rendering', this.model.toJSON()
-    this.$el.html(winnerTemplate.render(this.model.toJSON()))
+    this.$el.html(winnerTemplate.render(this.model.toView()))
     return this
 
   entryChanged: (e) =>
-    console.log 'entry changed', e
     this.model.set(id: parseInt(e.target.value))
     this.model.fetch()

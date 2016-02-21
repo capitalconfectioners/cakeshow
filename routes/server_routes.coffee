@@ -20,6 +20,7 @@ exports.register = (app, cakeshowDB) ->
   app.get('/shows/:year/signups', addLinksTo(middleware.signups), signups)
   app.get('/shows/:year/signups/print', middleware.allEntries, printSignups)
   app.get('/shows/:year/signups/all', middleware.entryTable, allSignups)
+  app.get('/shows/:year/signups/winners', middleware.winners, getWinners)
 
   app.get('/signups', addLinksTo(middleware.signups), signups)
   app.get('/signups/:signupID', middleware.singleSignup, singleSignup)
@@ -262,6 +263,21 @@ getEntry = (request, response, next) ->
     signup: request.entry.Signup.values
     registrant: sanitizeRegistrant(request.entry.Registrant)
   )
+
+getWinners = (request, response, next) ->
+  winners = {}
+
+  for winner in request.winners
+    winners[winner.Signup.class] ?= {}
+    winners[winner.Signup.class][winner.Entry.category] ?= {}
+
+    winners[winner.Signup.class][winner.Entry.category][winner.Entry.divisionPlace] =
+      entry: winner.Entry.values
+      signup: winner.Signup.values
+      registrant: sanitizeRegistrant(winner.Registrant)
+
+  request.jsonResults = winners
+  next()
 
 exports.DatabaseMiddleware = class DatabaseMiddleware
   constructor: (cakeshowDB) ->
@@ -550,4 +566,17 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     )
     .error( (error) ->
       return next(new Error("Could not create new entry: " + error))
+    )
+
+  winners: (request, response, next) =>
+    filter = this.cakeshowDB.Entry.quoted('divisionPlace') + ' IS NOT NULL'
+
+    this.cakeshowDB.Entry.joinTo( [this.cakeshowDB.Signup,
+                                   this.cakeshowDB.Registrant],
+      where: filter
+    ).success( (winners) ->
+      request.winners = winners
+      next()
+    ).error( (error) ->
+      return next(new Error('Could not fetch winners: ' + error))
     )

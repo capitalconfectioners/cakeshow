@@ -1,5 +1,7 @@
 signupModels = require('models/signup_models')
 signupViews = require('views/signup_views')
+
+winnerModels = require('models/winner_models')
 winnerViews = require('views/winner_views')
 
 entryTableModels = require('models/entry_table')
@@ -95,16 +97,16 @@ class exports.CakeshowRoutes extends Backbone.Router
     setTitle(this.currentView.title())
 
   showWinners: (year) ->
-    this.currentModel = null
+    this.currentModel = new winnerModels.Winners(
+      year: year
+    )
 
     this.currentView = new winnerViews.AllWinners(
       el: '#content'
-      model:
-        year: year
+      model: this.currentModel
     )
 
-    this.currentView.render()
-    setTitle(this.currentView.title())
+    this.fetchData(this.currentModel)
 
   setSearchToSignups: () ->
     if this.navView?.type == 'signups'

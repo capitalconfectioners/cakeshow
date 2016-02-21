@@ -1,4 +1,6 @@
 td #{place}
 td
-  input(type="number")
+  input.entry(type="number", value="#{id}")
 td #{firstname} #{lastname}
+   if saving
+      &nbsp; #[i.icon-refresh]

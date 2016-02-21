@@ -45,7 +45,7 @@ exports.CategoryWinners = class CategoryWinners extends Backbone.View
   className: 'category-winners'
   render: =>
     console.log 'rendering category winners into', this.el
-    this.$el.html(categoryWinnersTemplate.render(this.model.toJSON()))
+    this.$el.html(categoryWinnersTemplate.render(this.model))
     for place in [3, 2, 1]
       winnerView = new CategoryWinner(
         model:
@@ -61,7 +61,7 @@ exports.CategoryWinner = class CategoryWinner extends Backbone.View
   tagName: 'tr'
   render: =>
     console.log 'rendering category winner into', this.el
-    this.$el.html(winnerTemplate.render(this.model.toJSON()))
+    this.$el.html(winnerTemplate.render(this.model))
     return this
 
 exports.DivisionWinner = class DivisionWinner extends Backbone.View

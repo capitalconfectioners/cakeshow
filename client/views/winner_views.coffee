@@ -34,7 +34,7 @@ exports.DivisionWinners = class DivisionWinners extends Backbone.View
       categoryView = new CategoryWinners(
         model:
           year: this.model.year
-          division: division
+          division: this.model.division
           category: category
       )
 

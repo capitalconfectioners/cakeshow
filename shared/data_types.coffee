@@ -132,21 +132,23 @@ exports.divisionNames =
   'teen': 'Teen'
   'masters': 'Masters'
 
+exports.singleShowcaseTypes = ['showcase', 'showcase3']
+exports.teamShowcaseTypes = ['showcase2', 'showcase4']
+
 exports.isDivisional = (category, year) ->
   return category of exports.entryNames[year] and category != 'child' and category != 'junior' and not category.startsWith('showcase') and not category.startsWith('special')
 
 exports.isTasting = (category) ->
   return category.startsWith('special')
 
-exports.isShowcase = (category) ->
-  return category.startsWith('showcase')
-
 exports.divisionName = (division) ->
   if division of exports.divisionNames
     exports.divisionNames[division]
   else if division == 'tasting'
     'Tasting'
-  else if division == 'showcase'
-    'Showcase'
+  else if division == 'showcase-single'
+    'Individual Showcase'
+  else if division == 'showcase-team'
+    'Team Showcase'
   else if division == 'best'
     'Show'

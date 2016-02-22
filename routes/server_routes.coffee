@@ -276,8 +276,10 @@ getWinners = (request, response, next) ->
       winner.Signup.class
     else if data_types.isTasting(category)
       'tasting'
-    else if data_types.isShowcase(category)
-      'showcase'
+    else if category in data_types.singleShowcaseTypes
+      'showcase-single'
+    else if category in data_types.teamShowcaseTypes
+      'showcase-team'
 
     winners[division] ?= {}
     winners[division][category] ?= {}

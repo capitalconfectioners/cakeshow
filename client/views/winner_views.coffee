@@ -35,14 +35,23 @@ exports.AllWinners = class AllWinners extends Backbone.View
     )
     this.$el.append(tastingDivisionView.render().el)
 
-    showcaseDivisionView = new DivisionWinners(
+    singleShowcaseDivisionView = new DivisionWinners(
       model:
         year: this.model.get('year')
-        division: 'showcase'
-        categories: (c for c in cakeshowTypes.entryTypes when cakeshowTypes.isShowcase(c))
-        winners: this.model.get('showcase') ? {}
+        division: 'showcase-single'
+        categories: (c for c in cakeshowTypes.entryTypes when c in cakeshowTypes.singleShowcaseTypes)
+        winners: this.model.get('showcase-single') ? {}
     )
-    this.$el.append(showcaseDivisionView.render().el)
+    this.$el.append(singleShowcaseDivisionView.render().el)
+
+    teamShowcaseDivisionView = new DivisionWinners(
+      model:
+        year: this.model.get('year')
+        division: 'showcase-team'
+        categories: (c for c in cakeshowTypes.entryTypes when c in cakeshowTypes.teamShowcaseTypes)
+        winners: this.model.get('showcase-team') ? {}
+    )
+    this.$el.append(teamShowcaseDivisionView.render().el)
 
     bestOfShowView = new BestOfWinner(
       model:

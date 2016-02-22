@@ -3,6 +3,7 @@ cakeshowTypes = require('../data_types')
 winnerModels = require('../models/winner_models')
 
 categoryWinnersTemplate = require('./templates/category_winners')
+bestOfWinnersTemplate = require('./templates/best_of_winners')
 winnerTemplate = require('./templates/winner')
 
 exports.AllWinners = class AllWinners extends Backbone.View
@@ -58,6 +59,32 @@ exports.DivisionWinners = class DivisionWinners extends Backbone.View
       )
 
       this.$el.append(categoryView.render().el)
+
+    bestOfView = new BestOfWinner(model: this.model)
+    this.$el.append(bestOfView.render().el)
+
+    return this
+
+exports.BestOfWinner = class BestOfWinner extends Backbone.View
+  render: =>
+    this.$el.html(bestOfWinnersTemplate.render(_.extend(
+      divisionName: cakeshowTypes.divisionName(this.model.division)
+      , this.model
+    )))
+
+    bestInDivision = new winnerModels.Winner(
+      id: undefined
+      year: this.model.year
+      division: this.model.division
+      category: 'best'
+      place: 'best'
+      entry: undefined
+      signup: undefined
+      registrant: undefined
+    )
+
+    bestInDivisionView = new Winner(model: bestInDivision)
+    this.$('tbody').append(bestInDivisionView.render().el)
 
     return this
 

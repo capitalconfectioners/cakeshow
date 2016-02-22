@@ -43,6 +43,16 @@ exports.AllWinners = class AllWinners extends Backbone.View
         winners: this.model.get('showcase') ? {}
     )
     this.$el.append(showcaseDivisionView.render().el)
+
+    bestOfShowView = new BestOfWinner(
+      model:
+        year: this.model.get('year')
+        division: 'best'
+        winners:
+          best: this.model.get('best') ? {}
+    )
+    this.$el.append(bestOfShowView.render().el)
+
     return this
 
 exports.DivisionWinners = class DivisionWinners extends Backbone.View
@@ -72,15 +82,17 @@ exports.BestOfWinner = class BestOfWinner extends Backbone.View
       , this.model
     )))
 
+    currentWinner = this.model.winners.best
+
     bestInDivision = new winnerModels.Winner(
-      id: undefined
+      id: currentWinner?.entry?.id
       year: this.model.year
       division: this.model.division
       category: 'best'
       place: 'best'
-      entry: undefined
-      signup: undefined
-      registrant: undefined
+      entry: currentWinner?.entry
+      signup: currentWinner?.signup
+      registrant: currentWinner?.registrant
     )
 
     bestInDivisionView = new Winner(model: bestInDivision)

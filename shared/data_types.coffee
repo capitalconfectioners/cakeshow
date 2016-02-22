@@ -148,3 +148,5 @@ exports.divisionName = (division) ->
     'Tasting'
   else if division == 'showcase'
     'Showcase'
+  else if division == 'best'
+    'Show'

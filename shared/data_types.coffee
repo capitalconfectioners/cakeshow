@@ -110,14 +110,14 @@ exports.entryNames =
     junior: 'Junior'
 
 exports.divisions = [
-  'adultint'
+  'child'
+  'junior'
+  'teen'
   'culstudent'
   'adultbeg'
-  'professional'
-  'junior'
+  'adultint'
   'adultadv'
-  'child'
-  'teen'
+  'professional'
   'masters'
   ]
 

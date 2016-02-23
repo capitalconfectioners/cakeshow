@@ -21,6 +21,7 @@ exports.register = (app, cakeshowDB) ->
   app.get('/shows/:year/signups/print', middleware.allEntries, printSignups)
   app.get('/shows/:year/signups/all', middleware.entryTable, allSignups)
   app.get('/shows/:year/signups/winners', middleware.winners, getWinners)
+  app.get('/shows/:year/signups/winners/report.csv', middleware.winners, getWinnersReport)
   app.post('/shows/:year/signups/winners/best/best/best', middleware.postBestOfShow, postWinner)
   app.post('/shows/:year/signups/winners/:division/best/best', middleware.postBestOfDivision, postWinner)
   app.post('/shows/:year/signups/winners/:division/:category/:place', middleware.postWinner, postWinner)
@@ -267,12 +268,12 @@ getEntry = (request, response, next) ->
     registrant: sanitizeRegistrant(request.entry.Registrant)
   )
 
-getWinners = (request, response, next) ->
+collateWinners = (winnersList, year, renderWinner) ->
   winners = {}
 
-  for winner in request.winners
+  for winner in winnersList
     category = winner.Entry.category
-    division = if data_types.isDivisional(category, request.param('year'))
+    division = if data_types.isDivisional(category, year)
       winner.Signup.class
     else if data_types.isTasting(category)
       'tasting'
@@ -284,10 +285,7 @@ getWinners = (request, response, next) ->
     winners[division] ?= {}
     winners[division][category] ?= {}
 
-    winnerView =
-      entry: winner.Entry.values
-      signup: winner.Signup.values
-      registrant: sanitizeRegistrant(winner.Registrant)
+    winnerView = renderWinner(winner)
 
     if winner.Entry.bestInDivision
       winners[division].best = winnerView
@@ -297,8 +295,89 @@ getWinners = (request, response, next) ->
 
     winners[division][category][winner.Entry.divisionPlace] = winnerView
 
+  return winners
+
+getWinners = (request, response, next) ->
+  winners = collateWinners(request.winners, request.param('year'), (winner) ->
+    entry: winner.Entry.values
+    signup: winner.Signup.values
+    registrant: sanitizeRegistrant(winner.Registrant)
+  )
+
   request.jsonResults = winners
   next()
+
+placeName = (place) ->
+  ['1st', '2nd', '3rd'][place - 1]
+
+getDivisionWinnersReport = (year, winners, division, categories) ->
+  report = ''
+  divisionWinners = winners[division]
+
+  if not divisionWinners
+    return report
+
+  divisionName = data_types.divisionName(division)
+  report += divisionName + ',,\n'
+
+  for category in categories
+    categoryWinners = divisionWinners[category]
+
+    if not categoryWinners
+      continue
+
+    categoryName = data_types.entryNames[year][category]
+
+    for place in [3,2,1]
+      winner = categoryWinners[place]
+
+      if not winner
+        continue
+
+      report += "#{categoryName} #{placeName(place)} Place,#{winner.Entry.id},#{winner.Registrant.firstname} #{winner.Registrant.lastname}\n"
+
+  if 'best' of divisionWinners
+    winner = divisionWinners.best
+    report += "Best of #{divisionName},#{winner.Entry.id},#{winner.Registrant.firstname} #{winner.Registrant.lastname}\n"
+
+  return report
+
+getWinnersReport = (request, response, next) ->
+  year = request.param('year')
+  winners = collateWinners(request.winners, year, (winner) -> winner)
+
+  report = 'Title,Entry,Winner\n'
+
+  for division in data_types.divisions when division != 'junior' and division != 'child'
+    report += getDivisionWinnersReport(
+      year,
+      winners,
+      division,
+      c for c in data_types.entryTypes when data_types.isDivisional(c, year))
+
+  report += getDivisionWinnersReport(
+    year,
+    winners,
+    'tasting',
+    c for c in data_types.entryTypes when data_types.isTasting(c))
+
+  report += getDivisionWinnersReport(
+    year,
+    winners,
+    'showcase-single',
+    data_types.singleShowcaseTypes)
+
+  report += getDivisionWinnersReport(
+    year,
+    winners,
+    'showcase-team',
+    data_types.teamShowcaseTypes)
+
+  if 'best' of winners
+    winner = winners.best
+    report += "Best of Show,#{winner.Entry.id},#{winner.Registrant.firstname} #{winner.Registrant.lastname}\n"
+
+  response.send(report, {'Content-Type': 'text/csv'}, 200)
 
 postWinner = (request, response, next) ->
   response.json(

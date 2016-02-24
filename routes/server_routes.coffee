@@ -318,7 +318,7 @@ getDivisionWinnersReport = (year, winners, division, categories) ->
     return report
 
   divisionName = data_types.divisionName(division)
-  report += divisionName + ',,\n'
+  report += divisionName + ',,,,\n'
 
   for category in categories
     categoryWinners = divisionWinners[category]
@@ -334,11 +334,11 @@ getDivisionWinnersReport = (year, winners, division, categories) ->
       if not winner
         continue
 
-      report += "#{categoryName} #{placeName(place)} Place,#{winner.Entry.id},#{winner.Registrant.firstname} #{winner.Registrant.lastname}\n"
+      report += ",#{categoryName},#{placeName(place)} Place,#{winner.Registrant.firstname} #{winner.Registrant.lastname},#{winner.Entry.id}\n"
 
   if 'best' of divisionWinners
     winner = divisionWinners.best
-    report += "Best of #{divisionName},#{winner.Entry.id},#{winner.Registrant.firstname} #{winner.Registrant.lastname}\n"
+    report += ",#{categoryName},Best of,#{winner.Registrant.firstname} #{winner.Registrant.lastname},#{winner.Entry.id}\n"
 
   return report
 
@@ -346,7 +346,7 @@ getWinnersReport = (request, response, next) ->
   year = request.param('year')
   winners = collateWinners(request.winners, year, (winner) -> winner)
 
-  report = 'Title,Entry,Winner\n'
+  report = 'Division,Category,Placement,Winner,Entry\n'
 
   for division in data_types.divisions when division != 'junior' and division != 'child'
     report += getDivisionWinnersReport(
@@ -375,7 +375,7 @@ getWinnersReport = (request, response, next) ->
 
   if 'best' of winners
     winner = winners.best
-    report += "Best of Show,#{winner.Entry.id},#{winner.Registrant.firstname} #{winner.Registrant.lastname}\n"
+    report += ",Show,Best of,#{winner.Registrant.firstname} #{winner.Registrant.lastname},#{winner.Entry.id}\n"
 
   response.send(report, {'Content-Type': 'text/csv'}, 200)
 

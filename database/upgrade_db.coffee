@@ -39,7 +39,7 @@ signupColumnMap =
 
 class Upgrader
   cakeshowDBs :
-    "16": "2016"
+    "17": "2017"
 
   constructor: (username='root', password='', hostname='localhost', database='cakecuba_import15') ->
     this.upgradeDB = database

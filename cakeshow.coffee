@@ -13,6 +13,7 @@ clientPackage = stitch.createPackage(
 app = module.exports = express.createServer();
 
 if process.env['JAWSDB_URL']
+  console.log("Using JAWSDB_URL", process.env['JAWSDB_URL'])
   databaseURL = process.env['JAWSDB_URL']
 else
   database = process.env['CAKESHOW_DB'] ? 'cakeshow'

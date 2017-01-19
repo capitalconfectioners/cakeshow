@@ -445,12 +445,19 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
 
   singleSignup: (request, response, next) =>
     id = parseInt(request.param('signupID'), 10)
-    this.cakeshowDB.Signup.joinTo( this.cakeshowDB.Registrant, where: id )
-    .success( (signup) ->
-      request.signup = signup[0]
+    this.cakeshowDB.Registrant.findAll
+      include: [
+        model: this.cakeshowDB.Signup
+        where:
+          id: id
+      ]
+    .then( (registrant) ->
+      request.signup =
+        Registrant: registrant[0]
+        Signup: registrant[0].Signups[0]
       next()
     )
-    .error( (error) ->
+    .catch( (error) ->
       return next(new Error("Could not load signup #{id}: " + error))
     )
 

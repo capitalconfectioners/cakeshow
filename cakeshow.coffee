@@ -13,17 +13,19 @@ clientPackage = stitch.createPackage(
 app = module.exports = express.createServer();
 
 if process.env['JAWSDB_URL']
-  console.log("Using JAWSDB_URL", process.env['JAWSDB_URL'])
+  console.log('Using JAWSDB_URL')
   databaseURL = process.env['JAWSDB_URL']
 else
+  console.log('Using individual environment variables')
   database = process.env['CAKESHOW_DB'] ? 'cakeshow'
   username = process.env['CAKESHOW_USER'] ? 'root'
   password = process.env['CAKESHOW_PASSWORD'] ? ''
+  hostname = process.env['CAKESHOW_HOST'] ? 'localhost'
 
-  databaseURL = 'mysql://#{username}:#{password}@localhost:3306/#{database}'
+  databaseURL = "mysql://#{username}:#{password}@#{hostname}:3306/#{database}"
 
 
-cakeshowDB.connect(databaseURL)
+cakeshowDB.connect(databaseURL, {verbose: console.log})
 
 # Configuration
 

@@ -1,28 +1,17 @@
 Sequelize = require('sequelize')
 Joinalize = require('../lib/joinalize')
+mysql = require('mysql')
 
 cakeshowTypes = require('../shared/data_types')
 
 
-parseURL = (url) ->
-  parsedURI = url.match(/mysql:\/\/(\w+):(\w+)@([^:]+):(\d+)\/(\w+)/)
-  return {
-    username: parsedURI[1]
-    password: parsedURI[2]
-    host: parsedURI[3]
-    port: parseInt(parsedURI[4])
-    database: parsedURI[5]
-  }
-
 class CakeshowDB
   connect: (url, options={}) =>
-    {database, username, password, host, port} = parseURL(url)
+    logger = if options.verbose then console.log else null
     dbOptions =
-      logging: options.verbose
-      host: host
-      port: port
+      logging: logger
 
-    this.cakeshowDB = new Sequelize(database, username, password, dbOptions)
+    this.cakeshowDB = new Sequelize(url, dbOptions)
 
     this.Registrant = this.cakeshowDB.define('Registrant',
       firstname: Sequelize.STRING
@@ -85,13 +74,13 @@ class CakeshowDB
         default: false
     )
 
-    this.Registrant.hasMany(this.Signup, as: 'Signups')
-    this.Signup.belongsTo(this.Registrant, as: 'Registrant')
+    this.Registrant.hasMany(this.Signup)
 
-    this.Signup.hasMany(this.Entry, as: 'Entries')
-    this.Entry.belongsTo(this.Signup, as: 'Signup')
+    this.Signup.hasMany(this.Entry)
 
-    Joinalize.register(this.cakeshowDB)
-    this.cakeshowDB.sync()
+    this.cakeshowDB.sync(logging: logger)
+    .then () =>
+      console.log('Database Synced')
+
 
 module.exports = new CakeshowDB()

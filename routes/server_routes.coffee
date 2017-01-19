@@ -113,6 +113,11 @@ sanitizeRegistrant = (registrant) ->
   rawRegistrant[key] = value for key, value of registrant.get() when key != 'password' and key != 'Signups'
   return rawRegistrant
 
+sanitizeSignup = (signup) ->
+  rawSignup = {}
+  rawSignup[key] = value for key, value of signup.get() when key != 'Entries'
+  return rawSignup
+
 registrants = (request, response, next) ->
   request.jsonResults = []
   for registrant in request.registrants
@@ -238,8 +243,8 @@ allSignups = (request, response, next) ->
 
   for entry in request.entries
     request.jsonResults.push(
-      entry: entry.Entry.values
-      signup: entry.Signup.values
+      entry: entry.Entry.dataValues
+      signup: sanitizeSignup(entry.Signup)
       registrant: sanitizeRegistrant(entry.Registrant)
     )
 
@@ -454,7 +459,6 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     this.cakeshowDB.Signup.joinTo( this.cakeshowDB.Registrant, where: id )
     .success( (signup) =>
       request.signup = signup[0]
-      console.log(request.signup.Signup.id)
       this.cakeshowDB.Entry.findAll( where: SignupID: request.signup.Signup.id )
       .success( (entries) ->
         request.signup.Entries = entries
@@ -497,8 +501,6 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
       {page, limit, offset} = this.attachPagination(request, count)
       filter.limit = limit
       filter.offset = offset
-
-      console.log filter
 
       this.cakeshowDB.Registrant.findAll filter
       .then( (result) ->
@@ -548,7 +550,6 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     this.cakeshowDB.Entry.findAll( where: SignupID: signupID )
     .then( (entries) ->
       for entry in entries
-        console.log entry
         entry.didBring = if entry.didBring == 0 then false else true
         entry.styleChange = if entry.styleChange == 0 then false else true
       request.entries = entries
@@ -610,15 +611,25 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     else
       filter = {}
 
-    this.cakeshowDB.Entry.joinTo( [this.cakeshowDB.Signup,
-                                   this.cakeshowDB.Registrant],
-      where: filter
+    this.cakeshowDB.Registrant.findAll(
+      include: [
+        model: this.cakeshowDB.Signup
+        where: filter
+        include: [this.cakeshowDB.Entry]
+      ]
     )
-    .success( (entries) ->
-      request.entries = entries
+    .then( (registrants) ->
+      request.entries = []
+      for registrant in registrants
+        signup = registrant.Signups[0]
+        for entry in signup.Entries
+          request.entries.push
+            Registrant: registrant
+            Signup: signup
+            Entry: entry
       next()
     )
-    .error( (error) ->
+    .catch( (error) ->
       next(new Error(error))
     )
 

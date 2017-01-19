@@ -602,6 +602,27 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
       return next(new Error('Could not load signups: ' + error))
     )
 
+  entriesWithSignupAndRegistrant: (signupFilter, entryFilter) =>
+    this.cakeshowDB.Registrant.findAll
+      include: [
+        model: this.cakeshowDB.Signup
+        where: signupFilter
+        include: [
+          model: this.cakeshowDB.Entry
+          where: entryFilter
+        ]
+      ]
+    .then (registrants) ->
+      entries = []
+      for registrant in registrants
+        signup = registrant.Signups[0]
+        for entry in signup.Entries
+          entries.push
+            Registrant: registrant
+            Signup: signup
+            Entry: entry
+      return entries
+
   entryTable: (request, response, next) =>
     requestedYear = request.param('year')
 
@@ -611,27 +632,12 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     else
       filter = {}
 
-    this.cakeshowDB.Registrant.findAll(
-      include: [
-        model: this.cakeshowDB.Signup
-        where: filter
-        include: [this.cakeshowDB.Entry]
-      ]
-    )
-    .then( (registrants) ->
-      request.entries = []
-      for registrant in registrants
-        signup = registrant.Signups[0]
-        for entry in signup.Entries
-          request.entries.push
-            Registrant: registrant
-            Signup: signup
-            Entry: entry
+    this.entriesWithSignupAndRegistrant(filter)
+    .then (entries) ->
+      request.entries = entries
       next()
-    )
-    .catch( (error) ->
+    .catch (error) ->
       next(new Error(error))
-    )
 
   entry: (request, response, next) =>
     id = parseInt(request.param('id'), 10)
@@ -680,17 +686,16 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     )
 
   winners: (request, response, next) =>
-    filter = this.cakeshowDB.Entry.quoted('divisionPlace') + ' IS NOT NULL'
+    filter =
+      $not: null
 
-    this.cakeshowDB.Entry.joinTo( [this.cakeshowDB.Signup,
-                                   this.cakeshowDB.Registrant],
-      where: filter
-    ).success( (winners) ->
+    this.entriesWithSignupAndRegistrant {}, filter
+    .then (winners) ->
       request.winners = winners
       next()
-    ).error( (error) ->
+    .catch (error) ->
       return next(new Error('Could not fetch winners: ' + error))
-    )
+
 
   postWinner: (request, response, next) =>
     newID = parseInt(request.body.id)

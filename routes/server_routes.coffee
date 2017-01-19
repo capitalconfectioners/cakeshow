@@ -110,7 +110,7 @@ toc = (request, response, next) ->
 
 sanitizeRegistrant = (registrant) ->
   rawRegistrant = {}
-  rawRegistrant[key] = value for key, value of registrant.values when key != 'password'
+  rawRegistrant[key] = value for key, value of registrant.get() when key != 'password' and key != 'Signups'
   return rawRegistrant
 
 registrants = (request, response, next) ->
@@ -122,14 +122,14 @@ registrants = (request, response, next) ->
 
 signupToJSON = (signup) ->
   result = {
-    signup: signup.Signup.values
+    signup: signup.Signup
     registrant: sanitizeRegistrant(signup.Registrant)
   }
 
   if signup.Entries?
     result.entries = []
     for entry in signup.Entries
-      result.entries.push( entry.values )
+      result.entries.push( entry )
 
   return result
 
@@ -389,18 +389,12 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     this.cakeshowDB = cakeshowDB
 
   shows: (request, response, next) =>
-    distinct =
-      build: (values) ->
-        return values.year
-
-    this.cakeshowDB.cakeshowDB.getQueryInterface().select(distinct, this.cakeshowDB.Signup.tableName,
-      attributes: [['distinct year', 'year']]
-    )
-    .success( (years) ->
-      request.shows = years
+    this.cakeshowDB.cakeshowDB.query('SELECT distinct year as `year` FROM `Signups`', { type: 'SELECT'})
+    .then( (years) ->
+      request.shows = [year.year for year in years]
       next()
     )
-    .error( (error) ->
+    .catch( (error) ->
       return next(new Error("Could not select show list: " + error))
     )
 
@@ -475,50 +469,49 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
 
   signups: (request, response, next) =>
     requestedYear = request.param('year')
+    signupFilter = {}
 
     if requestedYear?
-      filter =
-        year: requestedYear
-    else
-      filter = {}
+      signupFilter.year = requestedYear
 
     search = request.param('search')
     if search?
-      filters = []
+      registrantFilter =
+        $or:
+          firstname:
+            $like: search
+          lastname:
+            $like: search
 
-      if filter.year?
-        yearFilter = this.cakeshowDB.Signup.quoted('year') + " = '#{filter.year}'"
-        filters.push(yearFilter)
+    filter =
+      where: registrantFilter
+      include: [
+        model: this.cakeshowDB.Signup
+        where: signupFilter
+      ]
 
-      firstnameFilter = this.cakeshowDB.Registrant.quoted('firstname') + " LIKE '%#{search}%'"
-      lastnameFilter = this.cakeshowDB.Registrant.quoted('lastname') + " LIKE '%#{search}%'"
 
-      nameFilter = [firstnameFilter, lastnameFilter].join(" OR ")
-      filters.push('(' + nameFilter + ')')
-
-      filter = filters.join(" AND ")
-
-    this.cakeshowDB.Signup.countJoined( this.cakeshowDB.Registrant, where: filter )
-    .success( (count) =>
+    this.cakeshowDB.Registrant.count filter
+    .then (count) =>
       {page, limit, offset} = this.attachPagination(request, count)
+      filter.limit = limit
+      filter.offset = offset
 
-      this.cakeshowDB.Signup.joinTo( this.cakeshowDB.Registrant,
-        where: filter
-        offset:offset
-        limit:limit
-        order: 'lastname ASC, firstname ASC'
-      )
-      .success( (signups) ->
-        request.signups = signups
+      console.log filter
+
+      this.cakeshowDB.Registrant.findAll filter
+      .then( (result) ->
+        request.signups = for r in result
+          Signup: r.Signups[0]
+          Registrant: r
+
         next()
       )
-      .error( (error) ->
-        return next(new Error('Could not load signups: ' + error))
+      .catch( (error) ->
+        return next(new Error('Could not fetch signups: ' + error))
       )
-    )
-    .error( (error) ->
+    .catch (error) ->
       return next(new Error('Could not count signups: ' + error))
-    )
 
   postSignup: (request, response, next) =>
     registrantSignup = request.body

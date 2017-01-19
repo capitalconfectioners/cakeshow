@@ -248,7 +248,7 @@ allSignups = (request, response, next) ->
 entries = (request, response, next) ->
   request.jsonResults = []
   for entry in request.entries
-    request.jsonResults.push( entry.values )
+    request.jsonResults.push( entry.dataValues )
 
   response.json(request.jsonResults)
 
@@ -418,22 +418,23 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
 
   allRegistrants: (request, response, next) =>
 
-    this.cakeshowDB.Registrant.count().success( (count) =>
+    this.cakeshowDB.Registrant.count()
+    .then( (count) =>
       {page, limit, offset} = this.attachPagination(request, count)
 
       this.cakeshowDB.Registrant.findAll(
         offset:offset
         limit:limit
         order: 'lastname ASC, firstname ASC')
-      .success( (registrants) ->
+      .then( (registrants) ->
         request.registrants = registrants
         next()
       )
-      .error( (error) ->
+      .catch( (error) ->
         return next(new Error('Could not load registrants: ' + error))
       )
     )
-    .error( (error) ->
+    .catch( (error) ->
       return next(new Error('Could not count registrants: ' + error))
     )
 
@@ -545,14 +546,15 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
   entriesForSignup: (request, response, next) =>
     signupID = request.param('signupID')
     this.cakeshowDB.Entry.findAll( where: SignupID: signupID )
-    .success( (entries) ->
+    .then( (entries) ->
       for entry in entries
+        console.log entry
         entry.didBring = if entry.didBring == 0 then false else true
         entry.styleChange = if entry.styleChange == 0 then false else true
       request.entries = entries
       next()
     )
-    .error( (error) ->
+    .catch( (error) ->
       return next(new Error("Could not load entries for signup #{id}: " + error))
     )
 

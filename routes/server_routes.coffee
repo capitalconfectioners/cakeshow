@@ -268,8 +268,8 @@ putEntry = (request, response, next) ->
 
 getEntry = (request, response, next) ->
   response.json(
-    entry: request.entry.Entry.values
-    signup: request.entry.Signup.values
+    entry: request.entry.Entry.dataValues
+    signup: sanitizeSignup(request.entry.Signup)
     registrant: sanitizeRegistrant(request.entry.Registrant)
   )
 
@@ -659,18 +659,14 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
 
   entryWithSignup: (request, response, next) =>
     id = parseInt(request.param('entryID'), 10)
-    this.cakeshowDB.Entry.joinTo( [this.cakeshowDB.Signup,
-                                   this.cakeshowDB.Registrant],
-      where:
-        id: id
-    )
-    .success( (entry) ->
+
+    this.entriesWithSignupAndRegistrant {}, id: id
+    .then (entry) ->
       request.entry = entry[0]
       next()
-    )
-    .error( (error) ->
+    .catch (error) ->
       next(new Error(error))
-    )
+
 
   postEntry: (request, response, next) =>
     entryAttributes = request.body

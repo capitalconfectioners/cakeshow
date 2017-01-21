@@ -223,12 +223,12 @@ signups = (request, response, next) ->
   next()
 
 putSignup = (request, response, next) ->
-  request.signup.Signup.updateAttributes(request.body)
-  .success( ->
-    response.json(request.signup.Signup.values)
+  request.signup.Signup.update(request.body)
+  .then( ->
+    response.json(sanitizeSignup(request.signup.Signup))
   )
-  .error( (error) ->
-    return next(new Error("Could not save signup #{request.signup.id} with values #{request.body}: " + error))
+  .catch( (error) ->
+    return next(new Error("Could not save signup #{request.signup.Signup.id} with values #{request.body}: " + error))
   )
 
 printSignups = (request, response, next) ->
@@ -258,13 +258,12 @@ entries = (request, response, next) ->
   response.json(request.jsonResults)
 
 putEntry = (request, response, next) ->
-  request.entry.updateAttributes(request.body)
-  .success( ->
+  console.log request.body
+  request.entry.update(request.body)
+  .then ->
     response.json(request.entry.values)
-  )
-  .error( (error) ->
+  .catch (error) ->
     return next(new Error("Could not save entry #{request.entry.id} with values #{request.body}: " + error))
-  )
 
 getEntry = (request, response, next) ->
   response.json(
@@ -530,35 +529,26 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     registrantSignup.signup.year != request.param('year')
       return next(new Error('Years do not match'))
 
-    registrant = this.cakeshowDB.Registrant.build(registrantSignup.registrant)
-    signup = this.cakeshowDB.Signup.build(registrantSignup.signup)
-
-    chain = new Sequelize.Utils.QueryChainer()
-
-    chain.add(registrant.save())
-    chain.add(signup.save())
-    chain.run()
-    .success( ->
-      registrant.addSignup(signup)
-      .success( ->
-        response.header('Location', '/signups/' + signup.id)
-        response.json(signupToJSON( Registrant: registrant, Signup: signup ))
-      )
-      .error( (error) ->
-        return next(new Error('Could not link signup to registrant: ' + error))
-      )
-    )
-    .error( (error) ->
-      return next(new Error('Could not create registrant and signup: ' + error))
-    )
+    transaction = this.cakeshowDB.cakeshowDB.transaction (t) =>
+      return this.cakeshowDB.Registrant.create(registrantSignup.registrant, transaction: t)
+      .then (registrant) =>
+        return this.cakeshowDB.Signup.create(registrantSignup.signup, transaction: t)
+        .then (signup) ->
+          return {registrant: registrant, signup: signup}
+      .then ({registrant, signup}) ->
+        return registrant.addSignup(signup, transaction: t)
+        .then () ->
+          return {registrant: registrant, signup: signup}
+    .then ({registrant, signup}) ->
+      response.header('Location', '/signups/' + signup.id)
+      response.json(signupToJSON( Registrant: registrant, Signup: signup ))
+    .catch (error) ->
+      next(new Error('Could not create Registrant or Signup: ' + error))
 
   entriesForSignup: (request, response, next) =>
     signupID = request.param('signupID')
     this.cakeshowDB.Entry.findAll( where: SignupID: signupID )
     .then( (entries) ->
-      for entry in entries
-        entry.didBring = if entry.didBring == 0 then false else true
-        entry.styleChange = if entry.styleChange == 0 then false else true
       request.entries = entries
       next()
     )
@@ -648,14 +638,12 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
 
   entry: (request, response, next) =>
     id = parseInt(request.param('id'), 10)
-    this.cakeshowDB.Entry.find(id)
-    .success( (entry) ->
+    this.cakeshowDB.Entry.findById(id)
+    .then (entry) ->
       request.entry = entry
       next()
-    )
-    .error( (error) ->
+    .catch (error) ->
       return next(new Error("Could not find entry with id #{id}: " + error))
-    )
 
   entryWithSignup: (request, response, next) =>
     id = parseInt(request.param('entryID'), 10)

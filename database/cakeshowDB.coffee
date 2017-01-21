@@ -1,5 +1,4 @@
 Sequelize = require('sequelize')
-Joinalize = require('../lib/joinalize')
 mysql = require('mysql')
 
 cakeshowTypes = require('../shared/data_types')
@@ -30,10 +29,10 @@ class CakeshowDB
       year: Sequelize.STRING
       registrationTime:
         type: Sequelize.STRING
-        validate: {isIn: ['early','late','student','child']}
+        validate: {isIn: [['early','late','student','child']]}
       'class':
         type: Sequelize.STRING
-        validate: {isIn: cakeshowTypes.divisions}
+        validate: {isIn: [cakeshowTypes.divisions]}
       childage: Sequelize.INTEGER
       paid:
         type: Sequelize.BOOLEAN
@@ -50,14 +49,14 @@ class CakeshowDB
         default: false
       paymentmethod:
         type: Sequelize.STRING
-        validate: {isIn: ['instore','mail','paypal']}
+        validate: {isIn: [['instore','mailin','paypal', 'full', 'multi', '']]}
     )
 
     this.Entry = this.cakeshowDB.define('Entry',
       year: Sequelize.STRING
       category:
         type: Sequelize.STRING
-        validate: {isIn: cakeshowTypes.entryTypes}
+        validate: {isIn: [cakeshowTypes.entryTypes]}
       didBring:
         type: Sequelize.BOOLEAN
         default: false

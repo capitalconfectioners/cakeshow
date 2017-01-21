@@ -127,7 +127,7 @@ registrants = (request, response, next) ->
 
 signupToJSON = (signup) ->
   result = {
-    signup: signup.Signup
+    signup: sanitizeSignup(signup.Signup)
     registrant: sanitizeRegistrant(signup.Registrant)
   }
 
@@ -462,21 +462,22 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
 
   signupWithEntries: (request, response, next) =>
     id = parseInt(request.param('signupID'), 10)
-    this.cakeshowDB.Signup.joinTo( this.cakeshowDB.Registrant, where: id )
-    .success( (signup) =>
-      request.signup = signup[0]
-      this.cakeshowDB.Entry.findAll( where: SignupID: request.signup.Signup.id )
-      .success( (entries) ->
-        request.signup.Entries = entries
-        next()
-      )
-      .error( (err) ->
-        return next(new Error("Could not load entries for signup #{request.signup.id}: " + err))
-      )
-    )
-    .error( (error) ->
+    this.cakeshowDB.Registrant.findAll
+      include: [
+        model: this.cakeshowDB.Signup
+        where:
+          id: id
+        include: [this.cakeshowDB.Entry]
+      ]
+    .then (registrant) ->
+      signup = registrant[0].Signups[0]
+      request.signup =
+        Registrant: registrant[0]
+        Signup: signup
+        Entries: signup.Entries
+      next()
+    .catch (error) ->
       return next(new Error("Could not load signup #{id}: " + error))
-    )
 
   signups: (request, response, next) =>
     requestedYear = request.param('year')
@@ -561,43 +562,35 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     requestedAfter = request.param('after')
 
     if requestedYear?
-      filter =
+      signupFilter =
         year: requestedYear
     else
-      filter = {}
+      signupFilter = {}
 
     if requestedAfter?
-      if filter.year?
-        filter = "Signups.year = #{Sequelize.Utils.escape(requestedYear)}"
-      else
-        filter = ''
+      signupFilter.createdAt =
+        $gt: requestedAfter
 
-      filter += " AND Signups.createdAt > #{Sequelize.Utils.escape(requestedAfter)}"
+    this.cakeshowDB.Registrant.findAll
+      order: [['lastname', 'ASC'], ['firstname', 'ASC']]
+      include: [
+        model: this.cakeshowDB.Signup
+        where: signupFilter
+        include: [this.cakeshowDB.Entry]
+      ]
+    .then (registrants) ->
+      request.signups = []
 
-    this.cakeshowDB.Signup.joinTo( this.cakeshowDB.Registrant,
-      where: filter
-      order: 'lastname ASC, firstname ASC'
-    )
-    .success( (signups) =>
-      async.map(signups, (signup, done) =>
-        this.cakeshowDB.Entry.findAll( where: SignupID: signup.Signup.id )
-        .success( (entries) ->
-          signup.Entries = entries
-          done(null, signup)
-        )
-        .error( (err) ->
-          done(err)
-        )
-      , (err, signups) ->
-        if err
-          return next(new Error('Could not load entries: ' + err))
-        request.signups = signups
-        next()
-      )
-    )
-    .error( (error) ->
-      return next(new Error('Could not load signups: ' + error))
-    )
+      for registrant in registrants
+        signup = registrant.Signups[0]
+        request.signups.push
+          Registrant: registrant
+          Signup: signup
+          Entries: signup.Entries
+
+      next()
+    .catch (error) ->
+      next(new Error("Could not load signups: " + error))
 
   entriesWithSignupAndRegistrant: (signupFilter, entryFilter) =>
     this.cakeshowDB.Registrant.findAll

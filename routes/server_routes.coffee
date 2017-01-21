@@ -258,7 +258,6 @@ entries = (request, response, next) ->
   response.json(request.jsonResults)
 
 putEntry = (request, response, next) ->
-  console.log request.body
   request.entry.update(request.body)
   .then ->
     response.json(request.entry.values)
@@ -303,8 +302,8 @@ collateWinners = (winnersList, year, renderWinner) ->
 
 getWinners = (request, response, next) ->
   winners = collateWinners(request.winners, request.param('year'), (winner) ->
-    entry: winner.Entry.values
-    signup: winner.Signup.values
+    entry: winner.Entry.dataValues
+    signup: sanitizeSignup(winner.Signup)
     registrant: sanitizeRegistrant(winner.Registrant)
   )
 
@@ -664,7 +663,7 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
 
   winners: (request, response, next) =>
     filter =
-      $not: null
+      divisionPlace: $not: null
 
     this.entriesWithSignupAndRegistrant {}, filter
     .then (winners) ->
@@ -673,66 +672,37 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     .catch (error) ->
       return next(new Error('Could not fetch winners: ' + error))
 
+  updateEntry: (id, update) =>
+    return this.cakeshowDB.Entry.findById(id)
+    .then (entry) =>
+      return entry.update update
 
   postWinner: (request, response, next) =>
     newID = parseInt(request.body.id)
 
     console.log 'setting winner', request.param('division'), request.param('category'), request.param('place'), newID
 
-    this.cakeshowDB.Entry.find(newID)
-    .success( (entry) =>
-      entry.updateAttributes(
-        divisionPlace: request.param('place')
-      )
-      .success( ->
-        next()
-      )
-      .error( (error) ->
-        return next(new Error('Could not update winner: ' + error))
-      )
-    )
-    .error( (error) ->
-      return next(new Error('Could not fetch entry: ' + error))
-    )
+    this.updateEntry newID, divisionPlace: request.param('place')
+    .then next
+    .catch (error) ->
+      next(new Error("Could not set winner for #{newID}: " + error))
 
   postBestOfDivision: (request, response, next) =>
     newID = parseInt(request.body.id)
 
     console.log 'setting best of division', request.param('division'), newID
 
-    this.cakeshowDB.Entry.find(newID)
-    .success( (entry) =>
-      entry.updateAttributes(
-        bestInDivision: true
-      )
-      .success( ->
-        next()
-      )
-      .error( (error) ->
-        return next(new Error('Could not update winner: ' + error))
-      )
-    )
-    .error( (error) ->
-      return next(new Error('Could not fetch entry: ' + error))
-    )
+    this.updateEntry newID, bestInDivision: true
+    .then next
+    .catch (error) ->
+      next(new Error("Could not set best of division for #{newID}: " + error))
 
   postBestOfShow: (request, response, next) =>
     newID = parseInt(request.body.id)
 
     console.log 'setting best of show', newID
 
-    this.cakeshowDB.Entry.find(newID)
-    .success( (entry) =>
-      entry.updateAttributes(
-        bestInShow: true
-      )
-      .success( ->
-        next()
-      )
-      .error( (error) ->
-        return next(new Error('Could not update winner: ' + error))
-      )
-    )
-    .error( (error) ->
-      return next(new Error('Could not fetch entry: ' + error))
-    )
+    this.updateEntry newID, bestInShow: true
+    .then next
+    .catch (error) ->
+      next(new Error("Could not set best of show for #{newID}: " + error))

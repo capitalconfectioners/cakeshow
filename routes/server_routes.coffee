@@ -660,21 +660,14 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     entryAttributes = request.body
     entryAttributes.year = request.signup.Signup.year
 
-    entry = this.cakeshowDB.Entry.build(entryAttributes)
-
-    entry.save()
-    .success( ->
-      request.signup.Signup.addEntry(entry)
-      .success( ->
-        response.json(entry.values)
-      )
-      .error( (error) ->
-        return next(new Error("Could not add entry to signup: " + error))
-      )
-    )
-    .error( (error) ->
+    this.cakeshowDB.cakeshowDB.transaction (t) =>
+      return this.cakeshowDB.Entry.create(entryAttributes, transaction: t)
+      .then (entry) ->
+        request.signup.Signup.addEntry(entry, transaction: t)
+    .then (entry) ->
+      response.json(entry.dataValues)
+    .catch (error) ->
       return next(new Error("Could not create new entry: " + error))
-    )
 
   winners: (request, response, next) =>
     filter =

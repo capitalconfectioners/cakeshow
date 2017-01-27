@@ -1,4 +1,5 @@
 {spawn} = require 'child_process'
+require 'coffee-script/register'
 db = require './database/cakeshowDB'
 Upgrader = require './database/upgrade_db'
 
@@ -77,24 +78,22 @@ runSqlScript = (options, script, onSuccess) ->
 
 createCakeshowDB = (options, onSuccess = ->) ->
   db.connect(options.database, options)
-
-  if( options.replace? )
-    console.log('Overwriting previous DB')
-    db.cakeshowDB.drop().success( ->
-      db.cakeshowDB.sync()
-        .success(-> onSuccess(options))
-        .error( (error) ->
-          console.log('Error creating DB: ' + error)
-        )
-    ).error( (error) ->
-      console.log('Error removing old DB: ' + error)
-    )
-  else
-    db.cakeshowDB.sync()
-      .success(-> onSuccess(options))
-      .error( (error) ->
-        console.log('Error creating DB: ' + error)
-      )
+  .then ->
+    if options.replace?
+      console.log('Overwriting previous DB')
+      db.cakeshowDB.drop()
+      .then ->
+        # Have to sync to register the models to drop, then sync again
+        # to re-create the tables.
+        db.cakeshowDB.sync()
+        .then ->
+          onSuccess(options)
+      .catch (error) ->
+        console.log('Error dropping DB:', error)
+    else
+      onSuccess(options)
+  .catch (error) ->
+    console.log('Error syncing Sequelize model: ', error)
 
 migrateData = (options, onSuccess) ->
   console.log('Migrating data')

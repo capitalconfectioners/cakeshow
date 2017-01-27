@@ -29,7 +29,7 @@ class CakeshowDB
       year: Sequelize.STRING
       registrationTime:
         type: Sequelize.STRING
-        validate: {isIn: [['early','late','student','child']]}
+        validate: {isIn: [['early','late','student','child','general']]}
       'class':
         type: Sequelize.STRING
         validate: {isIn: [cakeshowTypes.divisions]}

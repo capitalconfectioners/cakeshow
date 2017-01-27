@@ -110,8 +110,13 @@ toc = (request, response, next) ->
 
 sanitizeRegistrant = (registrant) ->
   rawRegistrant = {}
-  rawRegistrant[key] = value for key, value of registrant.values when key != 'password'
+  rawRegistrant[key] = value for key, value of registrant.get() when key != 'password' and key != 'Signups'
   return rawRegistrant
+
+sanitizeSignup = (signup) ->
+  rawSignup = {}
+  rawSignup[key] = value for key, value of signup.get() when key != 'Entries'
+  return rawSignup
 
 registrants = (request, response, next) ->
   request.jsonResults = []
@@ -122,14 +127,14 @@ registrants = (request, response, next) ->
 
 signupToJSON = (signup) ->
   result = {
-    signup: signup.Signup.values
+    signup: sanitizeSignup(signup.Signup)
     registrant: sanitizeRegistrant(signup.Registrant)
   }
 
   if signup.Entries?
     result.entries = []
     for entry in signup.Entries
-      result.entries.push( entry.values )
+      result.entries.push( entry )
 
   return result
 
@@ -218,12 +223,12 @@ signups = (request, response, next) ->
   next()
 
 putSignup = (request, response, next) ->
-  request.signup.Signup.updateAttributes(request.body)
-  .success( ->
-    response.json(request.signup.Signup.values)
+  request.signup.Signup.update(request.body)
+  .then( ->
+    response.json(sanitizeSignup(request.signup.Signup))
   )
-  .error( (error) ->
-    return next(new Error("Could not save signup #{request.signup.id} with values #{request.body}: " + error))
+  .catch( (error) ->
+    return next(new Error("Could not save signup #{request.signup.Signup.id} with values #{request.body}: " + error))
   )
 
 printSignups = (request, response, next) ->
@@ -238,8 +243,8 @@ allSignups = (request, response, next) ->
 
   for entry in request.entries
     request.jsonResults.push(
-      entry: entry.Entry.values
-      signup: entry.Signup.values
+      entry: entry.Entry.dataValues
+      signup: sanitizeSignup(entry.Signup)
       registrant: sanitizeRegistrant(entry.Registrant)
     )
 
@@ -248,23 +253,21 @@ allSignups = (request, response, next) ->
 entries = (request, response, next) ->
   request.jsonResults = []
   for entry in request.entries
-    request.jsonResults.push( entry.values )
+    request.jsonResults.push( entry.dataValues )
 
   response.json(request.jsonResults)
 
 putEntry = (request, response, next) ->
-  request.entry.updateAttributes(request.body)
-  .success( ->
+  request.entry.update(request.body)
+  .then ->
     response.json(request.entry.values)
-  )
-  .error( (error) ->
+  .catch (error) ->
     return next(new Error("Could not save entry #{request.entry.id} with values #{request.body}: " + error))
-  )
 
 getEntry = (request, response, next) ->
   response.json(
-    entry: request.entry.Entry.values
-    signup: request.entry.Signup.values
+    entry: request.entry.Entry.dataValues
+    signup: sanitizeSignup(request.entry.Signup)
     registrant: sanitizeRegistrant(request.entry.Registrant)
   )
 
@@ -299,8 +302,8 @@ collateWinners = (winnersList, year, renderWinner) ->
 
 getWinners = (request, response, next) ->
   winners = collateWinners(request.winners, request.param('year'), (winner) ->
-    entry: winner.Entry.values
-    signup: winner.Signup.values
+    entry: winner.Entry.dataValues
+    signup: sanitizeSignup(winner.Signup)
     registrant: sanitizeRegistrant(winner.Registrant)
   )
 
@@ -389,18 +392,12 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     this.cakeshowDB = cakeshowDB
 
   shows: (request, response, next) =>
-    distinct =
-      build: (values) ->
-        return values.year
-
-    this.cakeshowDB.cakeshowDB.getQueryInterface().select(distinct, this.cakeshowDB.Signup.tableName,
-      attributes: [['distinct year', 'year']]
-    )
-    .success( (years) ->
-      request.shows = years
+    this.cakeshowDB.cakeshowDB.query('SELECT distinct year as `year` FROM `Signups`', { type: 'SELECT'})
+    .then( (years) ->
+      request.shows = [year.year for year in years]
       next()
     )
-    .error( (error) ->
+    .catch( (error) ->
       return next(new Error("Could not select show list: " + error))
     )
 
@@ -424,101 +421,106 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
 
   allRegistrants: (request, response, next) =>
 
-    this.cakeshowDB.Registrant.count().success( (count) =>
+    this.cakeshowDB.Registrant.count()
+    .then( (count) =>
       {page, limit, offset} = this.attachPagination(request, count)
 
       this.cakeshowDB.Registrant.findAll(
         offset:offset
         limit:limit
         order: 'lastname ASC, firstname ASC')
-      .success( (registrants) ->
+      .then( (registrants) ->
         request.registrants = registrants
         next()
       )
-      .error( (error) ->
+      .catch( (error) ->
         return next(new Error('Could not load registrants: ' + error))
       )
     )
-    .error( (error) ->
+    .catch( (error) ->
       return next(new Error('Could not count registrants: ' + error))
     )
 
   singleSignup: (request, response, next) =>
     id = parseInt(request.param('signupID'), 10)
-    this.cakeshowDB.Signup.joinTo( this.cakeshowDB.Registrant, where: id )
-    .success( (signup) ->
-      request.signup = signup[0]
+    this.cakeshowDB.Registrant.findAll
+      include: [
+        model: this.cakeshowDB.Signup
+        where:
+          id: id
+      ]
+    .then( (registrant) ->
+      request.signup =
+        Registrant: registrant[0]
+        Signup: registrant[0].Signups[0]
       next()
     )
-    .error( (error) ->
+    .catch( (error) ->
       return next(new Error("Could not load signup #{id}: " + error))
     )
 
   signupWithEntries: (request, response, next) =>
     id = parseInt(request.param('signupID'), 10)
-    this.cakeshowDB.Signup.joinTo( this.cakeshowDB.Registrant, where: id )
-    .success( (signup) =>
-      request.signup = signup[0]
-      console.log(request.signup.Signup.id)
-      this.cakeshowDB.Entry.findAll( where: SignupID: request.signup.Signup.id )
-      .success( (entries) ->
-        request.signup.Entries = entries
-        next()
-      )
-      .error( (err) ->
-        return next(new Error("Could not load entries for signup #{request.signup.id}: " + err))
-      )
-    )
-    .error( (error) ->
+    this.cakeshowDB.Registrant.findAll
+      include: [
+        model: this.cakeshowDB.Signup
+        where:
+          id: id
+        include: [this.cakeshowDB.Entry]
+      ]
+    .then (registrant) ->
+      signup = registrant[0].Signups[0]
+      request.signup =
+        Registrant: registrant[0]
+        Signup: signup
+        Entries: signup.Entries
+      next()
+    .catch (error) ->
       return next(new Error("Could not load signup #{id}: " + error))
-    )
 
   signups: (request, response, next) =>
     requestedYear = request.param('year')
+    signupFilter = {}
 
     if requestedYear?
-      filter =
-        year: requestedYear
-    else
-      filter = {}
+      signupFilter.year = requestedYear
 
     search = request.param('search')
     if search?
-      filters = []
+      registrantFilter =
+        $or:
+          firstname:
+            $like: search
+          lastname:
+            $like: search
 
-      if filter.year?
-        yearFilter = this.cakeshowDB.Signup.quoted('year') + " = '#{filter.year}'"
-        filters.push(yearFilter)
+    filter =
+      where: registrantFilter
+      include: [
+        model: this.cakeshowDB.Signup
+        where: signupFilter
+      ]
 
-      firstnameFilter = this.cakeshowDB.Registrant.quoted('firstname') + " LIKE '%#{search}%'"
-      lastnameFilter = this.cakeshowDB.Registrant.quoted('lastname') + " LIKE '%#{search}%'"
 
-      nameFilter = [firstnameFilter, lastnameFilter].join(" OR ")
-      filters.push('(' + nameFilter + ')')
-
-      filter = filters.join(" AND ")
-
-    this.cakeshowDB.Signup.countJoined( this.cakeshowDB.Registrant, where: filter )
-    .success( (count) =>
+    this.cakeshowDB.Registrant.count filter
+    .then (count) =>
       {page, limit, offset} = this.attachPagination(request, count)
+      filter.limit = limit
+      filter.offset = offset
 
-      this.cakeshowDB.Signup.joinTo( this.cakeshowDB.Registrant,
-        where: filter
-        offset:offset
-        limit:limit
-        order: 'lastname ASC, firstname ASC'
-      )
-      .success( (signups) ->
-        request.signups = signups
+      this.cakeshowDB.Registrant.findAll filter
+      .then( (result) ->
+        request.signups = for r in result
+          Signup: r.Signups[0]
+          Registrant: r
+
         next()
       )
-      .error( (error) ->
-        return next(new Error('Could not load signups: ' + error))
+      .catch( (error) ->
+        return next(new Error('Could not fetch signups: ' + error))
       )
-    )
-    .error( (error) ->
+    .catch (error) ->
       return next(new Error('Could not count signups: ' + error))
-    )
 
   postSignup: (request, response, next) =>
     registrantSignup = request.body
@@ -527,39 +529,30 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     registrantSignup.signup.year != request.param('year')
       return next(new Error('Years do not match'))
 
-    registrant = this.cakeshowDB.Registrant.build(registrantSignup.registrant)
-    signup = this.cakeshowDB.Signup.build(registrantSignup.signup)
-
-    chain = new Sequelize.Utils.QueryChainer()
-
-    chain.add(registrant.save())
-    chain.add(signup.save())
-    chain.run()
-    .success( ->
-      registrant.addSignup(signup)
-      .success( ->
-        response.header('Location', '/signups/' + signup.id)
-        response.json(signupToJSON( Registrant: registrant, Signup: signup ))
-      )
-      .error( (error) ->
-        return next(new Error('Could not link signup to registrant: ' + error))
-      )
-    )
-    .error( (error) ->
-      return next(new Error('Could not create registrant and signup: ' + error))
-    )
+    transaction = this.cakeshowDB.cakeshowDB.transaction (t) =>
+      return this.cakeshowDB.Registrant.create(registrantSignup.registrant, transaction: t)
+      .then (registrant) =>
+        return this.cakeshowDB.Signup.create(registrantSignup.signup, transaction: t)
+        .then (signup) ->
+          return {registrant: registrant, signup: signup}
+      .then ({registrant, signup}) ->
+        return registrant.addSignup(signup, transaction: t)
+        .then () ->
+          return {registrant: registrant, signup: signup}
+    .then ({registrant, signup}) ->
+      response.header('Location', '/signups/' + signup.id)
+      response.json(signupToJSON( Registrant: registrant, Signup: signup ))
+    .catch (error) ->
+      next(new Error('Could not create Registrant or Signup: ' + error))
 
   entriesForSignup: (request, response, next) =>
     signupID = request.param('signupID')
     this.cakeshowDB.Entry.findAll( where: SignupID: signupID )
-    .success( (entries) ->
-      for entry in entries
-        entry.didBring = if entry.didBring == 0 then false else true
-        entry.styleChange = if entry.styleChange == 0 then false else true
+    .then( (entries) ->
       request.entries = entries
       next()
     )
-    .error( (error) ->
+    .catch( (error) ->
       return next(new Error("Could not load entries for signup #{id}: " + error))
     )
 
@@ -568,43 +561,56 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     requestedAfter = request.param('after')
 
     if requestedYear?
-      filter =
+      signupFilter =
         year: requestedYear
     else
-      filter = {}
+      signupFilter = {}
 
     if requestedAfter?
-      if filter.year?
-        filter = "Signups.year = #{Sequelize.Utils.escape(requestedYear)}"
-      else
-        filter = ''
+      signupFilter.createdAt =
+        $gt: requestedAfter
 
-      filter += " AND Signups.createdAt > #{Sequelize.Utils.escape(requestedAfter)}"
+    this.cakeshowDB.Registrant.findAll
+      order: [['lastname', 'ASC'], ['firstname', 'ASC']]
+      include: [
+        model: this.cakeshowDB.Signup
+        where: signupFilter
+        include: [this.cakeshowDB.Entry]
+      ]
+    .then (registrants) ->
+      request.signups = []
 
-    this.cakeshowDB.Signup.joinTo( this.cakeshowDB.Registrant,
-      where: filter
-      order: 'lastname ASC, firstname ASC'
-    )
-    .success( (signups) =>
-      async.map(signups, (signup, done) =>
-        this.cakeshowDB.Entry.findAll( where: SignupID: signup.Signup.id )
-        .success( (entries) ->
-          signup.Entries = entries
-          done(null, signup)
-        )
-        .error( (err) ->
-          done(err)
-        )
-      , (err, signups) ->
-        if err
-          return next(new Error('Could not load entries: ' + err))
-        request.signups = signups
-        next()
-      )
-    )
-    .error( (error) ->
-      return next(new Error('Could not load signups: ' + error))
-    )
+      for registrant in registrants
+        signup = registrant.Signups[0]
+        request.signups.push
+          Registrant: registrant
+          Signup: signup
+          Entries: signup.Entries
+
+      next()
+    .catch (error) ->
+      next(new Error("Could not load signups: " + error))
+
+  entriesWithSignupAndRegistrant: (signupFilter, entryFilter) =>
+    this.cakeshowDB.Registrant.findAll
+      include: [
+        model: this.cakeshowDB.Signup
+        where: signupFilter
+        include: [
+          model: this.cakeshowDB.Entry
+          where: entryFilter
+        ]
+      ]
+    .then (registrants) ->
+      entries = []
+      for registrant in registrants
+        signup = registrant.Signups[0]
+        for entry in signup.Entries
+          entries.push
+            Registrant: registrant
+            Signup: signup
+            Entry: entry
+      return entries
 
   entryTable: (request, response, next) =>
     requestedYear = request.param('year')
@@ -615,136 +621,88 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
     else
       filter = {}
 
-    this.cakeshowDB.Entry.joinTo( [this.cakeshowDB.Signup,
-                                   this.cakeshowDB.Registrant],
-      where: filter
-    )
-    .success( (entries) ->
+    this.entriesWithSignupAndRegistrant(filter)
+    .then (entries) ->
       request.entries = entries
       next()
-    )
-    .error( (error) ->
+    .catch (error) ->
       next(new Error(error))
-    )
 
   entry: (request, response, next) =>
     id = parseInt(request.param('id'), 10)
-    this.cakeshowDB.Entry.find(id)
-    .success( (entry) ->
+    this.cakeshowDB.Entry.findById(id)
+    .then (entry) ->
       request.entry = entry
       next()
-    )
-    .error( (error) ->
+    .catch (error) ->
       return next(new Error("Could not find entry with id #{id}: " + error))
-    )
 
   entryWithSignup: (request, response, next) =>
     id = parseInt(request.param('entryID'), 10)
-    this.cakeshowDB.Entry.joinTo( [this.cakeshowDB.Signup,
-                                   this.cakeshowDB.Registrant],
-      where:
-        id: id
-    )
-    .success( (entry) ->
+
+    this.entriesWithSignupAndRegistrant {}, id: id
+    .then (entry) ->
       request.entry = entry[0]
       next()
-    )
-    .error( (error) ->
+    .catch (error) ->
       next(new Error(error))
-    )
+
 
   postEntry: (request, response, next) =>
     entryAttributes = request.body
     entryAttributes.year = request.signup.Signup.year
 
-    entry = this.cakeshowDB.Entry.build(entryAttributes)
-
-    entry.save()
-    .success( ->
-      request.signup.Signup.addEntry(entry)
-      .success( ->
-        response.json(entry.values)
-      )
-      .error( (error) ->
-        return next(new Error("Could not add entry to signup: " + error))
-      )
-    )
-    .error( (error) ->
+    this.cakeshowDB.cakeshowDB.transaction (t) =>
+      return this.cakeshowDB.Entry.create(entryAttributes, transaction: t)
+      .then (entry) ->
+        request.signup.Signup.addEntry(entry, transaction: t)
+    .then (entry) ->
+      response.json(entry.dataValues)
+    .catch (error) ->
       return next(new Error("Could not create new entry: " + error))
-    )
 
   winners: (request, response, next) =>
-    filter = this.cakeshowDB.Entry.quoted('divisionPlace') + ' IS NOT NULL'
+    filter =
+      divisionPlace: $not: null
 
-    this.cakeshowDB.Entry.joinTo( [this.cakeshowDB.Signup,
-                                   this.cakeshowDB.Registrant],
-      where: filter
-    ).success( (winners) ->
+    this.entriesWithSignupAndRegistrant {}, filter
+    .then (winners) ->
       request.winners = winners
       next()
-    ).error( (error) ->
+    .catch (error) ->
       return next(new Error('Could not fetch winners: ' + error))
-    )
+
+  updateEntry: (id, update) =>
+    return this.cakeshowDB.Entry.findById(id)
+    .then (entry) =>
+      return entry.update update
 
   postWinner: (request, response, next) =>
     newID = parseInt(request.body.id)
 
     console.log 'setting winner', request.param('division'), request.param('category'), request.param('place'), newID
 
-    this.cakeshowDB.Entry.find(newID)
-    .success( (entry) =>
-      entry.updateAttributes(
-        divisionPlace: request.param('place')
-      )
-      .success( ->
-        next()
-      )
-      .error( (error) ->
-        return next(new Error('Could not update winner: ' + error))
-      )
-    )
-    .error( (error) ->
-      return next(new Error('Could not fetch entry: ' + error))
-    )
+    this.updateEntry newID, divisionPlace: request.param('place')
+    .then next
+    .catch (error) ->
+      next(new Error("Could not set winner for #{newID}: " + error))
 
   postBestOfDivision: (request, response, next) =>
     newID = parseInt(request.body.id)
 
     console.log 'setting best of division', request.param('division'), newID
 
-    this.cakeshowDB.Entry.find(newID)
-    .success( (entry) =>
-      entry.updateAttributes(
-        bestInDivision: true
-      )
-      .success( ->
-        next()
-      )
-      .error( (error) ->
-        return next(new Error('Could not update winner: ' + error))
-      )
-    )
-    .error( (error) ->
-      return next(new Error('Could not fetch entry: ' + error))
-    )
+    this.updateEntry newID, bestInDivision: true
+    .then next
+    .catch (error) ->
+      next(new Error("Could not set best of division for #{newID}: " + error))
 
   postBestOfShow: (request, response, next) =>
     newID = parseInt(request.body.id)
 
     console.log 'setting best of show', newID
 
-    this.cakeshowDB.Entry.find(newID)
-    .success( (entry) =>
-      entry.updateAttributes(
-        bestInShow: true
-      )
-      .success( ->
-        next()
-      )
-      .error( (error) ->
-        return next(new Error('Could not update winner: ' + error))
-      )
-    )
-    .error( (error) ->
-      return next(new Error('Could not fetch entry: ' + error))
-    )
+    this.updateEntry newID, bestInShow: true
+    .then next
+    .catch (error) ->
+      next(new Error("Could not set best of show for #{newID}: " + error))

@@ -656,6 +656,8 @@ exports.DatabaseMiddleware = class DatabaseMiddleware
       return this.cakeshowDB.Entry.create(entryAttributes, transaction: t)
       .then (entry) ->
         request.signup.Signup.addEntry(entry, transaction: t)
+        .then () ->
+          return entry
     .then (entry) ->
       response.json(entry.dataValues)
     .catch (error) ->

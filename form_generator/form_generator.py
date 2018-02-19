@@ -65,40 +65,78 @@ def get_show_end_date(year):
 
 
 def judging_divisional_body(canvas):
-    criteria = ["Precision", "Originality", "Creativity", "Skill", "Color", "Design", "Difficulty", "Number of Techniques", "Overall Eye Appeal"]
+    criteria = [
+        ("Skill & Precision of Techniques", 20),
+        ("Originality & Creativity", 20),
+        ("Difficulty of Techniques", 15),
+        ("Number of Techniques Used", 15),
+        ("Proportion, Balance, Use of Color", 15),
+        ("Overall Eye Appeal - Judge's Discretion", 15)
+    ]
+
+    offset = 8.75
 
     # Table header
-    canvas.drawString(3.30 * inch, 8.375 * inch, "    Needs")
-    canvas.drawString(3.30 * inch, 8.125 * inch, "Improvement")
-    canvas.drawString(4.85 * inch, 8.25 * inch, "Fair")
-    canvas.drawString(5.750 * inch, 8.25 * inch, "Good")
-    canvas.drawString(6.750 * inch, 8.25 * inch, "Excellent")
+    canvas.drawString(5.85 * inch, offset * inch, "Maximum")
+    canvas.drawString(6.85 * inch, offset * inch, "  Points")
+
+    offset -= 0.2
+
+    canvas.drawString(5.85 * inch, offset * inch, "  Points")
+    canvas.drawString(6.85 * inch, offset * inch, "Awarded")
+
+    top_of_grid = offset - 0.1
 
     # Display column of criteria
-    offset = 7.75
-    for criterium in criteria:
+    offset -= 0.275
+    for criterium, max_points in criteria:
         canvas.drawString(1.125 * inch, offset * inch, criterium)
-        offset -= 0.375
+        canvas.drawString(6.125 * inch, offset * inch, str(max_points))
+        offset -= 0.275
+    canvas.drawString(6.125 * inch, offset * inch, "Total:")
 
     # Build up rows
     rows = []
-    offset = 8.00
+    offset = top_of_grid
     for criterium in criteria:
         rows.append(offset * inch)
-        offset -= 0.375
+        offset -= 0.275
     rows.append(offset * inch)
 
     # Draw grid
-    canvas.grid([inch, 3.25 * inch, 4.50 * inch, 5.50 * inch, 6.50 * inch, 7.75 * inch], rows)
+    canvas.grid([inch, 5.75 * inch, 6.75 * inch, 7.75 * inch], rows)
+    canvas.grid([6.75 * inch, 7.75 * inch], [offset * inch, (offset - 0.275) * inch])
+    offset -= 0.275
+
+    # Display award levels
+    offset -= 0.275
+    canvas.drawString(
+        1.125 * inch, offset * inch,
+        "Platinum: 90-100pts, Gold: 80-89pts, Silver: 70-79pts, Bronze: Below 70")
+    offset -= 0.275
 
     # Display comments section
-    offset -= 0.5
+    offset -= 0.275
     canvas.drawString(inch, offset * inch, "Comments: ")
     canvas.line(2.25 * inch, offset * inch, 7.5 * inch, offset * inch)
 
-    while (offset > 1.5):
+    while (offset > 3.5):
         offset -= 0.5
         canvas.line(1 * inch, offset * inch, 7.5 * inch, offset * inch)
+
+    offset -= 0.375
+
+    canvas.drawString(inch, offset * inch, "Judges:")
+    offset -= 0.375
+
+    canvas.drawString(2 * inch, offset * inch, "Printed Name")
+    canvas.drawString(5 * inch, offset * inch, "Signature")
+
+    offset += 0.275
+
+    canvas.grid(
+        [inch, 4.25 * inch, 7.5 * inch],
+        [(offset - (pos * 0.375)) * inch for pos in range(6)])
 
 
 def judging_showcake_body(canvas):

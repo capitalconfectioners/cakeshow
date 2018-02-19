@@ -15,12 +15,18 @@
       "Renaissance Tasting",
       "Renaissance Tasting",
       "Cookies Tasting"
+    ],
+    "showcases": [
+      "Showpiece Sculpted Indiv",
+      "Showpiece Sculpted Team",
+      "Showpiece Tiered Indi",
+      "Showpiece Tiered Team"
     ]
   },
   "entries": [
     {
       "signup": {
-        "year": "2012",
+        "year": "2017",
         "registrationTime": "general",
         "class": "Adult Intermediate",
         "childage": 0,
@@ -31,8 +37,8 @@
         "electricity": 0,
         "paymentmethod": "",
         "id": 219,
-        "createdAt": "2012-02-25T04:43:14.000Z",
-        "updatedAt": "2012-02-29T00:45:54.000Z",
+        "createdAt": "2017-02-25T04:43:14.000Z",
+        "updatedAt": "2017-02-29T00:45:54.000Z",
         "RegistrantId": 892
       },
       "registrant": {
@@ -46,107 +52,107 @@
         "phone": "512-921-0309",
         "dateregistered": "2010-02-11T17:41:50.000Z",
         "id": 892,
-        "createdAt": "2012-02-25T04:43:12.000Z",
-        "updatedAt": "2012-02-25T04:43:12.000Z"
+        "createdAt": "2017-02-25T04:43:12.000Z",
+        "updatedAt": "2017-02-25T04:43:12.000Z"
       },
       "entries": [
         {
-          "year": "2012",
+          "year": "2017",
           "category": "Novelty Single",
           "didBring": 1,
           "styleChange": 0,
           "entryNumber": 1,
           "id": 405,
-          "createdAt": "2012-02-25T04:43:14.000Z",
-          "updatedAt": "2012-03-01T05:15:50.000Z",
+          "createdAt": "2017-02-25T04:43:14.000Z",
+          "updatedAt": "2017-03-01T05:15:50.000Z",
           "SignupId": 219
         },
         {
-          "year": "2012",
+          "year": "2017",
           "category": "Wedding Tiered",
           "didBring": 1,
           "styleChange": 0,
           "entryNumber": 21,
           "id": 406,
-          "createdAt": "2012-02-25T04:43:14.000Z",
-          "updatedAt": "2012-03-01T05:15:50.000Z",
+          "createdAt": "2017-02-25T04:43:14.000Z",
+          "updatedAt": "2017-03-01T05:15:50.000Z",
           "SignupId": 219
         },
         {
-          "year": "2012",
+          "year": "2017",
           "category": "Special Techniques",
           "didBring": 1,
           "styleChange": 0,
           "entryNumber": 32,
           "id": 407,
-          "createdAt": "2012-02-25T04:43:14.000Z",
-          "updatedAt": "2012-03-01T05:15:50.000Z",
+          "createdAt": "2017-02-25T04:43:14.000Z",
+          "updatedAt": "2017-03-01T05:15:50.000Z",
           "SignupId": 219
         },
         {
-          "year": "2012",
+          "year": "2017",
           "category": "Birthday Tasting",
           "didBring": 1,
           "styleChange": 0,
           "entryNumber": 43,
           "id": 408,
-          "createdAt": "2012-02-25T04:43:14.000Z",
-          "updatedAt": "2012-03-01T05:15:50.000Z",
+          "createdAt": "2017-02-25T04:43:14.000Z",
+          "updatedAt": "2017-03-01T05:15:50.000Z",
           "SignupId": 219
         },
         {
-          "year": "2012",
+          "year": "2017",
           "category": "Renaissance Tasting",
           "didBring": 1,
           "styleChange": 0,
           "entryNumber": 54,
           "id": 409,
-          "createdAt": "2012-02-25T04:43:14.000Z",
-          "updatedAt": "2012-03-01T05:15:50.000Z",
+          "createdAt": "2017-02-25T04:43:14.000Z",
+          "updatedAt": "2017-03-01T05:15:50.000Z",
           "SignupId": 219
         },
         {
-          "year": "2012",
+          "year": "2017",
           "category": "Renaissance Tasting",
           "didBring": 1,
           "styleChange": 0,
           "entryNumber": 895,
           "id": 410,
-          "createdAt": "2012-02-25T04:43:14.000Z",
-          "updatedAt": "2012-03-01T05:15:50.000Z",
+          "createdAt": "2017-02-25T04:43:14.000Z",
+          "updatedAt": "2017-03-01T05:15:50.000Z",
           "SignupId": 219
         },
         {
-          "year": "2012",
+          "year": "2017",
           "category": "Cookies Tasting",
           "didBring": 1,
           "styleChange": 0,
           "entryNumber": 916,
           "id": 411,
-          "createdAt": "2012-02-25T04:43:14.000Z",
-          "updatedAt": "2012-03-01T05:15:50.000Z",
+          "createdAt": "2017-02-25T04:43:14.000Z",
+          "updatedAt": "2017-03-01T05:15:50.000Z",
           "SignupId": 219
         },
         {
-          "year": "2012",
+          "year": "2017",
           "category": "Novelty Single",
           "didBring": 1,
           "styleChange": 1,
           "entryNumber": null,
           "id": 481,
-          "createdAt": "2012-03-01T05:15:28.000Z",
-          "updatedAt": "2012-03-01T05:15:50.000Z",
+          "createdAt": "2017-03-01T05:15:28.000Z",
+          "updatedAt": "2017-03-01T05:15:50.000Z",
           "SignupId": 219
         },
         {
-          "year": "2012",
+          "year": "2017",
           "category": "Showcakes",
           "didBring": 1,
           "styleChange": 1,
           "entryNumber": null,
           "id": 484,
-          "createdAt": "2012-03-01T05:15:28.000Z",
-          "updatedAt": "2012-03-01T05:15:50.000Z",
+          "createdAt": "2017-03-01T05:15:28.000Z",
+          "updatedAt": "2017-03-01T05:15:50.000Z",
           "SignupId": 219
         }
       ]

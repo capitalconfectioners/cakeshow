@@ -131,6 +131,27 @@ exports.entryNames =
     special5: 'Candy'
     child: 'Child'
     junior: 'Junior'
+  '2018':
+    showcase: 'Showpiece Sculpted Indiv'
+    showcase2: 'Showpiece Sculpted Team'
+    showcase3: 'Showpiece Tiered Indi'
+    showcase4: 'Showpiece Tiered Team'
+    style1: 'Novelty Single'
+    style2: 'Sculpted'
+    style3: 'Novelty Tiered'
+    style4: 'Wedding Tiered'
+    style5: 'Buttercream Single'
+    style6: 'Special Techniques'
+    style7: 'Small Bites'
+    style8: 'Dessert Table'
+    style9: 'Cookie Divisional'
+    special1: 'Formula Cakes'
+    special2: 'Flaky Pastries'
+    special3: 'Common Ingredient Herb'
+    special4: 'Cookie Tasting'
+    special5: 'Candy'
+    child: 'Child'
+    junior: 'Junior'
 
 exports.divisions = [
   'child'
@@ -140,7 +161,7 @@ exports.divisions = [
   'adultbeg'
   'adultint'
   'adultadv'
-  'professional'
+  # 'professional'
   'masters'
   ]
 
@@ -148,12 +169,12 @@ exports.divisionNames =
   'adultint': 'Adult Intermediate'
   'culstudent': 'Culinary Student'
   'adultbeg': 'Adult Beginner'
-  'professional': 'Professional'
+  # 'professional': 'Professional'
   'junior': 'Junior'
   'adultadv': 'Adult Advanced'
   'child': 'Child'
   'teen': 'Teen'
-  'masters': 'Masters'
+  'masters': 'Professional/Masters'
 
 exports.singleShowcaseTypes = ['showcase', 'showcase3']
 exports.teamShowcaseTypes = ['showcase2', 'showcase4']

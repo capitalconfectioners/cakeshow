@@ -9,7 +9,8 @@ SHOW_DATES = {
     2014: ("February 22", "23"),
     2015: ("February 21", "22"),
     2016: ("February 27", "28"),
-    2017: ("February 25", "26")
+    2017: ("February 25", "26"),
+    2018: ("February 24", "25")
 }
 
 

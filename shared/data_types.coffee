@@ -152,6 +152,28 @@ exports.entryNames =
     special5: 'Candy'
     child: 'Child'
     junior: 'Junior'
+  '2019':
+    showcase: 'Showpiece Sculpted Indiv'
+    showcase2: 'Showpiece Sculpted Team'
+    showcase3: 'Showpiece Tiered Indi'
+    showcase4: 'Showpiece Tiered Team'
+    style1: 'Novelty Single'
+    style2: 'Sculpted'
+    style3: 'Novelty Tiered'
+    style4: 'Wedding Tiered'
+    style5: 'Buttercream Single'
+    style6: 'Special Techniques'
+    style7: 'Cupcakes'
+    style8: 'Dessert Table'
+    style9: 'Cookie Divisional'
+    special1: 'Dutch Oven/Skillet Dessert'
+    special2: 'Coffee Cake'
+    special3: 'Common Ingredient - Corn'
+    special4: 'Cookie Tasting'
+    special5: 'Trail Mix/Granola'
+    child: 'Child'
+    junior: 'Junior'
+
 
 exports.divisions = [
   'child'

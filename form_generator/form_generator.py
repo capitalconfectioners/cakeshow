@@ -429,21 +429,23 @@ if __name__ == "__main__":
         print("I/O error({0}): {1}".format(e.errno, e.strerror))
         sys.exit(2)
 
+    metadata = data['metadata']
     canvas = canvas.Canvas(output_file, pagesize=letter)
     for contestant in data['entries']:
         # Put all of the contestant's entry forms together
         for entry in contestant.get('entries'):
-            generate_entry_form(canvas, contestant.get('signup'), entry, contestant.get('registrant'), data['metadata'])
+            generate_entry_form(canvas, contestant.get('signup'), entry, contestant.get('registrant'), metadata)
             canvas.showPage()
     for contestant in data['entries']:
         # Print R&R form
-        generate_registration_and_release_form(canvas, contestant.get('signup'), contestant.get('registrant'), data['metadata']['divisionals'], data['metadata']['tastings'], data['metadata']['showcases'])
+        generate_registration_and_release_form(canvas, contestant.get('signup'), contestant.get('registrant'), metadata['divisionals'], metadata['tastings'], metadata['showcases'])
         canvas.showPage()
 
         # Put all of the contestant's judging sheets together
         for entry in contestant.get('entries'):
             signup = contestant.get('signup')
-            if ((signup.get('class') != 'Child') and (signup.get('class') != 'Junior')):
-                generate_judging_form(canvas, contestant.get('signup'), entry, data['metadata'])
+            signup_class = signup.get('class')
+            if (signup_class != 'Child' and signup_class != 'Junior') or _is_tasting(metadata, entry):
+                generate_judging_form(canvas, contestant.get('signup'), entry, metadata)
                 canvas.showPage()
     canvas.save()

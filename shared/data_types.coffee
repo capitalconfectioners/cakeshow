@@ -175,9 +175,7 @@ exports.entryNames =
     junior: 'Junior'
   '2020':
     showcase: 'Showpiece Sculpted Indiv'
-    showcase2: 'Showpiece Sculpted Team'
     showcase3: 'Showpiece Tiered Indi'
-    showcase4: 'Showpiece Tiered Team'
     style1: 'Novelty Single'
     style2: 'Sculpted'
     style3: 'Novelty Tiered'

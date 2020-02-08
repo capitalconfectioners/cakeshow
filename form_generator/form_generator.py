@@ -23,7 +23,7 @@ def _is_tasting(metadata, entry):
 
 
 def _is_showcake(entry):
-    return entry.get('category').startswith('Showcakes')
+    return entry.get('category').startswith('Showpiece')
 
 
 def header(canvas, signup, entry, metadata):
@@ -157,6 +157,10 @@ def generate_judging_form(canvas, signup, entry, metadata):
         judging_showcake_body(canvas)
     elif _is_tasting(metadata, entry):
         judging_tasting_body(canvas)
+    elif entry['category'] == '3D Cookie':
+        three_d_cookie_body(canvas)
+    elif entry['category'] == '2D Cookie':
+        two_d_cookie_body(canvas)
     else:
         judging_divisional_body(canvas)
 
@@ -211,6 +215,43 @@ def judging_tasting_body(canvas):
                     ("Density", 10),
                     ("Appearance", 15),
                     ("Theme", 15)
+                ]),
+                spacer(0.5),
+            comments(1.5)
+        ])
+
+def three_d_cookie_body(canvas):
+    draw_page(
+        canvas, 8.375,
+        [
+                judging_criteria([
+                    ("Interpretation of Theme", 10),
+                    ("Number & Diff of Decorating Techniques Used", 10),
+                    ("Number & Diff of Construction Techniques Used", 10),
+                    ("Mastery of Techniques Used", 10),
+                    ("Cleanliness of Individual Elements and Constr.", 10),
+                    ("Scale, Balance and Viewability of 3D Construction", 10),
+                    ("Originality of Design", 10),
+                    ("Setup/Display", 10),
+                    ("Overall Appeal", 10),
+                ]),
+                spacer(0.5),
+            comments(1.5)
+        ])
+
+
+def two_d_cookie_body(canvas):
+    draw_page(
+        canvas, 8.375,
+        [
+                judging_criteria([
+                    ("Interpretation of Theme", 10),
+                    ("Number & Diff of Decorating Techniques Used", 10),
+                    ("Mastery of Techniques Used", 10),
+                    ("Cleanliness of Icing/Covering & Cookies", 10),
+                    ("Originality of Design", 10),
+                    ("Setup/Display", 10),
+                    ("Overall Appeal", 10),
                 ]),
                 spacer(0.5),
             comments(1.5)

@@ -26,16 +26,6 @@ def _is_showcake(entry):
     return entry.get('category').startswith('Showcakes')
 
 
-def generate_judging_form(canvas, signup, entry, metadata):
-    header(canvas, signup, entry, metadata)
-    if _is_showcake(entry):
-        judging_showcake_body(canvas)
-    elif _is_tasting(metadata, entry):
-        judging_tasting_body(canvas)
-    else:
-        judging_divisional_body(canvas)
-
-
 def header(canvas, signup, entry, metadata):
     year = int(signup.get('year'))
 
@@ -73,68 +63,67 @@ def get_show_end_date(year):
     return SHOW_DATES[year][1]
 
 
-def judging_divisional_body(canvas):
-    criteria = [
-        ("Skill & Precision of Techniques", 20),
-        ("Originality & Creativity", 20),
-        ("Difficulty of Techniques", 15),
-        ("Number of Techniques Used", 15),
-        ("Proportion, Balance, Use of Color", 15),
-        ("Overall Eye Appeal - Judge's Discretion", 15)
-    ]
+def judging_criteria(criteria):
+    def draw_judging_criteria(canvas, offset):
+        # Table header
+        canvas.drawString(5.85 * inch, offset * inch, "Maximum")
+        canvas.drawString(6.85 * inch, offset * inch, "  Points")
 
-    offset = 8.75
+        offset -= 0.2
 
-    # Table header
-    canvas.drawString(5.85 * inch, offset * inch, "Maximum")
-    canvas.drawString(6.85 * inch, offset * inch, "  Points")
+        canvas.drawString(5.85 * inch, offset * inch, "  Points")
+        canvas.drawString(6.85 * inch, offset * inch, "Awarded")
 
-    offset -= 0.2
+        top_of_grid = offset - 0.1
 
-    canvas.drawString(5.85 * inch, offset * inch, "  Points")
-    canvas.drawString(6.85 * inch, offset * inch, "Awarded")
-
-    top_of_grid = offset - 0.1
-
-    # Display column of criteria
-    offset -= 0.275
-    for criterium, max_points in criteria:
-        canvas.drawString(1.125 * inch, offset * inch, criterium)
-        canvas.drawString(6.125 * inch, offset * inch, str(max_points))
+        # Display column of criteria
         offset -= 0.275
-    canvas.drawString(6.125 * inch, offset * inch, "Total:")
+        for criterium, max_points in criteria:
+            canvas.drawString(1.125 * inch, offset * inch, criterium)
+            canvas.drawString(6.125 * inch, offset * inch, str(max_points))
+            offset -= 0.275
+        canvas.drawString(6.125 * inch, offset * inch, "Total:")
 
-    # Build up rows
-    rows = []
-    offset = top_of_grid
-    for criterium in criteria:
+        # Build up rows
+        rows = []
+        offset = top_of_grid
+        for criterium in criteria:
+            rows.append(offset * inch)
+            offset -= 0.275
         rows.append(offset * inch)
+
+        # Draw grid
+        canvas.grid([inch, 5.75 * inch, 6.75 * inch, 7.75 * inch], rows)
+        canvas.grid([6.75 * inch, 7.75 * inch], [offset * inch, (offset - 0.275) * inch])
         offset -= 0.275
-    rows.append(offset * inch)
 
-    # Draw grid
-    canvas.grid([inch, 5.75 * inch, 6.75 * inch, 7.75 * inch], rows)
-    canvas.grid([6.75 * inch, 7.75 * inch], [offset * inch, (offset - 0.275) * inch])
-    offset -= 0.275
+        return offset
 
-    # Display award levels
-    offset -= 0.275
+    return draw_judging_criteria
+
+def comments(end_offset):
+    def draw_comments(canvas, offset):
+        canvas.drawString(inch, offset * inch, "Comments: ")
+        canvas.line(2.25 * inch, offset * inch, 7.5 * inch, offset * inch)
+
+        while (offset > end_offset):
+            offset -= 0.5
+            canvas.line(1 * inch, offset * inch, 7.5 * inch, offset * inch)
+
+        return offset
+
+    return draw_comments
+
+def award_levels(canvas, offset):
     canvas.drawString(
         1.125 * inch, offset * inch,
         "Platinum: 90-100pts, Gold: 80-89pts, Silver: 70-79pts, Bronze: Below 70")
     offset -= 0.275
 
-    # Display comments section
-    offset -= 0.275
-    canvas.drawString(inch, offset * inch, "Comments: ")
-    canvas.line(2.25 * inch, offset * inch, 7.5 * inch, offset * inch)
+    return offset
 
-    while (offset > 3.5):
-        offset -= 0.5
-        canvas.line(1 * inch, offset * inch, 7.5 * inch, offset * inch)
 
-    offset -= 0.375
-
+def judges_table(canvas, offset):
     canvas.drawString(inch, offset * inch, "Judges:")
     offset -= 0.375
 
@@ -147,100 +136,85 @@ def judging_divisional_body(canvas):
         [inch, 4.25 * inch, 7.5 * inch],
         [(offset - (pos * 0.375)) * inch for pos in range(6)])
 
+    return offset
+
+
+def spacer(spacing):
+    def draw_spacer(canvas, offset):
+        return offset - spacing
+
+    return draw_spacer
+
+
+def draw_page(canvas, offset, sections):
+    for section in sections:
+        offset = section(canvas, offset)
+
+
+def generate_judging_form(canvas, signup, entry, metadata):
+    header(canvas, signup, entry, metadata)
+    if _is_showcake(entry):
+        judging_showcake_body(canvas)
+    elif _is_tasting(metadata, entry):
+        judging_tasting_body(canvas)
+    else:
+        judging_divisional_body(canvas)
+
+
+def judging_divisional_body(canvas):
+    draw_page(
+        canvas, 8.75,
+        [
+                judging_criteria([
+                    ("Skill & Precision of Techniques", 20),
+                    ("Originality & Creativity", 20),
+                    ("Difficulty of Techniques", 15),
+                    ("Number of Techniques Used", 15),
+                    ("Proportion, Balance, Use of Color", 15),
+                    ("Overall Eye Appeal - Judge's Discretion", 15)
+                ]),
+                spacer(0.275),
+            award_levels,
+            spacer(0.275),
+            comments(3.5),
+            spacer(0.375),
+            judges_table
+        ])
+
 
 def judging_showcake_body(canvas):
-    criteria = [
-        ("Application of Theme", 15),
-        ("Precision of Techniques", 15),
-        ("Originality & Creativity", 15),
-        ("Appropriate Design (size, shape, colors, etc.)", 15),
-        ("Difficulty of Techniques", 15),
-        ("Number of Techniques Used", 15),
-        ("Overall Eye Appeal (Judge's discretion)", 10)
-    ]
-
-    # Table header
-    canvas.drawString(5.85 * inch, 8.375 * inch, "Maximum")
-    canvas.drawString(5.85 * inch, 8.125 * inch, "  Points")
-    canvas.drawString(6.85 * inch, 8.375 * inch, "  Points")
-    canvas.drawString(6.85 * inch, 8.125 * inch, "Awarded")
-
-    # Display column of criteria
-    offset = 7.75
-    for criterium, maximum_points in criteria:
-        canvas.drawString(1.125 * inch, offset * inch, criterium)
-        canvas.drawString(6.125 * inch, offset * inch, str(maximum_points))
-        offset -= 0.375
-    canvas.drawString(6.125 * inch, offset * inch, "Total:")
-
-    # Build up rows
-    rows = []
-    offset = 8.00
-    for criterium in criteria:
-        rows.append(offset * inch)
-        offset -= 0.375
-    rows.append(offset * inch)
-
-    # Draw grid
-    canvas.grid([inch, 5.75 * inch, 6.75 * inch, 7.75 * inch], rows)
-    canvas.grid([6.75 * inch, 7.75 * inch], [offset * inch, (offset - 0.375) * inch])
-    offset -= 0.375
-
-    # Display comments section
-    offset -= 0.5
-    canvas.drawString(inch, offset * inch, "Comments: ")
-    canvas.line(2.25 * inch, offset * inch, 7.5 * inch, offset * inch)
-
-    while (offset > 1.5):
-        offset -= 0.5
-        canvas.line(1 * inch, offset * inch, 7.5 * inch, offset * inch)
+    draw_page(
+        canvas, 8.375,
+        [
+                judging_criteria([
+                    ("Application of Theme", 15),
+                    ("Precision of Techniques", 15),
+                    ("Originality & Creativity", 15),
+                    ("Appropriate Design (size, shape, colors, etc.)", 15),
+                    ("Difficulty of Techniques", 15),
+                    ("Number of Techniques Used", 15),
+                    ("Overall Eye Appeal (Judge's discretion)", 10)
+                ]),
+                spacer(0.5),
+            comments(1.5)
+        ])
 
 
 def judging_tasting_body(canvas):
-    criteria = [
-        ("Flavor", 40),
-        ("Crumb", 10),
-        ("Texture", 10),
-        ("Density", 10),
-        ("Appearance", 15),
-        ("Theme", 15)
-    ]
-
-    # Table header
-    canvas.drawString(5.85 * inch, 8.375 * inch, "Maximum")
-    canvas.drawString(5.85 * inch, 8.125 * inch, "  Points")
-    canvas.drawString(6.85 * inch, 8.375 * inch, "  Points")
-    canvas.drawString(6.85 * inch, 8.125 * inch, "Awarded")
-
-    # Display column of criteria
-    offset = 7.75
-    for criterium, maximum_points in criteria:
-        canvas.drawString(1.125 * inch, offset * inch, criterium)
-        canvas.drawString(6.125 * inch, offset * inch, str(maximum_points))
-        offset -= 0.375
-    canvas.drawString(6.125 * inch, offset * inch, "Total:")
-
-    # Build up rows
-    rows = []
-    offset = 8.00
-    for criterium in criteria:
-        rows.append(offset * inch)
-        offset -= 0.375
-    rows.append(offset * inch)
-
-    # Draw grid
-    canvas.grid([inch, 5.75 * inch, 6.75 * inch, 7.75 * inch], rows)
-    canvas.grid([6.75 * inch, 7.75 * inch], [offset * inch, (offset - 0.375) * inch])
-    offset -= 0.375
-
-    # Display comments section
-    offset -= 0.5
-    canvas.drawString(inch, offset * inch, "Comments: ")
-    canvas.line(2.25 * inch, offset * inch, 7.5 * inch, offset * inch)
-
-    while (offset > 1.5):
-        offset -= 0.5
-        canvas.line(1 * inch, offset * inch, 7.5 * inch, offset * inch)
+    draw_page(
+        canvas, 8.375,
+        [
+                judging_criteria([
+                    ("Flavor", 40),
+                    ("Crumb", 10),
+                    ("Texture", 10),
+                    ("Density", 10),
+                    ("Appearance", 15),
+                    ("Theme", 15)
+                ]),
+                spacer(0.5),
+            comments(1.5)
+        ])
 
 
 def generate_entry_form(canvas, signup, entry, registrant, metadata):

@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import json
 import sys
 from reportlab.pdfgen import canvas
@@ -20,9 +22,13 @@ def _is_tasting(metadata, entry):
     return entry['category'] in metadata['tastings']
 
 
+def _is_showcake(entry):
+    return entry.get('category').startswith('Showcakes')
+
+
 def generate_judging_form(canvas, signup, entry, metadata):
     header(canvas, signup, entry, metadata)
-    if (entry.get('category').startswith('Showcakes')):
+    if _is_showcake(entry):
         judging_showcake_body(canvas)
     elif _is_tasting(metadata, entry):
         judging_tasting_body(canvas)
@@ -46,7 +52,7 @@ def header(canvas, signup, entry, metadata):
     canvas.setFont("Helvetica-Bold", 20)
     canvas.drawRightString(7.75 * inch, 10 * inch, "Entry #" + str(entry.get('id')))
     canvas.setFont("Helvetica", 12)
-    if (entry.get('category').startswith('Showcakes')):
+    if _is_showcake(entry):
         canvas.drawRightString(7.75 * inch, 9.75 * inch, entry.get('category'))
     elif _is_tasting(metadata, entry):
         canvas.drawRightString(7.75 * inch, 9.75 * inch, entry.get('category'))
@@ -411,7 +417,7 @@ def generate_registration_and_release_form(canvas, signup, registrant, divisiona
 
 if __name__ == "__main__":
     if (len(sys.argv) != 3):
-        print "ERROR: Must provide two parameters: JSON_FILE OUTPUT_FILE"
+        print("ERROR: Must provide two parameters: JSON_FILE OUTPUT_FILE")
         sys.exit(2)
     json_file = str(sys.argv[1])
     output_file = str(sys.argv[2])
@@ -420,7 +426,7 @@ if __name__ == "__main__":
         json_data = open(json_file)
         data = json.load(json_data)
     except IOError as e:
-        print "I/O error({0}): {1}".format(e.errno, e.strerror)
+        print("I/O error({0}): {1}".format(e.errno, e.strerror))
         sys.exit(2)
 
     canvas = canvas.Canvas(output_file, pagesize=letter)

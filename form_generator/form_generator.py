@@ -149,8 +149,15 @@ def judging_divisional_body(canvas):
 
 
 def judging_showcake_body(canvas):
-    criteria = ["Application of Theme", "Precision of Techniques", "Originality & Creativity", "Appropriate Design (size, shape, colors, etc.)", "Difficulty of Techniques", "Number of Techniques Used", "Overall Eye Appeal (Judge's discretion)"]
-    maximum_points = [15, 15, 15, 15, 15, 15, 10]
+    criteria = [
+        ("Application of Theme", 15),
+        ("Precision of Techniques", 15),
+        ("Originality & Creativity", 15),
+        ("Appropriate Design (size, shape, colors, etc.)", 15),
+        ("Difficulty of Techniques", 15),
+        ("Number of Techniques Used", 15),
+        ("Overall Eye Appeal (Judge's discretion)", 10)
+    ]
 
     # Table header
     canvas.drawString(5.85 * inch, 8.375 * inch, "Maximum")
@@ -160,12 +167,10 @@ def judging_showcake_body(canvas):
 
     # Display column of criteria
     offset = 7.75
-    index = 0
-    for criterium in criteria:
+    for criterium, maximum_points in criteria:
         canvas.drawString(1.125 * inch, offset * inch, criterium)
-        canvas.drawString(6.125 * inch, offset * inch, str(maximum_points[index]))
+        canvas.drawString(6.125 * inch, offset * inch, str(maximum_points))
         offset -= 0.375
-        index += 1
     canvas.drawString(6.125 * inch, offset * inch, "Total:")
 
     # Build up rows
@@ -192,8 +197,14 @@ def judging_showcake_body(canvas):
 
 
 def judging_tasting_body(canvas):
-    criteria = ["Flavor", "Crumb", "Texture", "Density", "Appearance", "Theme"]
-    maximum_points = [40, 10, 10, 10, 15, 15]
+    criteria = [
+        ("Flavor", 40),
+        ("Crumb", 10),
+        ("Texture", 10),
+        ("Density", 10),
+        ("Appearance", 15),
+        ("Theme", 15)
+    ]
 
     # Table header
     canvas.drawString(5.85 * inch, 8.375 * inch, "Maximum")
@@ -203,12 +214,10 @@ def judging_tasting_body(canvas):
 
     # Display column of criteria
     offset = 7.75
-    index = 0
-    for criterium in criteria:
+    for criterium, maximum_points in criteria:
         canvas.drawString(1.125 * inch, offset * inch, criterium)
-        canvas.drawString(6.125 * inch, offset * inch, str(maximum_points[index]))
+        canvas.drawString(6.125 * inch, offset * inch, str(maximum_points))
         offset -= 0.375
-        index += 1
     canvas.drawString(6.125 * inch, offset * inch, "Total:")
 
     # Build up rows

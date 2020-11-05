@@ -1,1 +1,1 @@
-web: coffee cakeshow.coffee
+web: ./node_modules/.bin/coffee cakeshow.coffee

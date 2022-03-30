@@ -192,7 +192,27 @@ exports.entryNames =
     special5: 'Marshmallows'
     child: 'Child'
     junior: 'Junior'
-
+  '2022':
+    showcase: 'Showpiece Sculpted Indiv'
+    showcase2: 'Showpiece Sculpted Team'
+    showcase3: 'Showpiece Tiered Indi'
+    showcase4: 'Showpiece Tiered Team'
+    style1: 'Novelty Single'
+    style2: 'Sculpted'
+    style3: 'Novelty Tiered'
+    style4: 'Wedding Tiered'
+    style5: 'Buttercream Single'
+    style6: 'Special Techniques'
+    style7: 'Small Bites'
+    style8: '2D Cookie'
+    style9: '3D Cookie'
+    special1: 'Gourmet Popcorn'
+    special2: 'Common Ingredient - Citrus'
+    special3: 'Cocktail Inspired Cupcakes'
+    special4: 'Cookie Tasting'
+    special5: 'Intermission Inspired Candy'
+    child: 'Child'
+    junior: 'Junior'
 
 exports.divisions = [
   'child'

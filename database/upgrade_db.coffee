@@ -45,6 +45,7 @@ class Upgrader
     "19": "2019"
     "20": "2020"
     "22": "2022"
+    "23": "2023"
 
   constructor: (username='root', password='', hostname='localhost', database='cakecuba_import15') ->
     this.upgradeDB = database

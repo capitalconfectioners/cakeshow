@@ -4,7 +4,7 @@ RUN apt-get update && apt-get install -y nodejs npm
 
 WORKDIR /app
 
-COPY package.json package-lock.json requirements.txt cakeshow.coffee .
+COPY package.json package-lock.json requirements.txt cakeshow.coffee /app/
 
 RUN npm install && pip install -r requirements.txt
 
